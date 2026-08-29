@@ -1,0 +1,334 @@
+<!-- Mockup: 2077, el tema que reemplaza a Pigmento -->
+<title>2077</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@0,400;0,600&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#FCFCFA; --ink:#14161A; --ink-2:#5C6068;
+  --rule:#E2E3DE; --mark:#E10A6E;
+  --shadow:0 1px 2px rgba(20,22,26,.06), 0 10px 30px rgba(20,22,26,.09);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:400 16px/1.6 "Public Sans",system-ui,sans-serif;padding:0 24px 120px}
+.wrap{max-width:1020px;margin:0 auto}
+
+.top{padding:72px 0 0}
+.kicker{font:600 11px/1 "Martian Mono",ui-monospace,monospace;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--mark);margin:0 0 26px}
+h1{font:800 clamp(42px,7vw,86px)/0.94 "Bricolage Grotesque",system-ui,sans-serif;
+  letter-spacing:-.035em;margin:0 0 22px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--ink-2)}
+.lede{max-width:58ch;font-size:18px;color:var(--ink-2);margin:0}
+.lede b{color:var(--ink);font-weight:600}
+
+hr.ants-rule{border:0;height:1px;margin:76px 0 0;
+  background-image:repeating-linear-gradient(90deg,var(--rule) 0 5px,transparent 5px 10px);
+  background-size:100% 1px;background-repeat:repeat-x}
+
+section{padding-top:56px}
+.eyebrow{display:flex;align-items:baseline;gap:14px;margin:0 0 6px}
+.eyebrow .num{font:600 11px/1 "Martian Mono",ui-monospace,monospace;color:var(--mark);letter-spacing:.1em}
+h2{font:700 clamp(25px,3.2vw,34px)/1.1 "Bricolage Grotesque",system-ui,sans-serif;
+  letter-spacing:-.02em;margin:0 0 10px}
+.note{max-width:64ch;color:var(--ink-2);margin:0 0 26px}
+.note b{color:var(--ink);font-weight:600}
+
+.pane{background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+  box-shadow:var(--shadow);margin-bottom:18px}
+.pane .tag{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;border-bottom:1px solid var(--rule);
+  font:600 10.5px/1 "Martian Mono",ui-monospace,monospace;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-2)}
+
+/* ================================================================== 2077 */
+.cy{
+  --vacio:#0A0D14;     /* el fondo del taller */
+  --panel:#121826;     /* la barra */
+  --linea:#26304A;     /* las hairlines */
+  --cian:#00E5FF;      /* canal 1: lo elegido */
+  --magenta:#FF2D78;   /* canal 2: el corrimiento */
+  --amarillo:#FCEE0A;  /* canal 3: lo que está por pasar */
+  --tx:#D7E3F4;
+  --dim:#6B7A94;
+  font-family:"SF Mono",ui-monospace,"Roboto Mono",monospace;
+  background:var(--vacio);position:relative;
+}
+/* la variante de día: mismo neón, otro fondo. El neón sobre claro sigue siendo
+   neón; lo que cambia es de qué lado del vidrio estás. */
+.cy.dia{
+  --vacio:#DDE3EC; --panel:#F2F5F9; --linea:#B9C3D4; --tx:#0D1220; --dim:#5A6880;
+}
+
+/* el lienzo llega a los bordes */
+.cy .taller{
+  height:330px;display:flex;align-items:center;justify-content:center;
+  background:var(--vacio);position:relative;
+  /* barrido: una línea cada tres píxeles, casi invisible */
+  background-image:repeating-linear-gradient(0deg,
+    rgba(255,255,255,.028) 0 1px, transparent 1px 3px);
+}
+.cy.dia .taller{background-image:repeating-linear-gradient(0deg,
+  rgba(0,0,0,.03) 0 1px, transparent 1px 3px)}
+
+/* aberración cromática: el lienzo separa los canales en los bordes */
+.cy .hoja{background:#fff;line-height:0;position:relative}
+.cy .hoja:before,.cy .hoja:after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+}
+.cy .hoja:before{box-shadow:-3px 0 0 var(--cian)}
+.cy .hoja:after{box-shadow:3px 0 0 var(--magenta), 0 4px 0 var(--amarillo)}
+
+/* esquineros: en vez de encerrar el área, la marcan */
+.cy .esq{position:absolute;width:20px;height:20px}
+.cy .esq i{position:absolute;background:var(--amarillo);opacity:.85}
+.cy .esq .h{height:1px;width:20px} .cy .esq .v{width:1px;height:20px}
+.cy .esq.tl{left:14px;top:14px} .cy .esq.tl .h{top:0;left:0} .cy .esq.tl .v{top:0;left:0}
+.cy .esq.tr{right:14px;top:14px} .cy .esq.tr .h{top:0;right:0} .cy .esq.tr .v{top:0;right:0}
+.cy .esq.bl{left:14px;bottom:76px} .cy .esq.bl .h{bottom:0;left:0} .cy .esq.bl .v{bottom:0;left:0}
+.cy .esq.br{right:14px;bottom:76px} .cy .esq.br .h{bottom:0;right:0} .cy .esq.br .v{bottom:0;right:0}
+
+/* una sola barra abajo */
+.cy .barra{
+  height:58px;background:var(--panel);color:var(--tx);
+  display:flex;align-items:center;padding:0 14px;
+  border-top:1px solid var(--linea);
+}
+.cy .b{
+  width:38px;height:38px;display:grid;place-items:center;color:var(--tx);
+  border:1px solid transparent;position:relative;
+}
+.cy .b:hover{color:var(--amarillo);border-color:var(--amarillo)}
+.cy .b.on{color:var(--cian);border-color:var(--cian)}
+.cy .b.hov{color:var(--amarillo);border-color:var(--amarillo)}
+/* el resplandor del activo: el mismo trazo corrido al otro canal */
+.cy .b.on:after{
+  content:"";position:absolute;inset:-1px;border:1px solid var(--magenta);
+  transform:translate(2px,0);opacity:.55;pointer-events:none;
+}
+.cy .b svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round}
+.cy .sep{width:1px;height:28px;background:var(--linea);margin:0 12px}
+.cy .lab{font:600 9px/1 inherit;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--dim);margin-right:9px}
+.cy .pozos{display:flex;gap:5px}
+.cy .pozo{width:26px;height:26px;border:1px solid var(--linea)}
+.cy .pozo.sel{border-color:var(--cian);box-shadow:2px 0 0 var(--magenta), -2px 0 0 var(--amarillo)}
+.cy .pal{display:grid;grid-template-columns:repeat(10,16px);grid-auto-rows:16px;gap:1px}
+.cy .pal i{display:block;width:16px;height:16px}
+.cy .anchos{display:flex;gap:2px}
+.cy .ancho{width:32px;height:26px;display:grid;place-items:center;border:1px solid transparent}
+.cy .ancho.on{border-color:var(--cian)}
+.cy .ancho span{display:block;width:18px;background:var(--tx)}
+.cy .ancho.on span{background:var(--cian)}
+.cy .der{margin-left:auto;display:flex;align-items:center;gap:2px}
+.cy .zoom{font:600 11px/1 inherit;letter-spacing:.1em;padding:0 10px;color:var(--tx)}
+
+.chips{display:flex;flex-wrap:wrap;border-top:1px solid var(--rule)}
+.chip{flex:1 1 0;min-width:112px;padding:12px 14px 14px;border-right:1px solid var(--rule)}
+.chip:last-child{border-right:0}
+.chip .sw{display:block;height:32px;border:1px solid rgba(0,0,0,.14)}
+.chip .nm{display:block;margin-top:8px;font:400 10px/1.3 "Martian Mono",monospace;color:var(--ink-2)}
+.chip .hx{display:block;font:600 10.5px/1.4 "Martian Mono",monospace;color:var(--ink)}
+
+table.cmp{width:100%;border-collapse:collapse;margin-top:8px;font-size:14.5px}
+table.cmp th{text-align:left;font:600 10.5px/1 "Martian Mono",monospace;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--rule)}
+table.cmp td{padding:11px 14px 11px 0;border-bottom:1px solid var(--rule);
+  color:var(--ink-2);vertical-align:top}
+table.cmp td:first-child{color:var(--ink);font-weight:600;width:130px}
+
+.redlist{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:12px}
+.redlist li{display:grid;grid-template-columns:20px 1fr;gap:11px;align-items:start;
+  font-size:15px;color:var(--ink-2)}
+.redlist .dot{width:19px;height:19px;border-radius:50%;background:var(--mark);color:#fff;
+  display:grid;place-items:center;font:600 10px/1 "Martian Mono",monospace;margin-top:3px}
+.redlist b{color:var(--ink);font-weight:600}
+
+.foot{margin-top:86px;padding-top:24px;border-top:1px solid var(--rule);
+  font:400 12px/1.7 "Martian Mono",ui-monospace,monospace;color:var(--ink-2)}
+.foot b{color:var(--ink);font-weight:600}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">Lienzo · 2077, reemplaza a Pigmento</p>
+  <h1>Tres canales<br>mal <em>alineados.</em></h1>
+  <p class="lede">Cian, magenta y amarillo son los tres canales de impresión, y también los que se separan cuando una pantalla falla. Ese defecto es toda la identidad del tema: <b>lo activo no se rellena, se desalinea</b>. Y el chrome deja de ser una ventana para ser un visor.</p>
+</header>
+
+<hr class="ants-rule">
+
+<!-- ============================================================ LA APP == -->
+<section>
+  <div class="eyebrow"><span class="num">2077</span></div>
+  <h2>Una barra, y el resto es visor</h2>
+  <p class="note">La estructura es la que ya viste y no cambia: <b>toda la interfaz es una franja al pie</b> y el lienzo llega a los cuatro bordes. Lo que cambia es de qué está hecha.</p>
+
+  <div class="pane">
+    <div class="tag"><span>2077 nocturno</span><span>la variante oscura</span></div>
+    <div class="cy">
+      <div class="taller">
+        <span class="esq tl"><i class="h"></i><i class="v"></i></span>
+        <span class="esq tr"><i class="h"></i><i class="v"></i></span>
+        <span class="esq bl"><i class="h"></i><i class="v"></i></span>
+        <span class="esq br"><i class="h"></i><i class="v"></i></span>
+        <div class="hoja">
+          <svg width="392" height="215" viewBox="0 0 420 230">
+            <rect width="420" height="230" fill="#fff"/>
+            <circle cx="104" cy="102" r="56" fill="#FF2D78"/>
+            <path d="M196 160 L252 56 L308 160 Z" fill="#00E5FF"/>
+            <rect x="326" y="72" width="68" height="68" fill="#0A0D14"/>
+            <path d="M30 200 q66 -30 132 0 t132 0 t100 0" fill="none" stroke="#FF2D78" stroke-width="5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="barra">
+        <span class="b on"><svg viewBox="0 0 20 20"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg></span>
+        <span class="b"><svg viewBox="0 0 20 20"><path d="M2.5 17.5l4-6 4 4-6 4z" fill="currentColor"/><path d="M8 10.5L16.5 3"/></svg></span>
+        <span class="b hov"><svg viewBox="0 0 20 20"><path d="M4 10l6-6 6 6-6 6z"/></svg></span>
+        <span class="b"><svg viewBox="0 0 20 20"><path d="M4 4h12M10 4v12"/></svg></span>
+        <span class="b"><svg viewBox="0 0 20 20"><rect x="3.5" y="3.5" width="13" height="13"/></svg></span>
+        <span class="b"><svg viewBox="0 0 20 20"><path d="M3 13l7-7 5 5-5 5H5z"/><path d="M3 17h14"/></svg></span>
+        <span class="b"><svg viewBox="0 0 20 20"><path d="M13 3l4 4M15 5l-8 8-3 1 1-3z"/></svg></span>
+        <span class="b"><svg viewBox="0 0 20 20"><path d="M3 3h4M13 3h4M17 3v4M17 13v4M17 17h-4M7 17H3M3 17v-4M3 7V3"/></svg></span>
+
+        <span class="sep"></span>
+        <span class="pozos">
+          <span class="pozo sel" style="background:#00E5FF"></span>
+          <span class="pozo" style="background:#0A0D14"></span>
+        </span>
+        <span class="pal" style="margin-left:11px">
+          <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+          <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+          <i style="background:#fff"></i><i style="background:#C3C3C3"></i><i style="background:#B97A57"></i><i style="background:#FFAEC9"></i><i style="background:#FFC90E"></i>
+          <i style="background:#EFE4B0"></i><i style="background:#B5E61D"></i><i style="background:#99D9EA"></i><i style="background:#7092BE"></i><i style="background:#C8BFE7"></i>
+        </span>
+
+        <span class="der">
+          <span class="lab">Grosor</span>
+          <span class="anchos">
+            <span class="ancho on"><span style="height:1px"></span></span>
+            <span class="ancho"><span style="height:3px"></span></span>
+            <span class="ancho"><span style="height:5px"></span></span>
+            <span class="ancho"><span style="height:8px"></span></span>
+          </span>
+          <span class="sep"></span>
+          <span class="zoom">100%</span>
+          <span class="b"><svg viewBox="0 0 20 20"><path d="M7.5 6.5L3.5 10.5l4 4"/><path d="M3.5 10.5h8a3.5 3.5 0 010 7h-2"/></svg></span>
+          <span class="b"><svg viewBox="0 0 20 20"><path d="M3 5.5h14M3 10h14M3 14.5h14"/></svg></span>
+        </span>
+      </div>
+    </div>
+    <div class="chips">
+      <div class="chip"><span class="sw" style="background:#0A0D14"></span><span class="nm">vacío</span><span class="hx">0A0D14</span></div>
+      <div class="chip"><span class="sw" style="background:#121826"></span><span class="nm">panel</span><span class="hx">121826</span></div>
+      <div class="chip"><span class="sw" style="background:#26304A"></span><span class="nm">línea</span><span class="hx">26304A</span></div>
+      <div class="chip"><span class="sw" style="background:#00E5FF"></span><span class="nm">canal 1</span><span class="hx">00E5FF</span></div>
+      <div class="chip"><span class="sw" style="background:#FF2D78"></span><span class="nm">canal 2</span><span class="hx">FF2D78</span></div>
+      <div class="chip"><span class="sw" style="background:#FCEE0A"></span><span class="nm">canal 3</span><span class="hx">FCEE0A</span></div>
+      <div class="chip"><span class="sw" style="background:#D7E3F4"></span><span class="nm">texto</span><span class="hx">D7E3F4</span></div>
+    </div>
+  </div>
+
+  <div class="pane">
+    <div class="tag"><span>2077</span><span>la variante clara</span></div>
+    <div class="cy dia">
+      <div class="taller">
+        <span class="esq tl"><i class="h"></i><i class="v"></i></span>
+        <span class="esq tr"><i class="h"></i><i class="v"></i></span>
+        <div class="hoja">
+          <svg width="392" height="215" viewBox="0 0 420 230">
+            <rect width="420" height="230" fill="#fff"/>
+            <circle cx="104" cy="102" r="56" fill="#FF2D78"/>
+            <path d="M196 160 L252 56 L308 160 Z" fill="#00E5FF"/>
+            <rect x="326" y="72" width="68" height="68" fill="#0A0D14"/>
+            <path d="M30 200 q66 -30 132 0 t132 0 t100 0" fill="none" stroke="#FF2D78" stroke-width="5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="barra">
+        <span class="b on"><svg viewBox="0 0 20 20"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg></span>
+        <span class="b"><svg viewBox="0 0 20 20"><path d="M2.5 17.5l4-6 4 4-6 4z" fill="currentColor"/><path d="M8 10.5L16.5 3"/></svg></span>
+        <span class="b"><svg viewBox="0 0 20 20"><path d="M4 10l6-6 6 6-6 6z"/></svg></span>
+        <span class="b"><svg viewBox="0 0 20 20"><path d="M4 4h12M10 4v12"/></svg></span>
+        <span class="b"><svg viewBox="0 0 20 20"><rect x="3.5" y="3.5" width="13" height="13"/></svg></span>
+        <span class="sep"></span>
+        <span class="pozos">
+          <span class="pozo sel" style="background:#0D1220"></span>
+          <span class="pozo" style="background:#fff"></span>
+        </span>
+        <span class="pal" style="margin-left:11px">
+          <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+          <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+          <i style="background:#fff"></i><i style="background:#C3C3C3"></i><i style="background:#B97A57"></i><i style="background:#FFAEC9"></i><i style="background:#FFC90E"></i>
+          <i style="background:#EFE4B0"></i><i style="background:#B5E61D"></i><i style="background:#99D9EA"></i><i style="background:#7092BE"></i><i style="background:#C8BFE7"></i>
+        </span>
+        <span class="der">
+          <span class="lab">Grosor</span>
+          <span class="anchos">
+            <span class="ancho on"><span style="height:1px"></span></span>
+            <span class="ancho"><span style="height:3px"></span></span>
+            <span class="ancho"><span style="height:5px"></span></span>
+          </span>
+          <span class="sep"></span>
+          <span class="zoom">100%</span>
+          <span class="b"><svg viewBox="0 0 20 20"><path d="M3 5.5h14M3 10h14M3 14.5h14"/></svg></span>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ======================================================== POR QUÉ ==== -->
+<section>
+  <div class="eyebrow"><span class="num">LAS DECISIONES</span></div>
+  <h2>De dónde sale cada cosa</h2>
+  <p class="note">El riesgo de este estilo es terminar en el neón de siempre. Lo que lo salva es que <b>cada efecto sale de un defecto real de una pantalla</b>, y que el programa es justamente un editor de píxeles.</p>
+
+  <ol class="redlist">
+    <li><span class="dot">1</span><span><b>Lo activo no se rellena, se desalinea.</b> El botón puesto lleva su propio borde repetido en el otro canal y corrido dos píxeles. Es el único tema de los ocho donde el estado no se marca con un fondo de color.</span></li>
+    <li><span class="dot">2</span><span><b>El amarillo es lo que está por pasar.</b> Cian marca lo elegido y magenta es su corrimiento; el amarillo se queda con el paso del cursor y con los esquineros. Es el color que más vas a ver mientras movés el mouse, y el que nunca aparece quieto.</span></li>
+    <li><span class="dot">3</span><span><b>El lienzo tiene los canales separados</b> en los bordes: cian de un lado, magenta del otro. Reemplaza a la sombra, y en un editor de píxeles la aberración cromática es una referencia que se entiende sola.</span></li>
+    <li><span class="dot">4</span><span><b>Esquineros en vez de marco.</b> Cuatro ángulos marcan el área de trabajo sin encerrarla — un visor, no una ventana.</span></li>
+    <li><span class="dot">5</span><span><b>Barrido de una línea cada tres píxeles</b>, casi invisible, sobre el fondo del taller. Es lo que hace que el negro no se lea como un negro plano de aplicación oscura.</span></li>
+    <li><span class="dot">6</span><span><b>Todo en monoespaciada y versalitas</b> con mucho espaciado. Es la única tipografía de los ocho temas que no es la del sistema.</span></li>
+    <li><span class="dot">7</span><span><b>La variante clara no es «lo mismo pero blanco»:</b> mismo cian y mismo magenta a plena saturación sobre un gris frío. El neón sobre claro sigue siendo neón; lo que cambia es de qué lado del vidrio estás.</span></li>
+  </ol>
+</section>
+
+<hr class="ants-rule">
+
+<section>
+  <div class="eyebrow"><span class="num">CONTRA LO QUE HAY</span></div>
+  <h2>Que no se parezca a ninguno</h2>
+
+  <table class="cmp">
+    <tr><th>Tema</th><th>Dónde vive la interfaz</th><th>Cómo se marca lo activo</th></tr>
+    <tr><td>Lienzo</td><td>Riel al costado y barra de contexto</td><td>Bloque de tinta suave</td></tr>
+    <tr><td>Windows</td><td>Cinta arriba con pestañas</td><td>Fondo azul claro</td></tr>
+    <tr><td>Windows XP</td><td>Caja a la izquierda y paleta abajo</td><td>Botón hundido</td></tr>
+    <tr><td>macOS</td><td>Barra unificada, lateral e inspector</td><td>Pastilla azul llena</td></tr>
+    <tr><td>GNOME</td><td>Cabecera y píldora flotante</td><td>Fondo celeste</td></tr>
+    <tr><td>KDE</td><td>Menú, barra, panel y panel</td><td>Fondo Breeze</td></tr>
+    <tr><td><b>2077</b></td><td><b>Una sola barra al pie</b></td><td><b>Un borde corrido al otro canal</b></td></tr>
+  </table>
+
+  <p class="note" style="margin-top:24px"><b>Lienzo queda como está</b> y sigue siendo el de fábrica. Pigmento y Pigmento oscuro desaparecen: los reemplazan <b>2077</b> y <b>2077 nocturno</b>.</p>
+</section>
+
+<p class="foot">
+  <b>Lienzo</b> · 2077 · para revisión<br>
+  Maqueta en HTML, no capturas del programa.
+</p>
+
+</div>

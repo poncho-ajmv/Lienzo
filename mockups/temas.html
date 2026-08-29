@@ -1,0 +1,651 @@
+<!-- Mockup: temas de Lienzo -->
+<title>Temas — Lienzo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@0,400;0,600&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#FCFCFA;
+  --ink:#14161A;
+  --ink-2:#5C6068;
+  --rule:#E2E3DE;
+  --rule-2:#F1F1EE;
+  --mark:#E10A6E;
+  --shadow:0 1px 2px rgba(20,22,26,.06), 0 10px 30px rgba(20,22,26,.09);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:400 16px/1.6 "Public Sans", system-ui, sans-serif;
+  padding:0 24px 120px;
+}
+.wrap{max-width:1060px;margin:0 auto}
+
+/* ------------------------------------------------------------ cabecera --- */
+.top{padding:72px 0 0}
+.kicker{
+  font:600 11px/1 "Martian Mono", ui-monospace, monospace;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--mark);margin:0 0 26px;
+}
+h1{
+  font:800 clamp(42px,7vw,86px)/0.94 "Bricolage Grotesque", system-ui, sans-serif;
+  letter-spacing:-.035em;margin:0 0 22px;text-wrap:balance;
+}
+h1 em{font-style:normal;color:var(--ink-2)}
+.lede{max-width:58ch;font-size:18px;color:var(--ink-2);margin:0}
+.lede b{color:var(--ink);font-weight:600}
+
+hr.ants-rule{
+  border:0;height:1px;margin:80px 0 0;
+  background-image:repeating-linear-gradient(90deg,var(--rule) 0 5px,transparent 5px 10px);
+  background-size:100% 1px;background-repeat:repeat-x;
+}
+
+section{padding-top:60px}
+.eyebrow{display:flex;align-items:baseline;gap:14px;margin:0 0 6px}
+.eyebrow .num{font:600 11px/1 "Martian Mono", ui-monospace, monospace;color:var(--mark);letter-spacing:.1em}
+h2{font:700 clamp(26px,3.4vw,38px)/1.1 "Bricolage Grotesque", system-ui, sans-serif;letter-spacing:-.02em;margin:0 0 10px}
+.note{max-width:64ch;color:var(--ink-2);margin:0 0 28px}
+.note b{color:var(--ink);font-weight:600}
+
+/* ------------------------------------------------- tarjeta de muestrario --- */
+/* Cada tema es una ficha de muestrario: la misma aplicación pintada con sus
+   colores, y debajo la mancha del acento con su número, como en una carta de
+   colores de pintura. */
+.card{
+  background:#fff;border:1px solid var(--rule);border-radius:4px;
+  box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px;
+}
+.card-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  padding:12px 16px;border-bottom:1px solid var(--rule);
+}
+.card-head h3{
+  font:700 19px/1.2 "Bricolage Grotesque", system-ui, sans-serif;
+  letter-spacing:-.01em;margin:0;
+}
+.card-head .meta{
+  font:400 11px/1 "Martian Mono", ui-monospace, monospace;
+  color:var(--ink-2);letter-spacing:.04em;
+}
+.card-foot{
+  display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--rule);
+}
+.chip{flex:1 1 0;min-width:74px;padding:9px 10px 10px;border-right:1px solid var(--rule)}
+.chip:last-child{border-right:0}
+.chip .sw{display:block;height:26px;border-radius:2px;border:1px solid rgba(0,0,0,.14)}
+.chip .nm{
+  display:block;margin-top:6px;
+  font:400 9.5px/1.25 "Martian Mono", ui-monospace, monospace;
+  color:var(--ink-2);letter-spacing:.02em;
+}
+.chip .hx{display:block;font:600 10px/1.3 "Martian Mono", monospace;color:var(--ink)}
+
+/* ------------------------------------------------- la app en miniatura --- */
+.app{
+  font-family:"Segoe UI", system-ui, sans-serif;
+  background:var(--window);color:var(--text);
+  --r:var(--rounding);
+}
+.app .bar{
+  height:27px;display:flex;align-items:center;gap:6px;padding:0 8px;
+  background:linear-gradient(var(--bar-top),var(--bar-bottom));
+  border-bottom:1px solid var(--border);
+}
+.app .dot{width:11px;height:11px;border-radius:50%;background:var(--border-strong)}
+.app .qb{
+  width:19px;height:19px;border-radius:calc(var(--br));display:grid;place-items:center;
+  color:var(--icon);font-size:11px;
+}
+.app .tabs{display:flex;align-items:flex-end;background:var(--surface)}
+.app .ftab{
+  padding:6px 15px;font-size:12px;background:var(--file-tab);color:var(--file-tab-text);
+}
+.app .tab{padding:6px 15px;font-size:12px;color:var(--text)}
+.app .tab.on{background:var(--ribbon-tab-active);border:1px solid var(--border);border-bottom:0}
+.app .ribbon{
+  background:var(--ribbon);border-bottom:1px solid var(--border);
+  display:flex;align-items:stretch;padding:7px 0 0;
+}
+.app .grp{
+  padding:0 11px;border-right:1px solid var(--ribbon-separator);
+  display:flex;flex-direction:column;justify-content:space-between;flex:0 0 auto;
+}
+.app .grp:last-child{border-right:0}
+.app .grow{display:flex;gap:5px;padding-bottom:5px;align-items:flex-start}
+.app .glab{font-size:9.5px;color:var(--ribbon-group-label);text-align:center;padding:2px 0 5px}
+.app .big{
+  width:46px;padding:5px 3px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-size:9.5px;line-height:1.15;text-align:center;border-radius:var(--br);
+  border:1px solid transparent;
+}
+.app .big.on{background:var(--button-active);border-color:var(--accent)}
+.app .ico{width:17px;height:17px;color:var(--icon)}
+.app .sm{
+  width:23px;height:23px;border-radius:var(--br);display:grid;place-items:center;
+  border:1px solid transparent;color:var(--icon);
+}
+.app .sm.on{background:var(--button-active);border-color:var(--accent)}
+.app .pal{display:grid;grid-template-columns:repeat(10,11px);gap:2px}
+.app .pal i{width:11px;height:11px;border:1px solid var(--border-strong);display:block}
+.app .stage{
+  background:var(--workspace);padding:16px;display:flex;justify-content:center;
+}
+.app .canvas{background:#fff;border:1px solid rgba(0,0,0,.35);line-height:0}
+.app .status{
+  height:21px;display:flex;align-items:center;padding:0 9px;gap:14px;
+  font-size:10px;color:var(--text-dim);background:var(--surface-alt);
+  border-top:1px solid var(--border);
+}
+
+/* chrome unificado: una sola barra compacta, sin cinta */
+.app .unibar{
+  display:flex;align-items:center;gap:6px;padding:7px 9px;
+  background:linear-gradient(var(--bar-top),var(--bar-bottom));
+  border-bottom:1px solid var(--border);
+}
+.app .uni-title{
+  font-size:12px;font-weight:600;color:var(--text);margin:0 8px;
+}
+.app .pill{
+  display:flex;background:var(--button);border:1px solid var(--button-border);
+  border-radius:var(--r);overflow:hidden;
+}
+.app .pill .sm{border-radius:0;border:0;width:26px;height:22px}
+.app .pill .sm.on{background:var(--button-active);color:var(--accent)}
+.app .traffic{display:flex;gap:6px;padding-right:4px}
+.app .traffic i{width:11px;height:11px;border-radius:50%;display:block}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+
+.redlist{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:11px}
+.redlist li{display:grid;grid-template-columns:20px 1fr;gap:11px;align-items:start;font-size:15px;color:var(--ink-2)}
+.redlist .dot{
+  width:19px;height:19px;border-radius:50%;background:var(--mark);color:#fff;
+  display:grid;place-items:center;font:600 10px/1 "Martian Mono", monospace;margin-top:3px;
+}
+.redlist b{color:var(--ink);font-weight:600}
+
+.foot{
+  margin-top:90px;padding-top:24px;border-top:1px solid var(--rule);
+  font:400 12px/1.7 "Martian Mono", ui-monospace, monospace;color:var(--ink-2);
+}
+.foot b{color:var(--ink);font-weight:600}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">Lienzo · propuesta de temas</p>
+  <h1>Un tema<br>que no sea<br><em>de otro.</em></h1>
+  <p class="lede">Hoy los seis temas son pieles de sistemas ajenos, y el que viene puesto es Windows&nbsp;10. Esta hoja propone uno propio para que sea el de fábrica, y rehace Linux y macOS con sus lenguajes de verdad. <b>Todos los marcos muestran el mismo dibujo</b>, que es la única forma honesta de compararlos.</p>
+</header>
+
+<hr class="ants-rule">
+
+<!-- ======================================================= LIENZO ====== -->
+<section>
+  <div class="eyebrow"><span class="num">EL NUEVO POR DEFECTO</span></div>
+  <h2>Lienzo</h2>
+  <p class="note">La idea de la que sale todo: <b>el único color de la pantalla es tu dibujo</b>. La interfaz es tinta sobre papel, los iconos son grafito y lo que está activo se marca con un bloque de tinta, no con azul. Así los únicos píxeles saturados que ves son el Color&nbsp;1, el Color&nbsp;2, la paleta y el cuadro. Un instrumento de dibujo, no un panel de control.</p>
+
+  <div class="card" style="
+    --window:#E8E6E1; --surface:#FDFDFC; --surface-alt:#F3F2EE; --workspace:#34322E;
+    --border:#D8D6D0; --border-strong:#A8A59D; --text:#1A1917; --text-dim:#6E6B64;
+    --icon:#1A1917; --accent:#1A1917; --accent-soft:#DCD9D2; --button:#E8E6E1;
+    --button-active:#C9C5BC; --button-border:#D8D6D0; --ribbon:#FDFDFC;
+    --ribbon-tab-active:#FDFDFC; --ribbon-group-label:#8A867E; --ribbon-separator:#E4E2DC;
+    --file-tab:#1A1917; --file-tab-text:#FDFDFC; --bar-top:#FDFDFC; --bar-bottom:#FDFDFC;
+    --rounding:3px; --br:2px;">
+    <div class="card-head">
+      <h3>Lienzo</h3>
+      <span class="meta">cinta · claro · por defecto</span>
+    </div>
+    <div class="app">
+      <div class="bar">
+        <span class="qb">▣</span><span class="qb">↶</span><span class="qb">↷</span>
+      </div>
+      <div class="tabs">
+        <span class="ftab">Archivo</span>
+        <span class="tab on">Inicio</span>
+        <span class="tab">Ver</span>
+      </div>
+      <div class="ribbon">
+        <div class="grp">
+          <div class="grow">
+            <span class="big"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg>Pegar</span>
+          </div>
+          <div class="glab">Portapapeles</div>
+        </div>
+        <div class="grp">
+          <div class="grow">
+            <span class="sm on">✎</span><span class="sm">◇</span><span class="sm">T</span>
+            <span class="sm">◻</span><span class="sm">✐</span><span class="sm">◌</span>
+          </div>
+          <div class="glab">Herramientas</div>
+        </div>
+        <div class="grp">
+          <div class="grow" style="align-items:center;gap:8px">
+            <span style="width:26px;height:26px;background:#1A1917;border:1px solid var(--border-strong)"></span>
+            <span style="width:26px;height:26px;background:#fff;border:1px solid var(--border-strong)"></span>
+            <span class="pal">
+              <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+              <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+              <i style="background:#fff"></i><i style="background:#C3C3C3"></i><i style="background:#B97A57"></i><i style="background:#FFAEC9"></i><i style="background:#FFC90E"></i>
+              <i style="background:#EFE4B0"></i><i style="background:#B5E61D"></i><i style="background:#99D9EA"></i><i style="background:#7092BE"></i><i style="background:#C8BFE7"></i>
+            </span>
+          </div>
+          <div class="glab">Colores</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="canvas">
+          <svg width="252" height="132" viewBox="0 0 252 132" aria-label="dibujo de muestra">
+            <rect width="252" height="132" fill="#fff"/>
+            <circle cx="62" cy="60" r="34" fill="#FFC90E" stroke="#1A1917" stroke-width="2"/>
+            <path d="M118 92 L152 34 L186 92 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2"/>
+            <rect x="196" y="44" width="42" height="42" fill="#00A2E8" stroke="#1A1917" stroke-width="2"/>
+            <path d="M18 116 q40 -18 80 0 t 80 0 t 60 0" fill="none" stroke="#ED1C24" stroke-width="3"/>
+          </svg>
+        </div>
+      </div>
+      <div class="status"><span>252 × 132 px</span><span>100%</span></div>
+    </div>
+    <div class="card-foot">
+      <div class="chip"><span class="sw" style="background:#E8E6E1"></span><span class="nm">ventana</span><span class="hx">E8E6E1</span></div>
+      <div class="chip"><span class="sw" style="background:#FDFDFC"></span><span class="nm">superficie</span><span class="hx">FDFDFC</span></div>
+      <div class="chip"><span class="sw" style="background:#34322E"></span><span class="nm">taller</span><span class="hx">34322E</span></div>
+      <div class="chip"><span class="sw" style="background:#1A1917"></span><span class="nm">tinta</span><span class="hx">1A1917</span></div>
+      <div class="chip"><span class="sw" style="background:#DCD9D2"></span><span class="nm">activo</span><span class="hx">DCD9D2</span></div>
+      <div class="chip"><span class="sw" style="background:#A8A59D"></span><span class="nm">borde</span><span class="hx">A8A59D</span></div>
+      <div class="chip"><span class="sw" style="background:#6E6B64"></span><span class="nm">texto ten.</span><span class="hx">6E6B64</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="
+    --window:#1C1B19; --surface:#232220; --surface-alt:#1F1E1C; --workspace:#0D0D0C;
+    --border:#34322E; --border-strong:#55524C; --text:#EDEBE6; --text-dim:#96928A;
+    --icon:#EDEBE6; --accent:#EDEBE6; --accent-soft:#3A3833; --button:#232220;
+    --button-active:#3A3833; --button-border:#34322E; --ribbon:#232220;
+    --ribbon-tab-active:#2A2825; --ribbon-group-label:#96928A; --ribbon-separator:#34322E;
+    --file-tab:#EDEBE6; --file-tab-text:#1C1B19; --bar-top:#232220; --bar-bottom:#232220;
+    --rounding:3px; --br:2px;">
+    <div class="card-head">
+      <h3>Lienzo Tinta</h3>
+      <span class="meta">cinta · oscuro · pareja del anterior</span>
+    </div>
+    <div class="app">
+      <div class="bar"><span class="qb">▣</span><span class="qb">↶</span><span class="qb">↷</span></div>
+      <div class="tabs" style="background:var(--surface)">
+        <span class="ftab">Archivo</span>
+        <span class="tab on">Inicio</span>
+        <span class="tab">Ver</span>
+      </div>
+      <div class="ribbon">
+        <div class="grp">
+          <div class="grow">
+            <span class="big"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg>Pegar</span>
+          </div>
+          <div class="glab">Portapapeles</div>
+        </div>
+        <div class="grp">
+          <div class="grow">
+            <span class="sm on">✎</span><span class="sm">◇</span><span class="sm">T</span>
+            <span class="sm">◻</span><span class="sm">✐</span><span class="sm">◌</span>
+          </div>
+          <div class="glab">Herramientas</div>
+        </div>
+        <div class="grp">
+          <div class="grow" style="align-items:center;gap:8px">
+            <span style="width:26px;height:26px;background:#EDEBE6;border:1px solid var(--border-strong)"></span>
+            <span style="width:26px;height:26px;background:#1C1B19;border:1px solid var(--border-strong)"></span>
+            <span class="pal">
+              <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+              <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+              <i style="background:#fff"></i><i style="background:#C3C3C3"></i><i style="background:#B97A57"></i><i style="background:#FFAEC9"></i><i style="background:#FFC90E"></i>
+              <i style="background:#EFE4B0"></i><i style="background:#B5E61D"></i><i style="background:#99D9EA"></i><i style="background:#7092BE"></i><i style="background:#C8BFE7"></i>
+            </span>
+          </div>
+          <div class="glab">Colores</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="canvas">
+          <svg width="252" height="132" viewBox="0 0 252 132">
+            <rect width="252" height="132" fill="#fff"/>
+            <circle cx="62" cy="60" r="34" fill="#FFC90E" stroke="#1A1917" stroke-width="2"/>
+            <path d="M118 92 L152 34 L186 92 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2"/>
+            <rect x="196" y="44" width="42" height="42" fill="#00A2E8" stroke="#1A1917" stroke-width="2"/>
+            <path d="M18 116 q40 -18 80 0 t 80 0 t 60 0" fill="none" stroke="#ED1C24" stroke-width="3"/>
+          </svg>
+        </div>
+      </div>
+      <div class="status"><span>252 × 132 px</span><span>100%</span></div>
+    </div>
+    <div class="card-foot">
+      <div class="chip"><span class="sw" style="background:#1C1B19"></span><span class="nm">ventana</span><span class="hx">1C1B19</span></div>
+      <div class="chip"><span class="sw" style="background:#232220"></span><span class="nm">superficie</span><span class="hx">232220</span></div>
+      <div class="chip"><span class="sw" style="background:#0D0D0C"></span><span class="nm">taller</span><span class="hx">0D0D0C</span></div>
+      <div class="chip"><span class="sw" style="background:#EDEBE6"></span><span class="nm">tinta</span><span class="hx">EDEBE6</span></div>
+      <div class="chip"><span class="sw" style="background:#3A3833"></span><span class="nm">activo</span><span class="hx">3A3833</span></div>
+      <div class="chip"><span class="sw" style="background:#55524C"></span><span class="nm">borde</span><span class="hx">55524C</span></div>
+      <div class="chip"><span class="sw" style="background:#96928A"></span><span class="nm">texto ten.</span><span class="hx">96928A</span></div>
+    </div>
+  </div>
+
+  <ol class="redlist">
+    <li><span class="dot">1</span><span><b>El taller es cálido, no gris de sistema.</b> El área alrededor del lienzo es el color de una pared de galería: hace que cualquier dibujo se vea como es, y no le tira de ningún lado.</span></li>
+    <li><span class="dot">2</span><span><b>Sin azul de selección.</b> Lo activo se marca con un bloque de tinta suave. Es la decisión que hace que la pantalla se lea de un vistazo: si algo tiene color, es tuyo.</span></li>
+    <li><span class="dot">3</span><span><b>El papel es cálido y muy poco saturado.</b> No es crema —eso pelearía con los amarillos de la paleta— sino un gris con temperatura, como cartulina.</span></li>
+  </ol>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ===================================================== PIGMENTO ====== -->
+<section>
+  <div class="eyebrow"><span class="num">LA ALTERNATIVA</span></div>
+  <h2>Pigmento</h2>
+  <p class="note">El mismo papel y el mismo taller, pero con un acento. Si lo de arriba te parece demasiado austero, esta es la misma base con <b>un solo color</b>, y elegido como pigmento —ultramar— y no como azul de sistema operativo.</p>
+
+  <div class="card" style="
+    --window:#E8E6E1; --surface:#FDFDFC; --surface-alt:#F3F2EE; --workspace:#34322E;
+    --border:#D8D6D0; --border-strong:#A8A59D; --text:#1A1917; --text-dim:#6E6B64;
+    --icon:#2A44A8; --accent:#2A44A8; --accent-soft:#DCE1F4; --button:#E8E6E1;
+    --button-active:#DCE1F4; --button-border:#D8D6D0; --ribbon:#FDFDFC;
+    --ribbon-tab-active:#FDFDFC; --ribbon-group-label:#8A867E; --ribbon-separator:#E4E2DC;
+    --file-tab:#2A44A8; --file-tab-text:#FDFDFC; --bar-top:#FDFDFC; --bar-bottom:#FDFDFC;
+    --rounding:3px; --br:2px;">
+    <div class="card-head">
+      <h3>Pigmento</h3>
+      <span class="meta">cinta · claro · ultramar #2A44A8</span>
+    </div>
+    <div class="app">
+      <div class="bar"><span class="qb">▣</span><span class="qb">↶</span><span class="qb">↷</span></div>
+      <div class="tabs">
+        <span class="ftab">Archivo</span><span class="tab on">Inicio</span><span class="tab">Ver</span>
+      </div>
+      <div class="ribbon">
+        <div class="grp">
+          <div class="grow"><span class="big"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg>Pegar</span></div>
+          <div class="glab">Portapapeles</div>
+        </div>
+        <div class="grp">
+          <div class="grow">
+            <span class="sm on">✎</span><span class="sm">◇</span><span class="sm">T</span>
+            <span class="sm">◻</span><span class="sm">✐</span><span class="sm">◌</span>
+          </div>
+          <div class="glab">Herramientas</div>
+        </div>
+        <div class="grp">
+          <div class="grow" style="align-items:center;gap:8px">
+            <span style="width:26px;height:26px;background:#1A1917;border:1px solid var(--border-strong)"></span>
+            <span style="width:26px;height:26px;background:#fff;border:1px solid var(--border-strong)"></span>
+            <span class="pal">
+              <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+              <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+              <i style="background:#fff"></i><i style="background:#C3C3C3"></i><i style="background:#B97A57"></i><i style="background:#FFAEC9"></i><i style="background:#FFC90E"></i>
+              <i style="background:#EFE4B0"></i><i style="background:#B5E61D"></i><i style="background:#99D9EA"></i><i style="background:#7092BE"></i><i style="background:#C8BFE7"></i>
+            </span>
+          </div>
+          <div class="glab">Colores</div>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="canvas">
+          <svg width="252" height="132" viewBox="0 0 252 132">
+            <rect width="252" height="132" fill="#fff"/>
+            <circle cx="62" cy="60" r="34" fill="#FFC90E" stroke="#1A1917" stroke-width="2"/>
+            <path d="M118 92 L152 34 L186 92 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2"/>
+            <rect x="196" y="44" width="42" height="42" fill="#00A2E8" stroke="#1A1917" stroke-width="2"/>
+            <path d="M18 116 q40 -18 80 0 t 80 0 t 60 0" fill="none" stroke="#ED1C24" stroke-width="3"/>
+          </svg>
+        </div>
+      </div>
+      <div class="status"><span>252 × 132 px</span><span>100%</span></div>
+    </div>
+    <div class="card-foot">
+      <div class="chip"><span class="sw" style="background:#E8E6E1"></span><span class="nm">ventana</span><span class="hx">E8E6E1</span></div>
+      <div class="chip"><span class="sw" style="background:#FDFDFC"></span><span class="nm">superficie</span><span class="hx">FDFDFC</span></div>
+      <div class="chip"><span class="sw" style="background:#34322E"></span><span class="nm">taller</span><span class="hx">34322E</span></div>
+      <div class="chip"><span class="sw" style="background:#2A44A8"></span><span class="nm">ultramar</span><span class="hx">2A44A8</span></div>
+      <div class="chip"><span class="sw" style="background:#DCE1F4"></span><span class="nm">activo</span><span class="hx">DCE1F4</span></div>
+      <div class="chip"><span class="sw" style="background:#A8A59D"></span><span class="nm">borde</span><span class="hx">A8A59D</span></div>
+      <div class="chip"><span class="sw" style="background:#1A1917"></span><span class="nm">texto</span><span class="hx">1A1917</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ======================================================== LINUX ====== -->
+<section>
+  <div class="eyebrow"><span class="num">REHECHO</span></div>
+  <h2>Linux</h2>
+  <p class="note">El de ahora es un gris genérico con azul. GNOME tiene un lenguaje muy definido —<b>Adwaita</b>— y no aprovecharlo es dejar el tema a mitad de camino: barra de título integrada con los botones adentro, esquinas de 9&nbsp;px, botones pastilla y su azul exacto. Ahora también trae variante oscura.</p>
+
+  <div class="two">
+    <div class="card" style="
+      --window:#FAFAFA; --surface:#FFFFFF; --surface-alt:#F6F5F4; --workspace:#3D3846;
+      --border:#E0E0E0; --border-strong:#C0BFBC; --text:#241F31; --text-dim:#5E5C64;
+      --icon:#3584E4; --accent:#3584E4; --accent-soft:#D8E6FA; --button:#FFFFFF;
+      --button-active:#D8E6FA; --button-border:#DAD9D6;
+      --bar-top:#FFFFFF; --bar-bottom:#F6F5F4; --rounding:9px; --br:7px;">
+      <div class="card-head"><h3>Linux</h3><span class="meta">unificado · claro</span></div>
+      <div class="app">
+        <div class="unibar">
+          <div class="pill"><span class="sm on">✎</span><span class="sm">◇</span><span class="sm">T</span></div>
+          <div class="pill"><span class="sm">◻</span><span class="sm">◌</span></div>
+          <span class="uni-title">sin título.png</span>
+          <span style="margin-left:auto;display:flex;gap:5px">
+            <i style="width:20px;height:20px;border-radius:50%;background:#DAD9D6;display:block"></i>
+            <i style="width:20px;height:20px;border-radius:50%;background:#DAD9D6;display:block"></i>
+            <i style="width:20px;height:20px;border-radius:50%;background:#DAD9D6;display:block"></i>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:6px 9px;background:var(--surface-alt);border-bottom:1px solid var(--border)">
+          <span style="width:21px;height:21px;background:#1A1917;border-radius:4px;border:1px solid var(--border-strong)"></span>
+          <span style="width:21px;height:21px;background:#fff;border-radius:4px;border:1px solid var(--border-strong)"></span>
+          <span class="pal">
+            <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+            <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+          </span>
+        </div>
+        <div class="stage">
+          <div class="canvas" style="border-radius:2px">
+            <svg width="230" height="120" viewBox="0 0 252 132">
+              <rect width="252" height="132" fill="#fff"/>
+              <circle cx="62" cy="60" r="34" fill="#FFC90E" stroke="#1A1917" stroke-width="2"/>
+              <path d="M118 92 L152 34 L186 92 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2"/>
+              <rect x="196" y="44" width="42" height="42" fill="#00A2E8" stroke="#1A1917" stroke-width="2"/>
+              <path d="M18 116 q40 -18 80 0 t 80 0 t 60 0" fill="none" stroke="#ED1C24" stroke-width="3"/>
+            </svg>
+          </div>
+        </div>
+        <div class="status"><span>252 × 132 px</span><span>100%</span></div>
+      </div>
+      <div class="card-foot">
+        <div class="chip"><span class="sw" style="background:#FAFAFA"></span><span class="nm">ventana</span><span class="hx">FAFAFA</span></div>
+        <div class="chip"><span class="sw" style="background:#3D3846"></span><span class="nm">taller</span><span class="hx">3D3846</span></div>
+        <div class="chip"><span class="sw" style="background:#3584E4"></span><span class="nm">acento</span><span class="hx">3584E4</span></div>
+        <div class="chip"><span class="sw" style="background:#241F31"></span><span class="nm">texto</span><span class="hx">241F31</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="
+      --window:#242424; --surface:#303030; --surface-alt:#2A2A2A; --workspace:#161616;
+      --border:#3A3A3A; --border-strong:#5A5A5A; --text:#FFFFFF; --text-dim:#A8A8A8;
+      --icon:#78AEED; --accent:#78AEED; --accent-soft:#2A3A4E; --button:#383838;
+      --button-active:#2A3A4E; --button-border:#454545;
+      --bar-top:#303030; --bar-bottom:#2A2A2A; --rounding:9px; --br:7px;">
+      <div class="card-head"><h3>Linux oscuro</h3><span class="meta">unificado · oscuro</span></div>
+      <div class="app">
+        <div class="unibar">
+          <div class="pill"><span class="sm on">✎</span><span class="sm">◇</span><span class="sm">T</span></div>
+          <div class="pill"><span class="sm">◻</span><span class="sm">◌</span></div>
+          <span class="uni-title">sin título.png</span>
+          <span style="margin-left:auto;display:flex;gap:5px">
+            <i style="width:20px;height:20px;border-radius:50%;background:#454545;display:block"></i>
+            <i style="width:20px;height:20px;border-radius:50%;background:#454545;display:block"></i>
+            <i style="width:20px;height:20px;border-radius:50%;background:#454545;display:block"></i>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:6px 9px;background:var(--surface-alt);border-bottom:1px solid var(--border)">
+          <span style="width:21px;height:21px;background:#fff;border-radius:4px;border:1px solid var(--border-strong)"></span>
+          <span style="width:21px;height:21px;background:#242424;border-radius:4px;border:1px solid var(--border-strong)"></span>
+          <span class="pal">
+            <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+            <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+          </span>
+        </div>
+        <div class="stage">
+          <div class="canvas" style="border-radius:2px">
+            <svg width="230" height="120" viewBox="0 0 252 132">
+              <rect width="252" height="132" fill="#fff"/>
+              <circle cx="62" cy="60" r="34" fill="#FFC90E" stroke="#1A1917" stroke-width="2"/>
+              <path d="M118 92 L152 34 L186 92 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2"/>
+              <rect x="196" y="44" width="42" height="42" fill="#00A2E8" stroke="#1A1917" stroke-width="2"/>
+              <path d="M18 116 q40 -18 80 0 t 80 0 t 60 0" fill="none" stroke="#ED1C24" stroke-width="3"/>
+            </svg>
+          </div>
+        </div>
+        <div class="status"><span>252 × 132 px</span><span>100%</span></div>
+      </div>
+      <div class="card-foot">
+        <div class="chip"><span class="sw" style="background:#242424"></span><span class="nm">ventana</span><span class="hx">242424</span></div>
+        <div class="chip"><span class="sw" style="background:#161616"></span><span class="nm">taller</span><span class="hx">161616</span></div>
+        <div class="chip"><span class="sw" style="background:#78AEED"></span><span class="nm">acento</span><span class="hx">78AEED</span></div>
+        <div class="chip"><span class="sw" style="background:#FFFFFF"></span><span class="nm">texto</span><span class="hx">FFFFFF</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ======================================================== MACOS ====== -->
+<section>
+  <div class="eyebrow"><span class="num">REHECHO</span></div>
+  <h2>macOS</h2>
+  <p class="note">El de ahora es gris plano. macOS tiene tres cosas que lo hacen reconocible y ninguna estaba: <b>los semáforos a la izquierda</b>, una barra de herramientas más clara que la ventana con una línea de un píxel debajo, y botones muy redondeados con sombra mínima. También suma variante oscura.</p>
+
+  <div class="two">
+    <div class="card" style="
+      --window:#EFEFEF; --surface:#FFFFFF; --surface-alt:#F5F5F7; --workspace:#6E6E73;
+      --border:#D2D2D7; --border-strong:#AEAEB2; --text:#1D1D1F; --text-dim:#6E6E73;
+      --icon:#007AFF; --accent:#007AFF; --accent-soft:#D7E9FF; --button:#FFFFFF;
+      --button-active:#D7E9FF; --button-border:#C6C6C8;
+      --bar-top:#F7F7F7; --bar-bottom:#EDEDED; --rounding:7px; --br:6px;">
+      <div class="card-head"><h3>macOS</h3><span class="meta">unificado · claro</span></div>
+      <div class="app">
+        <div class="unibar">
+          <span class="traffic">
+            <i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i>
+          </span>
+          <span class="uni-title">Sin título</span>
+          <span style="margin-left:auto;display:flex;gap:6px">
+            <span class="pill"><span class="sm on">✎</span><span class="sm">◇</span><span class="sm">T</span><span class="sm">◻</span></span>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:6px 9px;background:var(--surface-alt);border-bottom:1px solid var(--border)">
+          <span style="width:21px;height:21px;background:#1A1917;border-radius:4px;border:1px solid var(--border-strong)"></span>
+          <span style="width:21px;height:21px;background:#fff;border-radius:4px;border:1px solid var(--border-strong)"></span>
+          <span class="pal">
+            <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+            <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+          </span>
+        </div>
+        <div class="stage">
+          <div class="canvas" style="border-radius:2px">
+            <svg width="230" height="120" viewBox="0 0 252 132">
+              <rect width="252" height="132" fill="#fff"/>
+              <circle cx="62" cy="60" r="34" fill="#FFC90E" stroke="#1A1917" stroke-width="2"/>
+              <path d="M118 92 L152 34 L186 92 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2"/>
+              <rect x="196" y="44" width="42" height="42" fill="#00A2E8" stroke="#1A1917" stroke-width="2"/>
+              <path d="M18 116 q40 -18 80 0 t 80 0 t 60 0" fill="none" stroke="#ED1C24" stroke-width="3"/>
+            </svg>
+          </div>
+        </div>
+        <div class="status"><span>252 × 132 px</span><span>100%</span></div>
+      </div>
+      <div class="card-foot">
+        <div class="chip"><span class="sw" style="background:#EFEFEF"></span><span class="nm">ventana</span><span class="hx">EFEFEF</span></div>
+        <div class="chip"><span class="sw" style="background:#6E6E73"></span><span class="nm">taller</span><span class="hx">6E6E73</span></div>
+        <div class="chip"><span class="sw" style="background:#007AFF"></span><span class="nm">acento</span><span class="hx">007AFF</span></div>
+        <div class="chip"><span class="sw" style="background:#1D1D1F"></span><span class="nm">texto</span><span class="hx">1D1D1F</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="
+      --window:#2A2A2C; --surface:#1E1E20; --surface-alt:#262628; --workspace:#131315;
+      --border:#3A3A3C; --border-strong:#545456; --text:#F5F5F7; --text-dim:#98989D;
+      --icon:#0A84FF; --accent:#0A84FF; --accent-soft:#17325A; --button:#3A3A3C;
+      --button-active:#17325A; --button-border:#48484A;
+      --bar-top:#333335; --bar-bottom:#2A2A2C; --rounding:7px; --br:6px;">
+      <div class="card-head"><h3>macOS oscuro</h3><span class="meta">unificado · oscuro</span></div>
+      <div class="app">
+        <div class="unibar">
+          <span class="traffic">
+            <i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i>
+          </span>
+          <span class="uni-title">Sin título</span>
+          <span style="margin-left:auto;display:flex;gap:6px">
+            <span class="pill"><span class="sm on">✎</span><span class="sm">◇</span><span class="sm">T</span><span class="sm">◻</span></span>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:6px 9px;background:var(--surface-alt);border-bottom:1px solid var(--border)">
+          <span style="width:21px;height:21px;background:#fff;border-radius:4px;border:1px solid var(--border-strong)"></span>
+          <span style="width:21px;height:21px;background:#2A2A2C;border-radius:4px;border:1px solid var(--border-strong)"></span>
+          <span class="pal">
+            <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+            <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+          </span>
+        </div>
+        <div class="stage">
+          <div class="canvas" style="border-radius:2px">
+            <svg width="230" height="120" viewBox="0 0 252 132">
+              <rect width="252" height="132" fill="#fff"/>
+              <circle cx="62" cy="60" r="34" fill="#FFC90E" stroke="#1A1917" stroke-width="2"/>
+              <path d="M118 92 L152 34 L186 92 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2"/>
+              <rect x="196" y="44" width="42" height="42" fill="#00A2E8" stroke="#1A1917" stroke-width="2"/>
+              <path d="M18 116 q40 -18 80 0 t 80 0 t 60 0" fill="none" stroke="#ED1C24" stroke-width="3"/>
+            </svg>
+          </div>
+        </div>
+        <div class="status"><span>252 × 132 px</span><span>100%</span></div>
+      </div>
+      <div class="card-foot">
+        <div class="chip"><span class="sw" style="background:#2A2A2C"></span><span class="nm">ventana</span><span class="hx">2A2A2C</span></div>
+        <div class="chip"><span class="sw" style="background:#131315"></span><span class="nm">taller</span><span class="hx">131315</span></div>
+        <div class="chip"><span class="sw" style="background:#0A84FF"></span><span class="nm">acento</span><span class="hx">0A84FF</span></div>
+        <div class="chip"><span class="sw" style="background:#F5F5F7"></span><span class="nm">texto</span><span class="hx">F5F5F7</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ===================================================== QUÉ QUEDA ===== -->
+<section>
+  <div class="eyebrow"><span class="num">SI ESTO VA</span></div>
+  <h2>Cómo queda la lista</h2>
+  <p class="note">Nueve familias, cada una con su claro y su oscuro donde tiene sentido. El interruptor de Configuración salta entre pareja y pareja, así que en la grilla seguís viendo una fila por familia.</p>
+
+  <ol class="redlist" style="gap:13px">
+    <li><span class="dot">★</span><span><b>Lienzo</b> pasa a ser el de fábrica, con <b>Lienzo Tinta</b> de pareja oscura. Windows 10 sigue estando, pero deja de ser lo primero que ves.</span></li>
+    <li><span class="dot">+</span><span><b>Pigmento</b> se suma como alternativa, por si el monocromo resulta demasiado seco en el uso diario.</span></li>
+    <li><span class="dot">↻</span><span><b>Linux</b> y <b>macOS</b> rehechos, cada uno con su variante oscura.</span></li>
+    <li><span class="dot">=</span><span><b>Windows 10, 11, 7 y XP</b> quedan como están: son clones y su gracia es parecerse.</span></li>
+  </ol>
+</section>
+
+<p class="foot">
+  <b>Lienzo</b> · propuesta de temas · para revisión<br>
+  Los marcos son maquetas en HTML, no capturas del programa.
+</p>
+
+</div>

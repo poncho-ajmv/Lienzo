@@ -1,0 +1,395 @@
+<!-- Mockup: el chrome propio de Lienzo -->
+<title>El chrome de Lienzo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@0,400;0,600&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#FCFCFA; --ink:#14161A; --ink-2:#5C6068;
+  --rule:#E2E3DE; --mark:#E10A6E;
+  --shadow:0 1px 2px rgba(20,22,26,.06), 0 10px 30px rgba(20,22,26,.09);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font:400 16px/1.6 "Public Sans", system-ui, sans-serif;padding:0 24px 120px;
+}
+.wrap{max-width:1060px;margin:0 auto}
+
+.top{padding:72px 0 0}
+.kicker{font:600 11px/1 "Martian Mono",ui-monospace,monospace;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--mark);margin:0 0 26px}
+h1{font:800 clamp(42px,7vw,86px)/0.94 "Bricolage Grotesque",system-ui,sans-serif;
+  letter-spacing:-.035em;margin:0 0 22px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--ink-2)}
+.lede{max-width:58ch;font-size:18px;color:var(--ink-2);margin:0}
+.lede b{color:var(--ink);font-weight:600}
+
+hr.ants-rule{border:0;height:1px;margin:80px 0 0;
+  background-image:repeating-linear-gradient(90deg,var(--rule) 0 5px,transparent 5px 10px);
+  background-size:100% 1px;background-repeat:repeat-x}
+
+section{padding-top:60px}
+.eyebrow{display:flex;align-items:baseline;gap:14px;margin:0 0 6px}
+.eyebrow .num{font:600 11px/1 "Martian Mono",ui-monospace,monospace;color:var(--mark);letter-spacing:.1em}
+h2{font:700 clamp(26px,3.4vw,38px)/1.1 "Bricolage Grotesque",system-ui,sans-serif;
+  letter-spacing:-.02em;margin:0 0 10px}
+.note{max-width:64ch;color:var(--ink-2);margin:0 0 28px}
+.note b{color:var(--ink);font-weight:600}
+
+.card{background:#fff;border:1px solid var(--rule);border-radius:4px;
+  box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  padding:11px 15px;border-bottom:1px solid var(--rule)}
+.card-head h3{font:700 18px/1.2 "Bricolage Grotesque",system-ui,sans-serif;margin:0}
+.card-head .meta{font:400 11px/1 "Martian Mono",ui-monospace,monospace;color:var(--ink-2)}
+.card-note{padding:15px 18px 18px;border-top:1px solid var(--rule);
+  color:var(--ink-2);font-size:14px}
+.card-note b{color:var(--ink);font-weight:600}
+
+/* ================================================== la app de Lienzo === */
+.lz{
+  --window:#E8E6E1; --surface:#FDFDFC; --taller:#34322E;
+  --line:#D8D6D0; --edge:#A8A59D; --ink-t:#1A1917; --dim:#6E6B64;
+  --sel:#DCD9D2; --on:#C9C5BC;
+  display:grid;grid-template-columns:52px 1fr;
+  font-family:"Segoe UI",system-ui,sans-serif;background:var(--window);
+  color:var(--ink-t);min-height:432px;
+}
+.lz.dark{
+  --window:#1C1B19; --surface:#232220; --taller:#0D0D0C;
+  --line:#34322E; --edge:#55524C; --ink-t:#EDEBE6; --dim:#96928A;
+  --sel:#2E2C29; --on:#3A3833;
+}
+
+/* -- el riel -- */
+.rail{
+  background:var(--surface);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px;
+}
+.rail .btn{
+  width:36px;height:32px;display:grid;place-items:center;border-radius:2px;
+  color:var(--ink-t);cursor:pointer;border:1px solid transparent;
+  transition:background .1s;
+}
+.rail .btn:hover{background:var(--sel)}
+.rail .btn.on{background:var(--on);border-color:var(--edge)}
+.rail .btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.35;
+  stroke-linecap:round;stroke-linejoin:round}
+.rail .sep{width:26px;height:1px;background:var(--line);margin:6px 0}
+
+/* el pozo de color, al pie del mismo riel */
+.well{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:5px;padding-bottom:2px}
+.well .pair{position:relative;width:34px;height:30px}
+.well .c1,.well .c2{position:absolute;width:21px;height:21px;border:1px solid var(--edge)}
+.well .c1{left:0;top:0;background:#1A1917;z-index:2}
+.well .c2{right:0;bottom:0;background:#fff}
+.well .grid{display:grid;grid-template-columns:repeat(2,13px);gap:2px}
+.well .grid i{width:13px;height:13px;display:block;border:1px solid var(--edge)}
+
+/* -- la parte derecha -- */
+.main{display:flex;flex-direction:column;min-width:0}
+.ctx{
+  height:38px;display:flex;align-items:center;gap:10px;padding:0 12px;
+  background:var(--surface);border-bottom:1px solid var(--line);
+}
+.ctx .lab{font-size:11px;color:var(--dim);letter-spacing:.02em}
+.ctx .sepv{width:1px;height:20px;background:var(--line);margin:0 2px}
+.ctx .opt{
+  height:24px;min-width:24px;padding:0 5px;display:grid;place-items:center;
+  border:1px solid transparent;border-radius:2px;cursor:pointer;font-size:12px;
+}
+.ctx .opt:hover{background:var(--sel)}
+.ctx .opt.on{background:var(--on);border-color:var(--edge)}
+.ctx .opt svg{fill:none;stroke:currentColor;stroke-width:1.35}
+.ctx .right{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--dim);font-size:11px}
+
+.taller{
+  flex:1;background:var(--taller);display:flex;align-items:center;justify-content:center;
+  padding:24px;
+}
+/* El lienzo flota: sin marco de panel, con sombra de verdad. Es papel sobre
+   una mesa, no un widget dentro de otro widget. */
+.sheet{background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.32), 0 14px 34px rgba(0,0,0,.34);line-height:0}
+.bar{
+  height:24px;display:flex;align-items:center;gap:14px;padding:0 12px;
+  background:var(--surface);border-top:1px solid var(--line);
+  font-size:11px;color:var(--dim);
+}
+.bar .r{margin-left:auto;display:flex;gap:14px}
+
+/* ------------------------------------------------------ comparación --- */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:820px){.vs{grid-template-columns:1fr}}
+.meter{margin-top:14px;display:grid;gap:8px}
+.meter .row{display:grid;grid-template-columns:112px 1fr 62px;align-items:center;gap:12px;
+  font:400 12px/1 "Martian Mono",ui-monospace,monospace;color:var(--ink-2)}
+.meter .track{height:10px;background:#EFEFEC;border-radius:2px;overflow:hidden}
+.meter .fill{height:100%;background:var(--ink)}
+.meter .fill.alt{background:var(--mark)}
+.meter .n{text-align:right;color:var(--ink);font-weight:600}
+
+.redlist{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:12px}
+.redlist li{display:grid;grid-template-columns:20px 1fr;gap:11px;align-items:start;
+  font-size:15px;color:var(--ink-2)}
+.redlist .dot{width:19px;height:19px;border-radius:50%;background:var(--mark);color:#fff;
+  display:grid;place-items:center;font:600 10px/1 "Martian Mono",monospace;margin-top:3px}
+.redlist b{color:var(--ink);font-weight:600}
+
+.foot{margin-top:90px;padding-top:24px;border-top:1px solid var(--rule);
+  font:400 12px/1.7 "Martian Mono",ui-monospace,monospace;color:var(--ink-2)}
+.foot b{color:var(--ink);font-weight:600}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">Lienzo · el chrome propio</p>
+  <h1>No es la cinta<br>pintada de <em>otro<br>color.</em></h1>
+  <p class="lede">Tenías razón: cambiarle los grises a la cinta de Windows no es un tema propio. Esto propone <b>otra estructura</b>: un riel de herramientas al costado, una barra que muestra sólo lo que la herramienta elegida sabe hacer, y el lienzo flotando con todo el espacio que sobra. <b>Probalo: tocá las herramientas del riel.</b></p>
+</header>
+
+<hr class="ants-rule">
+
+<!-- =========================================================== APP ===== -->
+<section>
+  <div class="eyebrow"><span class="num">LA PROPUESTA</span></div>
+  <h2>Riel, contexto, taller</h2>
+  <p class="note">Tres zonas y nada más. El riel no cambia nunca, así que la mano aprende dónde está cada cosa. La barra de contexto cambia entera con la herramienta, porque <b>mostrar el grosor del pincel mientras usás el cuentagotas es ruido</b>. Y lo que queda es taller.</p>
+
+  <div class="card">
+    <div class="card-head">
+      <h3>Lienzo</h3>
+      <span class="meta">claro · tocá una herramienta</span>
+    </div>
+    <div class="lz" id="app">
+      <nav class="rail">
+        <div class="btn" data-t="menu" title="Menú">
+          <svg viewBox="0 0 20 20"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
+        </div>
+        <div class="sep"></div>
+        <div class="btn" data-t="sel" title="Seleccionar">
+          <svg viewBox="0 0 20 20"><path d="M3 3h4M13 3h4M17 3v4M17 13v4M17 17h-4M7 17H3M3 17v-4M3 7V3" stroke-dasharray="0"/></svg>
+        </div>
+        <div class="btn on" data-t="pencil" title="Lápiz">
+          <svg viewBox="0 0 20 20"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg>
+        </div>
+        <div class="btn" data-t="brush" title="Pincel">
+          <svg viewBox="0 0 20 20"><path d="M2.5 17.5l4-6 4 4-6 4z" fill="currentColor"/><path d="M8 10.5L16.5 3"/></svg>
+        </div>
+        <div class="btn" data-t="fill" title="Relleno">
+          <svg viewBox="0 0 20 20"><path d="M4 10l6-6 6 6-6 6z"/><circle cx="17" cy="14.5" r="1.6" fill="currentColor" stroke="none"/></svg>
+        </div>
+        <div class="btn" data-t="text" title="Texto">
+          <svg viewBox="0 0 20 20"><path d="M4 4h12M10 4v12"/></svg>
+        </div>
+        <div class="btn" data-t="shape" title="Formas">
+          <svg viewBox="0 0 20 20"><rect x="3.5" y="3.5" width="13" height="13"/></svg>
+        </div>
+        <div class="btn" data-t="eraser" title="Borrador">
+          <svg viewBox="0 0 20 20"><path d="M3 13l7-7 5 5-5 5H5z"/><path d="M3 17h14"/></svg>
+        </div>
+        <div class="btn" data-t="picker" title="Cuentagotas">
+          <svg viewBox="0 0 20 20"><path d="M13 3l4 4M15 5l-8 8-3 1 1-3z"/></svg>
+        </div>
+        <div class="btn" data-t="zoom" title="Lupa">
+          <svg viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5"/><path d="M13 13l4 4"/></svg>
+        </div>
+
+        <div class="well">
+          <div class="sep"></div>
+          <div class="pair"><i class="c1"></i><i class="c2"></i></div>
+          <div class="grid">
+            <i style="background:#000"></i><i style="background:#fff"></i>
+            <i style="background:#7F7F7F"></i><i style="background:#C3C3C3"></i>
+            <i style="background:#ED1C24"></i><i style="background:#FFAEC9"></i>
+            <i style="background:#FF7F27"></i><i style="background:#FFC90E"></i>
+            <i style="background:#FFF200"></i><i style="background:#EFE4B0"></i>
+            <i style="background:#22B14C"></i><i style="background:#B5E61D"></i>
+            <i style="background:#00A2E8"></i><i style="background:#99D9EA"></i>
+            <i style="background:#3F48CC"></i><i style="background:#7092BE"></i>
+            <i style="background:#A349A4"></i><i style="background:#C8BFE7"></i>
+          </div>
+        </div>
+      </nav>
+
+      <div class="main">
+        <div class="ctx" id="ctx"></div>
+        <div class="taller">
+          <div class="sheet">
+            <svg width="420" height="230" viewBox="0 0 420 230">
+              <rect width="420" height="230" fill="#fff"/>
+              <circle cx="104" cy="102" r="56" fill="#FFC90E" stroke="#1A1917" stroke-width="2.5"/>
+              <path d="M196 160 L252 56 L308 160 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2.5"/>
+              <rect x="326" y="72" width="68" height="68" fill="#00A2E8" stroke="#1A1917" stroke-width="2.5"/>
+              <path d="M30 200 q66 -30 132 0 t132 0 t100 0" fill="none" stroke="#ED1C24" stroke-width="4"/>
+            </svg>
+          </div>
+        </div>
+        <div class="bar">
+          <span>241, 335 px</span>
+          <span class="r"><span>420 × 230 px</span><span>100%</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="card-note">
+      El riel mide <b>52&nbsp;px</b> y la barra de contexto <b>38</b>. La cinta de Windows se lleva <b>155&nbsp;px</b> de alto entre pestañas, banda y acceso rápido, y los muestra todos a la vez estés donde estés.
+    </div>
+  </div>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ======================================================== OSCURO ===== -->
+<section>
+  <div class="eyebrow"><span class="num">LA PAREJA</span></div>
+  <h2>Lienzo Tinta</h2>
+  <p class="note">La misma estructura de noche. Y ahora <b>cada estilo tiene su claro y su oscuro</b>: el interruptor salta a la pareja del tema que tenés puesto y a ninguna otra. Ese era el error — sin pareja declarada, caía en el primer tema oscuro de la lista y te sacaba del estilo elegido.</p>
+
+  <div class="card">
+    <div class="card-head"><h3>Lienzo Tinta</h3><span class="meta">oscuro · misma estructura</span></div>
+    <div class="lz dark">
+      <nav class="rail">
+        <div class="btn"><svg viewBox="0 0 20 20"><path d="M3 5h14M3 10h14M3 15h14"/></svg></div>
+        <div class="sep"></div>
+        <div class="btn"><svg viewBox="0 0 20 20"><path d="M3 3h4M13 3h4M17 3v4M17 13v4M17 17h-4M7 17H3M3 17v-4M3 7V3"/></svg></div>
+        <div class="btn"><svg viewBox="0 0 20 20"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg></div>
+        <div class="btn on"><svg viewBox="0 0 20 20"><path d="M2.5 17.5l4-6 4 4-6 4z" fill="currentColor"/><path d="M8 10.5L16.5 3"/></svg></div>
+        <div class="btn"><svg viewBox="0 0 20 20"><path d="M4 10l6-6 6 6-6 6z"/><circle cx="17" cy="14.5" r="1.6" fill="currentColor" stroke="none"/></svg></div>
+        <div class="btn"><svg viewBox="0 0 20 20"><path d="M4 4h12M10 4v12"/></svg></div>
+        <div class="btn"><svg viewBox="0 0 20 20"><rect x="3.5" y="3.5" width="13" height="13"/></svg></div>
+        <div class="btn"><svg viewBox="0 0 20 20"><path d="M3 13l7-7 5 5-5 5H5z"/><path d="M3 17h14"/></svg></div>
+        <div class="btn"><svg viewBox="0 0 20 20"><path d="M13 3l4 4M15 5l-8 8-3 1 1-3z"/></svg></div>
+        <div class="btn"><svg viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5"/><path d="M13 13l4 4"/></svg></div>
+        <div class="well">
+          <div class="sep"></div>
+          <div class="pair"><i class="c1" style="background:#EDEBE6"></i><i class="c2" style="background:#1C1B19"></i></div>
+          <div class="grid">
+            <i style="background:#000"></i><i style="background:#fff"></i>
+            <i style="background:#7F7F7F"></i><i style="background:#C3C3C3"></i>
+            <i style="background:#ED1C24"></i><i style="background:#FFAEC9"></i>
+            <i style="background:#FF7F27"></i><i style="background:#FFC90E"></i>
+            <i style="background:#FFF200"></i><i style="background:#EFE4B0"></i>
+            <i style="background:#22B14C"></i><i style="background:#B5E61D"></i>
+            <i style="background:#00A2E8"></i><i style="background:#99D9EA"></i>
+            <i style="background:#3F48CC"></i><i style="background:#7092BE"></i>
+            <i style="background:#A349A4"></i><i style="background:#C8BFE7"></i>
+          </div>
+        </div>
+      </nav>
+      <div class="main">
+        <div class="ctx">
+          <span class="lab">Pincel</span>
+          <span class="sepv"></span>
+          <span class="opt"><svg width="30" height="14" viewBox="0 0 30 14"><path d="M3 7h24" stroke-width="1.5"/></svg></span>
+          <span class="opt on"><svg width="30" height="14" viewBox="0 0 30 14"><path d="M3 7h24" stroke-width="4"/></svg></span>
+          <span class="opt"><svg width="30" height="14" viewBox="0 0 30 14"><path d="M3 7h24" stroke-width="7"/></svg></span>
+          <span class="sepv"></span>
+          <span class="opt on">Redondo</span>
+          <span class="opt">Caligráfico</span>
+          <span class="opt">Aerógrafo</span>
+          <span class="right"><span>Ajustes</span></span>
+        </div>
+        <div class="taller">
+          <div class="sheet">
+            <svg width="420" height="230" viewBox="0 0 420 230">
+              <rect width="420" height="230" fill="#fff"/>
+              <circle cx="104" cy="102" r="56" fill="#FFC90E" stroke="#1A1917" stroke-width="2.5"/>
+              <path d="M196 160 L252 56 L308 160 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2.5"/>
+              <rect x="326" y="72" width="68" height="68" fill="#00A2E8" stroke="#1A1917" stroke-width="2.5"/>
+              <path d="M30 200 q66 -30 132 0 t132 0 t100 0" fill="none" stroke="#ED1C24" stroke-width="4"/>
+            </svg>
+          </div>
+        </div>
+        <div class="bar">
+          <span>241, 335 px</span>
+          <span class="r"><span>420 × 230 px</span><span>100%</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ======================================================= QUÉ GANA ==== -->
+<section>
+  <div class="eyebrow"><span class="num">POR QUÉ</span></div>
+  <h2>Lo que cambia de verdad</h2>
+
+  <div class="meter">
+    <div class="row"><span>cinta Windows</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="n">155 px</span></div>
+    <div class="row"><span>contexto Lienzo</span><span class="track"><span class="fill alt" style="width:24.5%"></span></span><span class="n">38 px</span></div>
+  </div>
+  <p class="note" style="margin-top:14px">Alto de chrome sobre el lienzo. En una pantalla de portátil son <b>117 px más de dibujo</b>, que es una franja entera de la imagen.</p>
+
+  <ol class="redlist">
+    <li><span class="dot">1</span><span><b>La herramienta manda.</b> La barra de contexto muestra sólo lo que esa herramienta sabe hacer. Con el cuentagotas está casi vacía, y eso está bien: no hay nada que configurar.</span></li>
+    <li><span class="dot">2</span><span><b>Las opciones se ven, no se leen.</b> El grosor son rayas del grosor real, las formas son las formas, el pincel es su trazo. Nada de «1 3 5 8».</span></li>
+    <li><span class="dot">3</span><span><b>El lienzo flota.</b> Sin marco de panel, con sombra de verdad: es papel sobre una mesa, no un widget dentro de otro widget.</span></li>
+    <li><span class="dot">4</span><span><b>El color vive en el mismo riel</b> que las herramientas, al pie. La columna entera se lee como un instrumento: elegís, ajustás, pintás.</span></li>
+    <li><span class="dot">5</span><span><b>Archivo, Edición, Imagen y Ver</b> entran por el botón de arriba del riel, a la pantalla completa que ya existe. No ocupan lugar el resto del tiempo.</span></li>
+  </ol>
+</section>
+
+<hr class="ants-rule">
+
+<section>
+  <div class="eyebrow"><span class="num">ALCANCE</span></div>
+  <h2>Qué toca esto</h2>
+  <p class="note">Para que sepas qué estás aprobando.</p>
+  <ol class="redlist" style="gap:13px">
+    <li><span class="dot">A</span><span><b>Un cuarto chrome.</b> Hoy hay tres —cinta, paleta y unificado—. Este es el cuarto, y sólo lo usan Lienzo, Lienzo Tinta, Pigmento y Pigmento oscuro.</span></li>
+    <li><span class="dot">B</span><span><b>Los clones no se tocan.</b> Windows 10, 11, 7, XP, Linux y macOS siguen con el chrome que les corresponde. Su gracia es parecerse.</span></li>
+    <li><span class="dot">C</span><span><b>Se reutiliza casi todo.</b> Los iconos, la paleta, la vista previa del grosor, las galerías y la pantalla de Archivo ya están escritos. Lo nuevo es el armado.</span></li>
+  </ol>
+</section>
+
+<p class="foot">
+  <b>Lienzo</b> · chrome propio · para revisión<br>
+  Maqueta en HTML, no capturas del programa.
+</p>
+
+</div>
+
+<script>
+// La barra de contexto es el punto del diseño, así que es lo único que se
+// puede tocar: cada herramienta muestra otra cosa.
+const CTX = {
+  menu:   {lab:"Menú", html:`<span class="opt">Archivo</span><span class="opt">Edición</span><span class="opt">Imagen</span><span class="opt">Ver</span><span class="opt">Configuración</span>`},
+  sel:    {lab:"Selección", html:`<span class="opt on">Rectangular</span><span class="opt">Libre</span><span class="sepv"></span><span class="opt on">Transparente</span><span class="opt">Recortar</span>`},
+  pencil: {lab:"Lápiz", html:w(1)+w(3,true)+w(5)+w(8)},
+  brush:  {lab:"Pincel", html:w(1)+w(4,true)+w(7)+`<span class="sepv"></span><span class="opt on">Redondo</span><span class="opt">Caligráfico</span><span class="opt">Aerógrafo</span><span class="opt">Acuarela</span>`},
+  fill:   {lab:"Relleno", html:`<span class="opt on">Color sólido</span><span class="opt">Tolerancia 0</span>`},
+  text:   {lab:"Texto", html:`<span class="opt on">Proporcional</span><span class="opt">18</span><span class="sepv"></span><span class="opt on">Transparente</span><span class="opt">Opaco</span>`},
+  shape:  {lab:"Formas", html:sh("M3 3 L17 17")+sh("M10 3 L17 17 L3 17 Z",true)+sh("RECT")+sh("CIRC")+`<span class="sepv"></span><span class="opt on">Contorno</span><span class="opt">Relleno</span>`},
+  eraser: {lab:"Borrador", html:w(4)+w(6,true)+w(8)+w(10)},
+  picker: {lab:"Cuentagotas", html:`<span class="lab" style="opacity:.7">Tocá el lienzo para tomar un color</span>`},
+  zoom:   {lab:"Lupa", html:`<span class="opt">−</span><span class="opt on">100%</span><span class="opt">+</span>`},
+};
+function w(px, on){
+  return `<span class="opt${on?" on":""}"><svg width="30" height="14" viewBox="0 0 30 14"><path d="M3 7h24" stroke-width="${px}"/></svg></span>`;
+}
+function sh(d, on){
+  const body = d==="RECT" ? `<rect x="3.5" y="4.5" width="13" height="11"/>`
+             : d==="CIRC" ? `<circle cx="10" cy="10" r="6"/>`
+             : `<path d="${d}"/>`;
+  return `<span class="opt${on?" on":""}"><svg width="20" height="20" viewBox="0 0 20 20">${body}</svg></span>`;
+}
+const ctx = document.getElementById('ctx');
+function paint(t){
+  const c = CTX[t] || CTX.pencil;
+  ctx.innerHTML = `<span class="lab">${c.lab}</span><span class="sepv"></span>${c.html}`
+                + `<span class="right"><span>Ajustes</span></span>`;
+}
+document.querySelectorAll('#app .rail .btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#app .rail .btn').forEach(o=>o.classList.remove('on'));
+    b.classList.add('on');
+    paint(b.dataset.t);
+  });
+});
+paint('pencil');
+</script>

@@ -1,0 +1,44 @@
+{
+  "name": "Windows 11 oscuro",
+  "chrome": "ribbon",
+  "dark": true,
+  "pair": "Windows 11",
+
+  "window": "#202020",
+  "surface": "#2c2c2c",
+  "surface_alt": "#272727",
+  "workspace": "#171717",
+
+  "border": "#3a3a3a",
+  "border_strong": "#585858",
+
+  "text": "#f0f0f0",
+  "text_dim": "#a6a6a6",
+  "font_size": 12.5,
+
+  "icon": "#60cdff",
+  "accent": "#4cc2ff",
+  "accent_soft": "#16394f",
+  "accent_text": "#0a0a0a",
+
+  "button": "#2c2c2c",
+  "button_hover": "#383838",
+  "button_active": "#16394f",
+  "button_border": "#3a3a3a",
+
+  "ribbon": "#2c2c2c",
+  "ribbon_tab_active": "#333333",
+  "ribbon_group_label": "#a6a6a6",
+  "ribbon_separator": "#3a3a3a",
+  "file_tab": "#0f5c9c",
+  "file_tab_text": "#ffffff",
+
+  "bar_top": "#2c2c2c",
+  "bar_bottom": "#272727",
+
+  "rounding": 8.0,
+  "button_rounding": 6.0,
+  "item_spacing": 3.0,
+  "button_padding": 8.0,
+  "ribbon_height": 100.0
+}

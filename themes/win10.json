@@ -1,0 +1,44 @@
+{
+  "name": "Windows 10",
+  "chrome": "ribbon",
+  "dark": false,
+  "pair": "Windows 10 oscuro",
+
+  "window": "#f0f0f0",
+  "surface": "#ffffff",
+  "surface_alt": "#f5f6f7",
+  "workspace": "#808080",
+
+  "border": "#d6d6d6",
+  "border_strong": "#9a9a9a",
+
+  "text": "#1a1a1a",
+  "text_dim": "#6b6b6b",
+  "font_size": 12.0,
+
+  "icon": "#1e6fc4",
+  "accent": "#0078d7",
+  "accent_soft": "#cce4f7",
+  "accent_text": "#ffffff",
+
+  "button": "#f0f0f0",
+  "button_hover": "#e5f1fb",
+  "button_active": "#cce4f7",
+  "button_border": "#d6d6d6",
+
+  "ribbon": "#ffffff",
+  "ribbon_tab_active": "#ffffff",
+  "ribbon_group_label": "#6b6b6b",
+  "ribbon_separator": "#e0e0e0",
+  "file_tab": "#0063b1",
+  "file_tab_text": "#ffffff",
+
+  "bar_top": "#ffffff",
+  "bar_bottom": "#ffffff",
+
+  "rounding": 2.0,
+  "button_rounding": 2.0,
+  "item_spacing": 3.0,
+  "button_padding": 6.0,
+  "ribbon_height": 104.0
+}

@@ -1,0 +1,265 @@
+<!-- Mockup: el grosor en la barra de estado -->
+<title>Tamaño abajo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@0,400;0,600&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#FCFCFA; --ink:#14161A; --ink-2:#5C6068;
+  --rule:#E2E3DE; --mark:#E10A6E;
+  --shadow:0 1px 2px rgba(20,22,26,.06), 0 10px 30px rgba(20,22,26,.09);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:400 16px/1.6 "Public Sans",system-ui,sans-serif;padding:0 24px 120px}
+.wrap{max-width:1020px;margin:0 auto}
+.top{padding:72px 0 0}
+.kicker{font:600 11px/1 "Martian Mono",ui-monospace,monospace;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--mark);margin:0 0 26px}
+h1{font:800 clamp(42px,7vw,86px)/0.94 "Bricolage Grotesque",system-ui,sans-serif;
+  letter-spacing:-.035em;margin:0 0 22px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--ink-2)}
+.lede{max-width:58ch;font-size:18px;color:var(--ink-2);margin:0}
+.lede b{color:var(--ink);font-weight:600}
+hr.ants-rule{border:0;height:1px;margin:76px 0 0;
+  background-image:repeating-linear-gradient(90deg,var(--rule) 0 5px,transparent 5px 10px)}
+section{padding-top:56px}
+.eyebrow{display:flex;align-items:baseline;gap:14px;margin:0 0 6px}
+.eyebrow .num{font:600 11px/1 "Martian Mono",ui-monospace,monospace;color:var(--mark);letter-spacing:.1em}
+h2{font:700 clamp(25px,3.2vw,34px)/1.1 "Bricolage Grotesque",system-ui,sans-serif;
+  letter-spacing:-.02em;margin:0 0 10px}
+.note{max-width:64ch;color:var(--ink-2);margin:0 0 26px}
+.note b{color:var(--ink);font-weight:600}
+.pane{background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+  box-shadow:var(--shadow);margin-bottom:18px}
+.pane .tag{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;border-bottom:1px solid var(--rule);
+  font:600 10.5px/1 "Martian Mono",ui-monospace,monospace;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-2)}
+.pane .tag .mal{color:var(--mark)}
+
+/* ===================================================== el botón Tamaño === */
+.mesa{display:flex;gap:44px;align-items:flex-start;padding:34px 26px;background:#F7F7F5}
+.par{text-align:center}
+.par .pie{margin-top:12px;font:600 10px/1 "Martian Mono",monospace;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-2)}
+.par .pie.mal{color:var(--mark)}
+/* el botón, a escala 2× para que se vea el choque */
+.btn{width:92px;height:132px;position:relative;background:#fff;border:1px solid #E6E6E4}
+.btn .rayas{position:absolute;left:18px;right:18px;top:16px}
+.btn .rayas i{display:block;background:#14161A;margin-bottom:11px}
+.btn .lab{position:absolute;left:0;right:0;bottom:32px;text-align:center;
+  font:400 15px/1 "Public Sans",sans-serif;color:#14161A}
+.btn .car{position:absolute;left:50%;bottom:11px;transform:translateX(-50%);
+  width:0;height:0;border:5px solid transparent;border-top-color:#14161A}
+
+/* ==================================================== la barra de estado == */
+.win{background:#fff;border-top:1px solid #E4E4E2}
+.st{height:56px;background:#F0F0F0;border-top:1px solid #DDDDDB;display:flex;
+  align-items:center;gap:0;padding:0 8px;
+  font:400 13.5px/1 "Segoe UI",system-ui,sans-serif;color:#1A1A1A}
+.st .hint{padding:0 10px;color:#3C3C3C}
+.st .sep{width:1px;height:22px;background:#D2D2D0;margin:0 6px}
+.st .der{margin-left:auto;display:flex;align-items:center;gap:0}
+.st .med{padding:0 10px;white-space:nowrap}
+.st .zb{width:22px;height:22px;border:1px solid #C6C6C4;background:#FDFDFD;
+  display:grid;place-items:center;font-size:13px;line-height:1;color:#1A1A1A}
+.st .zt{width:120px;height:22px;position:relative;margin:0 6px}
+.st .zt:before{content:"";position:absolute;left:0;right:0;top:10px;height:2px;background:#B9B9B7}
+.st .zt i{position:absolute;top:3px;left:52px;width:7px;height:16px;background:#5A5A58}
+
+/* la pieza nueva */
+.gr{display:flex;align-items:center;gap:8px;padding:0 10px}
+.gr .cap{font-size:13px;color:#3C3C3C}
+.gr .vista{width:30px;height:22px;border:1px solid #C6C6C4;background:#fff;
+  display:grid;place-items:center}
+.gr .vista i{display:block;width:20px;background:#14161A;border-radius:99px}
+.gr .num{width:46px;height:22px;border:1px solid #C6C6C4;background:#fff;
+  display:grid;place-items:center;font:400 12.5px/1 "Segoe UI",sans-serif}
+.gr .riel{width:104px;height:22px;position:relative}
+.gr .riel:before{content:"";position:absolute;left:0;right:0;top:10px;height:2px;background:#B9B9B7}
+.gr .riel i{position:absolute;top:3px;width:7px;height:16px;background:#0078D7}
+.gr .step{width:20px;height:22px;border:1px solid #C6C6C4;background:#FDFDFD;
+  display:grid;place-items:center;font-size:12px;color:#1A1A1A}
+.gr .cuatro{display:flex;gap:2px}
+.gr .cuatro b{width:26px;height:22px;border:1px solid transparent;display:grid;place-items:center;
+  background:#fff}
+.gr .cuatro b.on{border-color:#0078D7;background:#CCE4F7}
+.gr .cuatro b i{display:block;width:16px;background:#14161A;border-radius:99px}
+
+.opt{display:grid;grid-template-columns:1fr;gap:0}
+.opt .fila{padding:18px 20px;border-bottom:1px solid var(--rule)}
+.opt .fila:last-child{border-bottom:0}
+.opt .cab{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+.opt .cab .l{font:600 10px/1 "Martian Mono",monospace;color:var(--mark);letter-spacing:.1em}
+.opt .cab .t{font:600 15px/1 "Public Sans",sans-serif}
+.opt .cab .d{font-size:13.5px;color:var(--ink-2)}
+.opt .caja{background:#F0F0F0;border:1px solid #DDDDDB;display:inline-flex;align-items:center;
+  height:34px;font:400 13.5px/1 "Segoe UI",system-ui,sans-serif;color:#1A1A1A}
+
+table.cmp{width:100%;border-collapse:collapse;margin-top:8px;font-size:14.5px}
+table.cmp th{text-align:left;font:600 10.5px/1 "Martian Mono",monospace;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--rule)}
+table.cmp td{padding:11px 14px 11px 0;border-bottom:1px solid var(--rule);
+  color:var(--ink-2);vertical-align:top}
+table.cmp td:first-child{color:var(--ink);font-weight:600;width:150px}
+.si{color:#0A7B45;font-weight:600}
+.no{color:var(--mark);font-weight:600}
+.redlist{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:12px}
+.redlist li{display:grid;grid-template-columns:20px 1fr;gap:11px;align-items:start;
+  font-size:15px;color:var(--ink-2)}
+.redlist .dot{width:19px;height:19px;border-radius:50%;background:var(--mark);color:#fff;
+  display:grid;place-items:center;font:600 10px/1 "Martian Mono",monospace;margin-top:3px}
+.redlist b{color:var(--ink);font-weight:600}
+</style>
+
+<div class="wrap">
+<div class="top">
+  <p class="kicker">Lienzo · mockup</p>
+  <h1>El grosor,<br><em>abajo y a mano</em></h1>
+  <p class="lede">Dos cosas: <b>la goma rompía el botón Tamaño</b> —sus cuatro rayas caían encima de la palabra—, y falta poder cambiar el grosor sin abrir la cinta. Esto último es lo que hay que validar.</p>
+</div>
+
+<hr class="ants-rule">
+
+<section>
+  <div class="eyebrow"><span class="num">01</span></div>
+  <h2>El botón roto</h2>
+  <p class="note">El bloque de rayas se dibuja <b>al grosor de verdad</b>, para que se vea qué estás eligiendo. Pero los grosores de la goma (4, 6, 8 y 10&nbsp;px) suman el doble que los del lápiz (1, 3, 5 y 8) y <b>el alto del botón es fijo</b>: al tomar la goma el bloque crecía hasta pisar la etiqueta. Ahora los cuatro se encogen parejo hasta caber, así que se sigue leyendo cuál es más gordo.</p>
+  <div class="pane">
+    <div class="tag"><span>Botón Tamaño · goma</span><span class="mal">2× para que se note</span></div>
+    <div class="mesa">
+      <div class="par">
+        <div class="btn">
+          <div class="rayas">
+            <i style="height:8px"></i><i style="height:12px"></i><i style="height:16px"></i><i style="height:20px;margin-bottom:0"></i>
+          </div>
+          <div class="lab">Tamaño</div>
+          <div class="car"></div>
+        </div>
+        <div class="pie mal">antes</div>
+      </div>
+      <div class="par">
+        <div class="btn">
+          <div class="rayas" style="top:16px">
+            <i style="height:5px;margin-bottom:7px"></i><i style="height:8px;margin-bottom:7px"></i><i style="height:10px;margin-bottom:7px"></i><i style="height:13px;margin-bottom:0"></i>
+          </div>
+          <div class="lab">Tamaño</div>
+          <div class="car"></div>
+        </div>
+        <div class="pie">ahora</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><span class="num">02</span></div>
+  <h2>Dónde va</h2>
+  <p class="note">A la <b>izquierda</b>, pegado al mensaje. La derecha de la barra es el grupo de «cómo estoy mirando el dibujo» —peso, tamaño del lienzo, zoom—; el grosor es «cómo estoy dibujando», que es otra cosa. Metido entre el zoom y el tamaño del lienzo se lee como un tercer número del mismo grupo.</p>
+  <div class="pane">
+    <div class="tag"><span>Barra de estado · Windows 10 · 2× de alto</span><span>pincel, 5 px</span></div>
+    <div class="win">
+      <div style="height:120px;background:#fff"></div>
+      <div class="st">
+        <span class="hint">312, 148 px</span>
+        <span class="sep"></span>
+        <span class="gr">
+          <span class="cap">Grosor</span>
+          <span class="vista"><i style="height:5px"></i></span>
+          <span class="riel"><i style="left:22px"></i></span>
+          <span class="num">5 px</span>
+        </span>
+        <span class="der">
+          <span class="med">1152 × 648 px</span>
+          <span class="sep"></span>
+          <span class="med">2.8 MB</span>
+          <span class="sep"></span>
+          <span class="med">100%</span>
+          <span class="zb">−</span>
+          <span class="zt"><i></i></span>
+          <span class="zb">+</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><span class="num">03</span></div>
+  <h2>Tres formas. Elegí una</h2>
+  <p class="note">La diferencia de fondo no es el aspecto: es <b>si abajo hay los mismos cuatro grosores que arriba o hay todos</b>.</p>
+  <div class="pane opt">
+    <div class="fila">
+      <div class="cab"><span class="l">A</span><span class="t">Deslizador</span>
+        <span class="d">1 a 50 px, continuo. Recomendada.</span></div>
+      <span class="caja" style="padding:0 4px">
+        <span class="gr">
+          <span class="cap">Grosor</span>
+          <span class="vista"><i style="height:5px"></i></span>
+          <span class="riel"><i style="left:22px"></i></span>
+          <span class="num">5 px</span>
+        </span>
+      </span>
+      <p class="note" style="margin:14px 0 0;font-size:14.5px">Es lo único que la cinta <b>no</b> puede hacer: arriba hay cuatro grosores y nada más. Si abajo van esos mismos cuatro, la barra no agrega nada y sólo ocupa lugar. El motor ya acepta cualquier ancho, así que el deslizador no cuesta código extra.</p>
+    </div>
+    <div class="fila">
+      <div class="cab"><span class="l">B</span><span class="t">Los cuatro</span>
+        <span class="d">El menú de la cinta, aplanado.</span></div>
+      <span class="caja" style="padding:0 4px">
+        <span class="gr">
+          <span class="cap">Grosor</span>
+          <span class="cuatro">
+            <b><i style="height:1px"></i></b>
+            <b><i style="height:3px"></i></b>
+            <b class="on"><i style="height:5px"></i></b>
+            <b><i style="height:8px"></i></b>
+          </span>
+        </span>
+      </span>
+      <p class="note" style="margin:14px 0 0;font-size:14.5px">Un solo clic y nada que aprender, pero es la cinta repetida: lo que ya podías hacer en dos clics ahora se hace en uno. Y con la goma cambian los cuatro valores, así que los botones no quedan quietos.</p>
+    </div>
+    <div class="fila">
+      <div class="cab"><span class="l">C</span><span class="t">Campo con flechas</span>
+        <span class="d">Continuo también, pero de a un píxel.</span></div>
+      <span class="caja" style="padding:0 4px">
+        <span class="gr">
+          <span class="cap">Grosor</span>
+          <span class="vista"><i style="height:5px"></i></span>
+          <span class="step">−</span>
+          <span class="num">5 px</span>
+          <span class="step">+</span>
+        </span>
+      </span>
+      <p class="note" style="margin:14px 0 0;font-size:14.5px">El más angosto de los tres y el único que da el valor exacto sin puntería. A cambio, ir de 3 a 40 son treinta y siete clics.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><span class="num">04</span></div>
+  <h2>Cuándo aparece</h2>
+  <p class="note">Sólo con las herramientas que <b>cargan un grosor</b>. Con el bote o el cuentagotas el control no haría nada, y un control muerto es peor que ninguno: parece que se rompió.</p>
+  <table class="cmp">
+    <tr><th>Herramienta</th><th>Abajo</th><th>Por qué</th></tr>
+    <tr><td>Lápiz, Pincel</td><td class="si">Sí</td><td>1 a 50 px</td></tr>
+    <tr><td>Goma</td><td class="si">Sí</td><td>Su propio rango, 1 a 100 px: borrar de a poco no sirve</td></tr>
+    <tr><td>Línea, Figura</td><td class="si">Sí</td><td>Es el grosor del contorno</td></tr>
+    <tr><td>Texto</td><td class="no">No</td><td>El cuerpo de la letra ya está en su barra</td></tr>
+    <tr><td>Bote, Cuentagotas,<br>Lupa, Selección</td><td class="no">No</td><td>No tienen grosor. El hueco se cierra, no queda gris</td></tr>
+  </table>
+</section>
+
+<section>
+  <div class="eyebrow"><span class="num">05</span></div>
+  <h2>Lo que arrastra</h2>
+  <ul class="redlist">
+    <li><span class="dot">1</span><span>Los <b>cuatro grosores de la cinta dejan de ser los únicos</b>. El menú de arriba se queda como está —son atajos a los valores redondos—, pero el número de abajo puede caer entre dos.</span></li>
+    <li><span class="dot">2</span><span>El botón Tamaño de la cinta <b>tiene que mostrar el grosor puesto</b>, aunque no sea uno de sus cuatro. Si no, ponés 23 px abajo y arriba sigue marcado el 5.</span></li>
+    <li><span class="dot">3</span><span>Con la barra de estado apagada (Ver → Barra de estado) <b>el control se va con ella</b>. El de la cinta sigue estando, así que no te quedás sin ninguno.</span></li>
+    <li><span class="dot">4</span><span>Los ocho chromes: en XP el grosor ya vive en la caja de opciones y en SW en el lector. Ahí <b>no se agrega nada</b> — sería el tercer sitio para lo mismo.</span></li>
+  </ul>
+</section>
+</div>

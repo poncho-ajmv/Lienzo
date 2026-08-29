@@ -1,0 +1,50 @@
+[package]
+name = "lienzo"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "A Microsoft Paint clone in Rust, with Windows XP/7/10/11, Linux and macOS skins."
+readme = "README.md"
+keywords = ["paint", "editor", "raster", "bitmap", "gui"]
+categories = ["multimedia::images", "graphics"]
+authors = ["poncho-ajmv"]
+repository = "https://github.com/poncho-ajmv/lienzo"
+homepage = "https://github.com/poncho-ajmv/lienzo"
+
+[dependencies]
+# `ecolor` es la única dependencia del motor: da el tipo de color que permite
+# subir el buffer a la GPU sin conversión por píxel. `canvas.rs` y `shapes.rs`
+# no tocan nada más, y por eso se testean sin ventana.
+ecolor = "0.36"
+egui = "0.36"
+eframe = { version = "0.36", default-features = false, features = [
+    # glow en vez de wgpu: en web ahorra ~2,4 MiB de wasm (naga no entra).
+    "glow",
+    "default_fonts",
+    # Con default-features = false hay que pedirlos a mano o no hay ventana
+    # en Linux. El propio eframe lo avisa en su Cargo.toml.
+    "x11",
+    "wayland",
+    # Guarda tema, idioma y colores entre sesiones. Trae `ron` y el directorio
+    # de configuración del sistema; escribirlo a mano sería reimplementar eso.
+    "persistence",
+] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Sólo los formatos que Paint maneja. Por defecto `image` compila EXR, DDS,
+# HDR, AVIF y media docena más que no usamos: es la perilla de tamaño más
+# grande del proyecto después de elegir glow.
+image = { version = "0.25", default-features = false, features = [
+    "png", "jpeg", "bmp", "gif", "tiff", "ico",
+] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+rfd = "0.17"
+# arboard no compila a wasm; en web el portapapeles lo maneja eframe.
+arboard = { version = "3.6", features = ["image-data"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true

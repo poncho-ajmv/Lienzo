@@ -1,0 +1,528 @@
+<!-- Mockup: herramienta Texto de Lienzo -->
+<title>Herramienta Texto — Lienzo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#FCFCFA;
+  --ink:#14161A;
+  --ink-2:#5C6068;
+  --rule:#E2E3DE;
+  --rule-2:#F1F1EE;
+  --win:#0078D7;          /* el azul real de Paint: sólo dentro de los marcos */
+  --win-soft:#CCE4F7;
+  --win-line:#99D1FF;
+  --chrome:#F0F0F0;
+  --chrome-2:#FAFAFA;
+  --ants:#1B1B1B;
+  --mark:#E10A6E;         /* lápiz rojo de revisión: nunca es interfaz */
+  --shadow:0 1px 2px rgba(20,22,26,.06), 0 8px 24px rgba(20,22,26,.07);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font:400 16px/1.6 "Public Sans", system-ui, sans-serif;
+  padding:0 24px 120px;
+}
+.wrap{max-width:1000px;margin:0 auto}
+
+/* ---------------------------------------------------------- encabezado --- */
+.top{padding:72px 0 0}
+.kicker{
+  font:600 11px/1 "Martian Mono", ui-monospace, monospace;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--mark);
+  margin:0 0 26px;
+}
+h1{
+  font:800 clamp(42px,7.2vw,88px)/0.94 "Bricolage Grotesque", system-ui, sans-serif;
+  letter-spacing:-.035em;margin:0 0 22px;text-wrap:balance;
+}
+h1 em{font-style:normal;color:var(--ink-2)}
+.lede{max-width:56ch;font-size:18px;color:var(--ink-2);margin:0}
+.lede b{color:var(--ink);font-weight:600}
+
+/* ------------------------------------------------- hormigas en marcha --- */
+/* El borde punteado que corre no es adorno: es literalmente lo que estamos
+   diseñando, así que también separa las secciones de esta hoja. */
+.ants{
+  background-image:
+    repeating-linear-gradient(90deg,var(--ants) 0 4px,transparent 4px 8px),
+    repeating-linear-gradient(90deg,var(--ants) 0 4px,transparent 4px 8px),
+    repeating-linear-gradient(0deg,var(--ants) 0 4px,transparent 4px 8px),
+    repeating-linear-gradient(0deg,var(--ants) 0 4px,transparent 4px 8px);
+  background-size:100% 1px,100% 1px,1px 100%,1px 100%;
+  background-position:0 0,0 100%,0 0,100% 0;
+  background-repeat:no-repeat;
+  animation:march .55s linear infinite;
+}
+@keyframes march{to{background-position:8px 0,-8px 100%,0 -8px,100% 8px}}
+
+hr.ants-rule{
+  border:0;height:1px;margin:88px 0 0;
+  background-image:repeating-linear-gradient(90deg,var(--rule) 0 5px,transparent 5px 10px);
+  background-size:100% 1px;background-repeat:repeat-x;
+}
+
+/* --------------------------------------------------------- estructura --- */
+section{padding-top:64px}
+.eyebrow{
+  display:flex;align-items:baseline;gap:14px;margin:0 0 6px;
+}
+.eyebrow .num{
+  font:600 11px/1 "Martian Mono", ui-monospace, monospace;
+  color:var(--mark);letter-spacing:.1em;
+}
+h2{
+  font:700 clamp(26px,3.4vw,38px)/1.1 "Bricolage Grotesque", system-ui, sans-serif;
+  letter-spacing:-.02em;margin:0 0 10px;
+}
+.note{max-width:62ch;color:var(--ink-2);margin:0 0 30px}
+.note b{color:var(--ink);font-weight:600}
+
+/* ------------------------------------------------------------- marcos --- */
+.frame{
+  position:relative;background:#fff;border:1px solid var(--rule);
+  border-radius:3px;box-shadow:var(--shadow);overflow:hidden;
+}
+.frame-cap{
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:9px 14px;border-bottom:1px solid var(--rule);background:var(--chrome-2);
+  font:600 11px/1 "Martian Mono", ui-monospace, monospace;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);
+}
+.frame-cap .tag{color:var(--mark);text-transform:none;letter-spacing:.02em}
+.frame-cap .tag.ok{color:#137333}
+.stage{
+  padding:34px 30px;background:#fff;
+  background-image:linear-gradient(var(--rule-2) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--rule-2) 1px,transparent 1px);
+  background-size:20px 20px;
+}
+
+/* -------------------------------------------------- la caja de texto ---- */
+.tbox{position:relative;display:inline-block;min-width:260px;padding:9px 11px;vertical-align:top}
+.tbox.opaque{background:#fff}
+.tbox .txt{
+  font:400 21px/1.35 "Segoe UI", system-ui, sans-serif;
+  color:var(--ink);white-space:pre-wrap;min-height:1.35em;
+}
+.tbox .txt.blue{color:#1668C6}
+.tbox .txt.hint{color:#A8ACB3}
+.caret{
+  display:inline-block;width:1px;height:1.15em;background:var(--ink);
+  vertical-align:-.18em;animation:blink 1.06s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0}}
+
+.h{position:absolute;width:7px;height:7px;background:#fff;border:1px solid #3C3C3C}
+.h.nw{left:-4px;top:-4px}      .h.n{left:calc(50% - 3.5px);top:-4px}
+.h.ne{right:-4px;top:-4px}     .h.e{right:-4px;top:calc(50% - 3.5px)}
+.h.se{right:-4px;bottom:-4px}  .h.s{left:calc(50% - 3.5px);bottom:-4px}
+.h.sw{left:-4px;bottom:-4px}   .h.w{left:-4px;top:calc(50% - 3.5px)}
+.h.live{background:var(--win);border-color:var(--win)}
+
+/* puntero de arrastre dibujado, no un emoji */
+.ptr{position:absolute;width:26px;height:26px;pointer-events:none}
+
+/* --------------------------------------------------------- redlines ----- */
+.redline{
+  position:absolute;display:flex;align-items:center;gap:8px;
+  font:400 12px/1.35 "Martian Mono", ui-monospace, monospace;color:var(--mark);
+  max-width:230px;
+}
+.redline .dot{
+  flex:0 0 auto;width:17px;height:17px;border-radius:50%;
+  background:var(--mark);color:#fff;display:grid;place-items:center;
+  font:600 10px/1 "Martian Mono", monospace;
+}
+.redlist{
+  list-style:none;margin:22px 0 0;padding:0;
+  display:grid;gap:10px;
+}
+.redlist li{
+  display:grid;grid-template-columns:20px 1fr;gap:11px;align-items:start;
+  font-size:15px;color:var(--ink-2);
+}
+.redlist .dot{
+  width:19px;height:19px;border-radius:50%;background:var(--mark);color:#fff;
+  display:grid;place-items:center;font:600 10px/1 "Martian Mono", monospace;
+  margin-top:3px;
+}
+.redlist b{color:var(--ink);font-weight:600}
+
+/* ------------------------------------------------------ cinta de Win --- */
+.ribbon{font-family:"Segoe UI", system-ui, sans-serif;background:var(--chrome);border-bottom:1px solid #D9D9D9}
+.tabs{display:flex;align-items:flex-end;gap:0;padding:0 6px;background:#fff;position:relative}
+.ctx-label{
+  position:absolute;right:10px;top:2px;
+  font-size:11px;color:#B03A00;letter-spacing:.02em;
+}
+.tab{padding:7px 17px;font-size:14px;color:#333;border:1px solid transparent;border-bottom:0}
+.tab.on{background:var(--chrome);border-color:#D9D9D9}
+.tab.ctx{color:#B03A00}
+.tab.ctx.on{background:#FDF0E7;border-color:#F0C9AC}
+.groups{display:flex;align-items:stretch;padding:8px 0 0;min-height:104px}
+.grp{padding:0 14px;border-right:1px solid #DEDEDE;display:flex;flex-direction:column;justify-content:space-between}
+.grp:last-child{border-right:0}
+.grp-body{display:flex;gap:8px;align-items:flex-start;padding-bottom:6px}
+.grp-name{text-align:center;font-size:11px;color:#8A8A8A;padding:3px 0 6px}
+.fld{
+  background:#fff;border:1px solid #ABABAB;height:23px;display:flex;align-items:center;
+  padding:0 6px;font-size:13px;color:#222;gap:8px;min-width:60px;
+}
+.fld .car{margin-left:auto;font-size:9px;color:#555}
+.bstrip{display:flex;gap:2px;margin-top:5px}
+.bt{
+  width:24px;height:23px;display:grid;place-items:center;font-size:13px;color:#222;
+  border:1px solid transparent;background:transparent;
+}
+.bt.on{background:var(--win-soft);border-color:var(--win-line)}
+.bt.i{font-style:italic;font-family:Georgia,serif}
+.bt.b{font-weight:700}
+.bt.u{text-decoration:underline}
+.bt.s{text-decoration:line-through}
+.big{
+  width:62px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:5px 4px;font-size:11px;color:#222;text-align:center;line-height:1.2;
+  border:1px solid transparent;
+}
+.big.on{background:var(--win-soft);border-color:var(--win-line)}
+.sw{width:26px;height:26px;border:1px solid #6E6E6E}
+.checker{
+  background-image:
+    linear-gradient(45deg,#C9C9C9 25%,transparent 25% 75%,#C9C9C9 75%),
+    linear-gradient(45deg,#C9C9C9 25%,transparent 25% 75%,#C9C9C9 75%);
+  background-size:10px 10px;background-position:0 0,5px 5px;background-color:#fff;
+}
+
+/* ------------------------------------------------------------ grillas --- */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+
+/* ------------------------------------------------------------- teclas --- */
+.keys{width:100%;border-collapse:collapse;margin-top:8px}
+.keys td{padding:11px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.keys td:first-child{width:180px;white-space:nowrap}
+.keys tr:last-child td{border-bottom:0}
+kbd{
+  display:inline-block;font:600 12px/1 "Martian Mono", ui-monospace, monospace;
+  background:#fff;border:1px solid #C9CAC5;border-bottom-width:2px;border-radius:4px;
+  padding:5px 7px;color:var(--ink);
+}
+.keys .what{color:var(--ink-2);font-size:15px}
+.keys .what b{color:var(--ink);font-weight:600}
+
+/* --------------------------------------------------------------- pie ---- */
+.foot{
+  margin-top:96px;padding-top:26px;
+  border-top:1px solid var(--rule);
+  font:400 12px/1.7 "Martian Mono", ui-monospace, monospace;color:var(--ink-2);
+}
+.foot b{color:var(--ink);font-weight:600}
+
+@media (prefers-reduced-motion:reduce){
+  .ants{animation:none}
+  .caret{animation:none}
+}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">Lienzo · mockup para revisión</p>
+  <h1>La herramienta<br>de texto <em>escribe<br>letras.</em></h1>
+  <p class="lede">Hoy el cuadro de texto es un control gris que flota sobre el lienzo con dos botones, y lo que estampa son <b>puntos, no letras</b>. Esta hoja propone el reemplazo: escribís sobre el dibujo, con tu color y tu fuente, y confirmás saliendo.</p>
+</header>
+
+<hr class="ants-rule">
+
+<!-- ====================================================== HOY ========== -->
+<section>
+  <div class="eyebrow"><span class="num">ASÍ ESTÁ HOY</span></div>
+  <h2>Cuatro cosas que no van</h2>
+  <p class="note">No es cuestión de gusto: cada una rompe algo que el resto del programa ya hace bien.</p>
+
+  <div class="frame">
+    <div class="frame-cap"><span>Estado actual</span><span class="tag">4 observaciones</span></div>
+    <div class="stage" style="position:relative;padding:52px 30px 64px">
+      <div style="position:relative;display:inline-block">
+        <div style="width:300px;height:118px;background:#F4F5F6;border:1px solid var(--win);border-radius:2px"></div>
+        <div style="position:absolute;left:9px;top:9px;width:1px;height:20px;background:var(--win)"></div>
+        <div style="margin-top:9px;display:flex;gap:7px">
+          <span style="padding:5px 13px;background:#EDEDED;border:1px solid #ADADAD;font:400 13px/1 'Segoe UI',sans-serif">Aplicar</span>
+          <span style="padding:5px 13px;background:#EDEDED;border:1px solid #ADADAD;font:400 13px/1 'Segoe UI',sans-serif">Cancelar</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ol class="redlist">
+    <li><span class="dot">1</span><span><b>El fondo gris tapa el dibujo.</b> No ves cómo queda el texto sobre lo que ya pintaste, que es justamente la decisión que estás tomando.</span></li>
+    <li><span class="dot">2</span><span><b>Aplicar y Cancelar no son de Paint.</b> En el resto del programa confirmás saliendo y cancelás con Escape. Dos botones acá crean una regla que sólo vale acá.</span></li>
+    <li><span class="dot">3</span><span><b>La caja no se puede mover ni redimensionar.</b> Cae donde hiciste clic y ahí se queda; si le erraste, cancelás y volvés a empezar.</span></li>
+    <li><span class="dot">4</span><span><b>Lo que estampa no son letras.</b> Cada carácter sale como un punto de 2 px. El cuadro te deja escribir «Hola» y el lienzo recibe cuatro manchas.</span></li>
+  </ol>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ================================================== EL RECORRIDO ===== -->
+<section>
+  <div class="eyebrow"><span class="num">EL RECORRIDO</span></div>
+  <h2>Cuatro momentos, en orden</h2>
+  <p class="note">Están numerados porque son una secuencia real: cada uno sólo existe después del anterior.</p>
+
+  <div class="two">
+
+    <!-- 1 -->
+    <div class="frame">
+      <div class="frame-cap"><span>01 · Arrastrás la caja</span></div>
+      <div class="stage" style="padding:44px 30px 52px">
+        <div class="tbox ants">
+          <div class="txt hint">Escribí acá<span class="caret"></span></div>
+          <i class="h nw"></i><i class="h n"></i><i class="h ne"></i><i class="h e"></i>
+          <i class="h se"></i><i class="h s"></i><i class="h sw"></i><i class="h w"></i>
+        </div>
+      </div>
+      <div style="padding:16px 18px 20px;border-top:1px solid var(--rule);color:var(--ink-2);font-size:14px">
+        Borde punteado en marcha y ocho manijas, iguales a las de Seleccionar. El fondo se ve porque no hay fondo.
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="frame">
+      <div class="frame-cap"><span>02 · Escribís</span></div>
+      <div class="stage" style="padding:44px 30px 52px">
+        <div class="tbox ants">
+          <div class="txt blue">Venta de<br>verano<span class="caret"></span></div>
+          <i class="h nw"></i><i class="h n"></i><i class="h ne"></i><i class="h e"></i>
+          <i class="h se"></i><i class="h s"></i><i class="h sw"></i><i class="h w"></i>
+        </div>
+      </div>
+      <div style="padding:16px 18px 20px;border-top:1px solid var(--rule);color:var(--ink-2);font-size:14px">
+        Las letras salen con el Color&nbsp;1, la fuente y el tamaño elegidos. Lo que ves es lo que va a quedar.
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="frame">
+      <div class="frame-cap"><span>03 · Ajustás</span></div>
+      <div class="stage" style="padding:44px 30px 52px;position:relative">
+        <div class="tbox ants" style="min-width:210px">
+          <div class="txt blue">Venta de<br>verano</div>
+          <i class="h nw"></i><i class="h n"></i><i class="h ne"></i><i class="h e live"></i>
+          <i class="h se"></i><i class="h s"></i><i class="h sw"></i><i class="h w"></i>
+          <svg class="ptr" style="right:-22px;top:calc(50% - 4px)" viewBox="0 0 26 26" aria-hidden="true">
+            <path d="M4 13h18M4 13l4-4M4 13l4 4M22 13l-4-4M22 13l-4 4"
+                  fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div style="padding:16px 18px 20px;border-top:1px solid var(--rule);color:var(--ink-2);font-size:14px">
+        Tirás de una manija y el texto se reacomoda dentro. Arrastrando el borde, la caja entera se mueve.
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="frame">
+      <div class="frame-cap"><span>04 · Confirmás</span><span class="tag ok">queda en píxeles</span></div>
+      <div class="stage" style="padding:44px 30px 52px">
+        <div style="display:inline-block;padding:9px 11px;min-width:210px">
+          <div class="txt blue" style="font:400 21px/1.35 'Segoe UI',system-ui,sans-serif;color:#1668C6">Venta de<br>verano</div>
+        </div>
+      </div>
+      <div style="padding:16px 18px 20px;border-top:1px solid var(--rule);color:var(--ink-2);font-size:14px">
+        Un clic afuera, <kbd>Esc</kbd> o cambiar de herramienta: se van las hormigas y el texto pasa al lienzo. Un solo paso para Deshacer.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ================================================ PESTAÑA TEXTO ====== -->
+<section>
+  <div class="eyebrow"><span class="num">LA CINTA</span></div>
+  <h2>Una pestaña que aparece y se va</h2>
+  <p class="note">Mientras la caja está abierta se suma <b>Texto</b> a la cinta y la cinta salta sola a esa pestaña. Al confirmar, desaparece. Es lo que hace Paint, y evita meter controles de fuente en Inicio, donde estorbarían el resto del tiempo.</p>
+
+  <div class="frame">
+    <div class="frame-cap"><span>Pestaña contextual</span><span class="tag">sólo con la caja abierta</span></div>
+    <div class="ribbon">
+      <div class="tabs">
+        <span class="ctx-label">Herramientas de texto</span>
+        <span class="tab">Archivo</span>
+        <span class="tab">Inicio</span>
+        <span class="tab">Ver</span>
+        <span class="tab ctx on">Texto</span>
+      </div>
+      <div class="groups">
+
+        <div class="grp">
+          <div class="grp-body">
+            <div>
+              <div style="display:flex;gap:4px">
+                <div class="fld" style="min-width:132px">Segoe UI <span class="car">▾</span></div>
+                <div class="fld" style="min-width:52px">21 <span class="car">▾</span></div>
+              </div>
+              <div class="bstrip">
+                <span class="bt b">N</span>
+                <span class="bt i">K</span>
+                <span class="bt u">S</span>
+                <span class="bt s">ab</span>
+                <span style="width:9px"></span>
+                <span class="bt on" title="Alinear a la izquierda">≡</span>
+                <span class="bt">≡</span>
+                <span class="bt">≡</span>
+              </div>
+            </div>
+          </div>
+          <div class="grp-name">Fuente</div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-body">
+            <div class="big on">
+              <span class="sw checker" aria-hidden="true"></span>
+              Transparente
+            </div>
+            <div class="big">
+              <span class="sw" style="background:#fff" aria-hidden="true"></span>
+              Opaco
+            </div>
+          </div>
+          <div class="grp-name">Fondo</div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-body" style="align-items:center;gap:14px">
+            <div style="text-align:center;font-size:11px;color:#222">
+              <span class="sw" style="background:#1668C6;display:block;margin:0 auto 4px;width:30px;height:30px"></span>
+              Color 1
+            </div>
+            <div style="text-align:center;font-size:11px;color:#222">
+              <span class="sw" style="background:#fff;display:block;margin:0 auto 4px;width:30px;height:30px"></span>
+              Color 2
+            </div>
+          </div>
+          <div class="grp-name">Colores</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <ol class="redlist">
+    <li><span class="dot">→</span><span><b>Color 1 es la tinta, Color 2 el fondo.</b> Misma regla que las formas, así que no hay nada nuevo que aprender.</span></li>
+    <li><span class="dot">→</span><span><b>Los cambios se ven en vivo.</b> Cambiás la fuente con la caja abierta y el texto se redibuja; no hay que confirmar para ver.</span></li>
+  </ol>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ============================================= FONDO TRANS / OPACO === -->
+<section>
+  <div class="eyebrow"><span class="num">LAS OPCIONES</span></div>
+  <h2>Transparente u opaco</h2>
+  <p class="note">La única opción del texto que cambia el resultado en píxeles, y por eso la que hay que poder comparar de un vistazo.</p>
+
+  <div class="two">
+    <div class="frame">
+      <div class="frame-cap"><span>Transparente</span><span class="tag ok">por defecto</span></div>
+      <div class="stage" style="padding:0">
+        <div style="position:relative;height:180px;background:
+             radial-gradient(circle at 22% 34%, #FFD25E 0 52px, transparent 53px),
+             radial-gradient(circle at 74% 68%, #7ED0A5 0 44px, transparent 45px),
+             #EAF2F8">
+          <div class="tbox ants" style="position:absolute;left:38px;top:62px">
+            <div class="txt" style="color:#12386B">Verano</div>
+            <i class="h nw"></i><i class="h ne"></i><i class="h se"></i><i class="h sw"></i>
+          </div>
+        </div>
+      </div>
+      <div style="padding:16px 18px 20px;border-top:1px solid var(--rule);color:var(--ink-2);font-size:14px">
+        Sólo se estampan los píxeles de las letras. El dibujo sigue viéndose entre los trazos.
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="frame-cap"><span>Opaco</span></div>
+      <div class="stage" style="padding:0">
+        <div style="position:relative;height:180px;background:
+             radial-gradient(circle at 22% 34%, #FFD25E 0 52px, transparent 53px),
+             radial-gradient(circle at 74% 68%, #7ED0A5 0 44px, transparent 45px),
+             #EAF2F8">
+          <div class="tbox ants opaque" style="position:absolute;left:38px;top:62px">
+            <div class="txt" style="color:#12386B">Verano</div>
+            <i class="h nw"></i><i class="h ne"></i><i class="h se"></i><i class="h sw"></i>
+          </div>
+        </div>
+      </div>
+      <div style="padding:16px 18px 20px;border-top:1px solid var(--rule);color:var(--ink-2);font-size:14px">
+        La caja entera se rellena con el Color&nbsp;2 y borra lo que había debajo.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ====================================================== TECLAS ======== -->
+<section>
+  <div class="eyebrow"><span class="num">TECLADO</span></div>
+  <h2>Nada nuevo que memorizar</h2>
+  <p class="note">Las mismas teclas que ya usa el resto del programa, aplicadas a la caja.</p>
+
+  <table class="keys">
+    <tr>
+      <td><kbd>Esc</kbd></td>
+      <td class="what"><b>Cancela.</b> La caja se cierra y el lienzo queda intacto. Ya funciona así en todos los diálogos y menús.</td>
+    </tr>
+    <tr>
+      <td><kbd>Ctrl</kbd> <kbd>Enter</kbd></td>
+      <td class="what"><b>Confirma sin sacar el mouse.</b> <kbd>Enter</kbd> solo hace un salto de línea, como en cualquier cuadro de varias líneas.</td>
+    </tr>
+    <tr>
+      <td><kbd>Clic afuera</kbd></td>
+      <td class="what"><b>Confirma.</b> El gesto natural, y el que usa Paint.</td>
+    </tr>
+    <tr>
+      <td><kbd>Ctrl</kbd> <kbd>Z</kbd></td>
+      <td class="what"><b>Deshace el texto entero</b>, no letra por letra: la caja escribe un solo paso al confirmar.</td>
+    </tr>
+    <tr>
+      <td><kbd>Ctrl</kbd> <kbd>A</kbd></td>
+      <td class="what">Con la caja abierta selecciona <b>el texto</b>, no el lienzo.</td>
+    </tr>
+  </table>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ================================================== QUÉ IMPLICA ====== -->
+<section>
+  <div class="eyebrow"><span class="num">PARA PORTARLO</span></div>
+  <h2>Lo que hay que tocar</h2>
+  <p class="note">Para que sepas qué estás aprobando antes de que lo escriba.</p>
+
+  <ol class="redlist" style="gap:14px">
+    <li><span class="dot">A</span><span><b>Rasterizar de verdad.</b> egui ya mide y arma el texto para dibujarlo en pantalla; se le pide la misma galería y se vuelca al lienzo píxel por píxel. Sin fuentes nuevas ni dependencias.</span></li>
+    <li><span class="dot">B</span><span><b>La caja vive en el documento, no en un cuadro flotante.</b> Se dibuja sobre el lienzo con las mismas hormigas y manijas que ya usa la selección: es código que existe.</span></li>
+    <li><span class="dot">C</span><span><b>Una pestaña contextual en la cinta.</b> El armado por pestañas ya está; hay que sumar una que aparezca y desaparezca.</span></li>
+    <li><span class="dot">D</span><span><b>Acentos y ñ.</b> Es el primer lugar del programa donde escribís de verdad, así que acá se nota si el teclado muerto falla. Es la prueba que quedó pendiente desde el arranque.</span></li>
+  </ol>
+</section>
+
+<p class="foot">
+  <b>Lienzo</b> · mockup de la herramienta Texto · para revisión<br>
+  Los marcos son maquetas en HTML, no capturas del programa.
+</p>
+
+</div>

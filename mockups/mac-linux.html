@@ -1,0 +1,526 @@
+<!-- Mockup: macOS y Linux, cada uno desde su propio sistema -->
+<title>macOS y Linux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@0,400;0,600&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#FCFCFA; --ink:#14161A; --ink-2:#5C6068;
+  --rule:#E2E3DE; --mark:#E10A6E;
+  --shadow:0 1px 2px rgba(20,22,26,.06), 0 10px 30px rgba(20,22,26,.09);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:400 16px/1.6 "Public Sans",system-ui,sans-serif;padding:0 24px 120px}
+.wrap{max-width:1060px;margin:0 auto}
+
+.top{padding:72px 0 0}
+.kicker{font:600 11px/1 "Martian Mono",ui-monospace,monospace;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--mark);margin:0 0 26px}
+h1{font:800 clamp(42px,7vw,86px)/0.94 "Bricolage Grotesque",system-ui,sans-serif;
+  letter-spacing:-.035em;margin:0 0 22px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--ink-2)}
+.lede{max-width:58ch;font-size:18px;color:var(--ink-2);margin:0}
+.lede b{color:var(--ink);font-weight:600}
+
+hr.ants-rule{border:0;height:1px;margin:80px 0 0;
+  background-image:repeating-linear-gradient(90deg,var(--rule) 0 5px,transparent 5px 10px);
+  background-size:100% 1px;background-repeat:repeat-x}
+
+section{padding-top:60px}
+.eyebrow{display:flex;align-items:baseline;gap:14px;margin:0 0 6px}
+.eyebrow .num{font:600 11px/1 "Martian Mono",ui-monospace,monospace;color:var(--mark);letter-spacing:.1em}
+h2{font:700 clamp(26px,3.4vw,38px)/1.1 "Bricolage Grotesque",system-ui,sans-serif;
+  letter-spacing:-.02em;margin:0 0 10px}
+.note{max-width:64ch;color:var(--ink-2);margin:0 0 28px}
+.note b{color:var(--ink);font-weight:600}
+
+.card{background:#fff;border:1px solid var(--rule);border-radius:4px;
+  box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  padding:11px 15px;border-bottom:1px solid var(--rule)}
+.card-head h3{font:700 17px/1.2 "Bricolage Grotesque",system-ui,sans-serif;margin:0}
+.card-head .meta{font:400 11px/1 "Martian Mono",ui-monospace,monospace;color:var(--ink-2)}
+.card-note{padding:14px 17px 17px;border-top:1px solid var(--rule);color:var(--ink-2);font-size:14px}
+.card-note b{color:var(--ink);font-weight:600}
+
+/* ------------------------------------------------- muestrario de piezas -- */
+/* Antes de armar nada, las piezas de cada sistema, nombradas. Es de donde sale
+   el diseño: no se inventa un botón, se usa el que ese escritorio ya tiene. */
+.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));
+  border-top:1px solid var(--rule)}
+.part{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:17px 15px 13px}
+.part .stage{min-height:46px;display:flex;align-items:center}
+.part .nm{display:block;margin-top:11px;font:600 10.5px/1.4 "Martian Mono",ui-monospace,monospace;
+  color:var(--ink);letter-spacing:.02em}
+.part .dsc{display:block;font-size:12.5px;line-height:1.45;color:var(--ink-2);margin-top:2px}
+
+/* ================================================================ macOS == */
+.mac{
+  --bg:#EFEFEF; --content:#FFFFFF; --side:#F2F2F4; --line:#D8D8DC; --hair:#E4E4E8;
+  --tx:#1D1D1F; --tx2:#86868B; --acc:#007AFF; --accsoft:#E4F0FF;
+  --taller:#6E6E73;
+  font-family:-apple-system,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+  background:var(--bg);color:var(--tx);border-radius:10px;overflow:hidden;
+}
+.mac.dark{
+  --bg:#2A2A2C; --content:#1E1E20; --side:#252527; --line:#3A3A3C; --hair:#323234;
+  --tx:#F5F5F7; --tx2:#98989D; --acc:#0A84FF; --accsoft:#17325A; --taller:#131315;
+}
+.mac .tb{
+  height:50px;display:flex;align-items:center;gap:12px;padding:0 14px;
+  background:var(--bg);border-bottom:1px solid var(--line);position:relative;
+}
+.mac .lights{display:flex;gap:8px}
+.mac .lights i{width:12px;height:12px;border-radius:50%;display:block}
+.mac .title{position:absolute;left:0;right:0;text-align:center;font-size:13px;font-weight:600;
+  pointer-events:none}
+.mac .title small{display:block;font-size:10.5px;font-weight:400;color:var(--tx2)}
+.mac .tbr{margin-left:auto;display:flex;gap:9px;align-items:center;z-index:1}
+/* control segmentado: la pieza más reconocible de un Mac */
+.mac .seg{display:flex;background:var(--side);border:1px solid var(--line);border-radius:7px;
+  padding:1px;gap:1px}
+.mac .seg span{padding:4px 9px;border-radius:6px;font-size:12px;color:var(--tx);
+  display:grid;place-items:center;min-width:28px}
+.mac .seg span.on{background:var(--content);box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.mac.dark .seg span.on{background:#48484A;box-shadow:none}
+.mac .body{display:grid;grid-template-columns:172px 1fr 194px;min-height:290px}
+.mac .side{background:var(--side);border-right:1px solid var(--hair);padding:9px 8px}
+.mac .side .h{font-size:10.5px;font-weight:600;color:var(--tx2);text-transform:uppercase;
+  letter-spacing:.04em;padding:7px 8px 5px}
+.mac .side .it{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:6px;
+  font-size:13px;color:var(--tx)}
+.mac .side .it.on{background:var(--acc);color:#fff}
+.mac.dark .side .it.on{background:var(--acc)}
+.mac .side .it svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5}
+.mac .stage{background:var(--taller);display:flex;align-items:center;justify-content:center;padding:20px}
+.mac .insp{background:var(--side);border-left:1px solid var(--hair);padding:11px 13px}
+.mac .insp .h{font-size:10.5px;font-weight:600;color:var(--tx2);text-transform:uppercase;
+  letter-spacing:.04em;margin:12px 0 7px}
+.mac .insp .h:first-child{margin-top:0}
+.mac .row{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;margin:6px 0}
+.mac .stepper{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  background:var(--content)}
+.mac .stepper span{padding:2px 7px;font-size:12px}
+.mac .sw{width:22px;height:22px;border-radius:5px;border:1px solid var(--line);display:block}
+
+/* ================================================================ GNOME == */
+.gn{
+  --bg:#FFFFFF; --head:#FAFAFA; --line:#E0E0E0; --tx:#241F31; --tx2:#5E5C64;
+  --btn:#F6F5F4; --btnb:#DAD9D6; --acc:#3584E4; --accsoft:#D8E6FA; --taller:#3D3846;
+  font-family:"Cantarell",-apple-system,system-ui,sans-serif;
+  background:var(--bg);color:var(--tx);border-radius:12px;overflow:hidden;
+}
+.gn.dark{
+  --bg:#242424; --head:#303030; --line:#3A3A3A; --tx:#FFFFFF; --tx2:#A8A8A8;
+  --btn:#383838; --btnb:#454545; --acc:#78AEED; --accsoft:#2A3A4E; --taller:#161616;
+}
+/* HeaderBar: en GNOME la barra de título *es* la barra de herramientas */
+.gn .hb{
+  height:47px;display:flex;align-items:center;gap:8px;padding:0 8px;
+  background:var(--head);border-bottom:1px solid var(--line);position:relative;
+}
+.gn .ti{position:absolute;left:0;right:0;text-align:center;pointer-events:none}
+.gn .ti b{display:block;font-size:12px;font-weight:700}
+.gn .ti small{display:block;font-size:10px;color:var(--tx2)}
+/* botones enlazados: la otra pieza inconfundible de Adwaita */
+.gn .link{display:flex;border-radius:6px;overflow:hidden;border:1px solid var(--btnb)}
+.gn .link .b{width:32px;height:30px;display:grid;place-items:center;background:var(--btn);
+  border-right:1px solid var(--btnb)}
+.gn .link .b:last-child{border-right:0}
+.gn .link .b.on{background:var(--accsoft);color:var(--acc)}
+.gn .b svg,.gn .sq svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.5}
+.gn .sq{width:32px;height:30px;border-radius:6px;display:grid;place-items:center;
+  background:var(--btn);border:1px solid var(--btnb)}
+.gn .sugg{padding:0 13px;height:30px;border-radius:6px;background:var(--acc);color:#fff;
+  font-size:12px;font-weight:700;display:grid;place-items:center}
+.gn .right{margin-left:auto;display:flex;gap:8px;align-items:center;z-index:1}
+.gn .stage{background:var(--taller);min-height:290px;display:flex;align-items:center;
+  justify-content:center;padding:22px;position:relative}
+/* la píldora flotante: el patrón de las apps nuevas de GNOME */
+.gn .pill{
+  position:absolute;left:50%;transform:translateX(-50%);bottom:16px;
+  display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:12px;
+  background:var(--head);border:1px solid var(--line);
+  box-shadow:0 2px 5px rgba(0,0,0,.16),0 10px 26px rgba(0,0,0,.22);
+}
+.gn .pill .dot{width:22px;height:22px;border-radius:6px;border:1px solid var(--btnb);display:block}
+.gn .pill .sepv{width:1px;height:20px;background:var(--line)}
+.gn .pill .pal{display:grid;grid-template-columns:repeat(10,13px);gap:2px}
+.gn .pill .pal i{width:13px;height:13px;border-radius:2px;display:block}
+
+.sheet{background:#fff;line-height:0}
+.mac .sheet{box-shadow:0 1px 3px rgba(0,0,0,.3),0 10px 26px rgba(0,0,0,.26)}
+.gn .sheet{border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.3),0 8px 22px rgba(0,0,0,.28)}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:860px){.two{grid-template-columns:1fr}}
+
+.redlist{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:12px}
+.redlist li{display:grid;grid-template-columns:20px 1fr;gap:11px;align-items:start;
+  font-size:15px;color:var(--ink-2)}
+.redlist .dot{width:19px;height:19px;border-radius:50%;background:var(--mark);color:#fff;
+  display:grid;place-items:center;font:600 10px/1 "Martian Mono",monospace;margin-top:3px}
+.redlist b{color:var(--ink);font-weight:600}
+
+table.cmp{width:100%;border-collapse:collapse;margin-top:10px;font-size:14.5px}
+table.cmp th{text-align:left;font:600 10.5px/1 "Martian Mono",monospace;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);
+  padding:0 14px 10px 0;border-bottom:1px solid var(--rule)}
+table.cmp td{padding:12px 14px 12px 0;border-bottom:1px solid var(--rule);
+  color:var(--ink-2);vertical-align:top}
+table.cmp td:first-child{color:var(--ink);font-weight:600;width:150px}
+
+.foot{margin-top:90px;padding-top:24px;border-top:1px solid var(--rule);
+  font:400 12px/1.7 "Martian Mono",ui-monospace,monospace;color:var(--ink-2)}
+.foot b{color:var(--ink);font-weight:600}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">Lienzo · macOS y Linux</p>
+  <h1>Dos escritorios,<br><em>un solo</em><br>diseño.</h1>
+  <p class="lede">Hoy los dos temas comparten la misma función: <b>literalmente el mismo código con otros colores</b>. Un Mac y un GNOME no se parecen en nada, y esa era toda la gracia de tener los dos. Esto los rehace desde el vocabulario propio de cada sistema.</p>
+</header>
+
+<hr class="ants-rule">
+
+<!-- ================================================= PIEZAS macOS ====== -->
+<section>
+  <div class="eyebrow"><span class="num">macOS · LAS PIEZAS</span></div>
+  <h2>De qué está hecho un Mac</h2>
+  <p class="note">Antes de armar nada, las piezas. No se inventa un botón: se usa el que ese escritorio ya tiene, y de ahí sale la estructura.</p>
+
+  <div class="card">
+    <div class="card-head"><h3>Vocabulario</h3><span class="meta">referencia · Finder, Vista Previa, Pages</span></div>
+    <div class="parts">
+      <div class="part">
+        <div class="stage"><span style="display:flex;gap:8px">
+          <i style="width:12px;height:12px;border-radius:50%;background:#FF5F57;display:block"></i>
+          <i style="width:12px;height:12px;border-radius:50%;background:#FEBC2E;display:block"></i>
+          <i style="width:12px;height:12px;border-radius:50%;background:#28C840;display:block"></i>
+        </span></div>
+        <span class="nm">Semáforos</span>
+        <span class="dsc">A la izquierda, siempre. Es lo primero que dice «esto es un Mac».</span>
+      </div>
+      <div class="part">
+        <div class="stage"><span class="mac" style="background:none"><span class="seg">
+          <span class="on">100%</span><span>−</span><span>+</span>
+        </span></span></div>
+        <span class="nm">Control segmentado</span>
+        <span class="dsc">Opciones excluyentes fundidas en una pastilla. La elegida sobresale con sombra.</span>
+      </div>
+      <div class="part">
+        <div class="stage"><span style="font:600 13px/1 -apple-system,system-ui;color:#1D1D1F;text-align:center;display:block;width:100%">
+          Sin título<br><small style="font:400 10.5px/1.6 -apple-system;color:#86868B">Modificado</small></span></div>
+        <span class="nm">Título centrado</span>
+        <span class="dsc">Con el estado debajo en gris. La barra de título y la de herramientas son una sola.</span>
+      </div>
+      <div class="part">
+        <div class="stage"><span style="display:block;width:100%;background:#F2F2F4;border-radius:6px;padding:5px">
+          <span style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:#007AFF;color:#fff;font:400 13px/1 -apple-system">Lápiz</span>
+          <span style="display:flex;align-items:center;gap:8px;padding:5px 8px;font:400 13px/1 -apple-system;color:#1D1D1F">Pincel</span>
+        </span></div>
+        <span class="nm">Barra lateral</span>
+        <span class="dsc">Las herramientas viven a la izquierda, no arriba. Lo elegido se llena de acento.</span>
+      </div>
+      <div class="part">
+        <div class="stage"><span style="display:block;width:100%">
+          <span style="font:600 10.5px/1 -apple-system;color:#86868B;text-transform:uppercase;letter-spacing:.04em">Trazo</span>
+          <span style="display:flex;justify-content:space-between;align-items:center;font:400 12.5px/1 -apple-system;color:#1D1D1F;margin-top:9px">
+            Grosor
+            <span style="display:flex;border:1px solid #D8D8DC;border-radius:6px;background:#fff">
+              <span style="padding:2px 7px;font-size:12px">3</span><span style="padding:2px 6px;border-left:1px solid #D8D8DC;font-size:11px">⌃⌄</span>
+            </span>
+          </span></span></div>
+        <span class="nm">Inspector</span>
+        <span class="dsc">Las opciones a la derecha, en secciones con encabezado gris. Nunca una cinta arriba.</span>
+      </div>
+      <div class="part">
+        <div class="stage"><span style="display:block;width:56px;height:34px;border-radius:10px;
+          background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2),0 8px 20px rgba(0,0,0,.16)"></span></div>
+        <span class="nm">Esquinas y sombra</span>
+        <span class="dsc">Radio 10 en ventana, 6 en botón. Sombras suaves y anchas.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================== APP macOS ======= -->
+<section style="padding-top:34px">
+  <div class="card">
+    <div class="card-head"><h3>macOS</h3><span class="meta">barra unificada · lateral · inspector</span></div>
+    <div class="mac">
+      <div class="tb">
+        <span class="lights"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></span>
+        <span class="title">Sin título<small>Modificado</small></span>
+        <span class="tbr">
+          <span class="seg"><span class="on">−</span><span>100%</span><span>+</span></span>
+          <span class="seg"><span class="on">◧</span><span>◨</span></span>
+        </span>
+      </div>
+      <div class="body">
+        <nav class="side">
+          <div class="h">Herramientas</div>
+          <div class="it on"><svg viewBox="0 0 20 20"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg>Lápiz</div>
+          <div class="it"><svg viewBox="0 0 20 20"><path d="M2.5 17.5l4-6 4 4-6 4z" fill="currentColor"/><path d="M8 10.5L16.5 3"/></svg>Pincel</div>
+          <div class="it"><svg viewBox="0 0 20 20"><path d="M4 10l6-6 6 6-6 6z"/></svg>Relleno</div>
+          <div class="it"><svg viewBox="0 0 20 20"><path d="M4 4h12M10 4v12"/></svg>Texto</div>
+          <div class="it"><svg viewBox="0 0 20 20"><rect x="3.5" y="3.5" width="13" height="13"/></svg>Formas</div>
+          <div class="it"><svg viewBox="0 0 20 20"><path d="M3 13l7-7 5 5-5 5H5z"/><path d="M3 17h14"/></svg>Borrador</div>
+          <div class="h">Selección</div>
+          <div class="it"><svg viewBox="0 0 20 20"><path d="M3 3h4M13 3h4M17 3v4M17 13v4M17 17h-4M7 17H3M3 17v-4M3 7V3"/></svg>Rectangular</div>
+        </nav>
+        <div class="stage">
+          <div class="sheet">
+            <svg width="300" height="180" viewBox="0 0 420 230">
+              <rect width="420" height="230" fill="#fff"/>
+              <circle cx="104" cy="102" r="56" fill="#FFC90E" stroke="#1A1917" stroke-width="2.5"/>
+              <path d="M196 160 L252 56 L308 160 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2.5"/>
+              <rect x="326" y="72" width="68" height="68" fill="#00A2E8" stroke="#1A1917" stroke-width="2.5"/>
+              <path d="M30 200 q66 -30 132 0 t132 0 t100 0" fill="none" stroke="#ED1C24" stroke-width="4"/>
+            </svg>
+          </div>
+        </div>
+        <aside class="insp">
+          <div class="h">Trazo</div>
+          <div class="row">Grosor <span class="stepper"><span>3</span><span style="border-left:1px solid var(--line)">⌃⌄</span></span></div>
+          <div class="row">Estilo <span class="stepper"><span>Sólido ⌄</span></span></div>
+          <div class="h">Color</div>
+          <div class="row">Trazo <span class="sw" style="background:#1A1917"></span></div>
+          <div class="row">Relleno <span class="sw" style="background:#fff"></span></div>
+          <div class="h">Lienzo</div>
+          <div class="row">Ancho <span class="stepper"><span>420</span></span></div>
+          <div class="row">Alto <span class="stepper"><span>230</span></span></div>
+        </aside>
+      </div>
+    </div>
+    <div class="card-note">
+      Nada de esto existía: <b>ni semáforos, ni control segmentado, ni lateral, ni inspector</b>. El tema de antes era una barra genérica con el azul de Apple encima.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>macOS oscuro</h3><span class="meta">misma estructura</span></div>
+    <div class="mac dark">
+      <div class="tb">
+        <span class="lights"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></span>
+        <span class="title">Sin título<small>Modificado</small></span>
+        <span class="tbr">
+          <span class="seg"><span class="on">−</span><span>100%</span><span>+</span></span>
+        </span>
+      </div>
+      <div class="body">
+        <nav class="side">
+          <div class="h">Herramientas</div>
+          <div class="it on"><svg viewBox="0 0 20 20"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg>Lápiz</div>
+          <div class="it"><svg viewBox="0 0 20 20"><path d="M2.5 17.5l4-6 4 4-6 4z" fill="currentColor"/><path d="M8 10.5L16.5 3"/></svg>Pincel</div>
+          <div class="it"><svg viewBox="0 0 20 20"><path d="M4 4h12M10 4v12"/></svg>Texto</div>
+          <div class="it"><svg viewBox="0 0 20 20"><rect x="3.5" y="3.5" width="13" height="13"/></svg>Formas</div>
+        </nav>
+        <div class="stage">
+          <div class="sheet">
+            <svg width="300" height="180" viewBox="0 0 420 230">
+              <rect width="420" height="230" fill="#fff"/>
+              <circle cx="104" cy="102" r="56" fill="#FFC90E" stroke="#1A1917" stroke-width="2.5"/>
+              <path d="M196 160 L252 56 L308 160 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2.5"/>
+              <rect x="326" y="72" width="68" height="68" fill="#00A2E8" stroke="#1A1917" stroke-width="2.5"/>
+              <path d="M30 200 q66 -30 132 0 t132 0 t100 0" fill="none" stroke="#ED1C24" stroke-width="4"/>
+            </svg>
+          </div>
+        </div>
+        <aside class="insp">
+          <div class="h">Trazo</div>
+          <div class="row">Grosor <span class="stepper"><span>3</span></span></div>
+          <div class="h">Color</div>
+          <div class="row">Trazo <span class="sw" style="background:#fff"></span></div>
+          <div class="row">Relleno <span class="sw" style="background:#2A2A2C"></span></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ================================================= PIEZAS GNOME ====== -->
+<section>
+  <div class="eyebrow"><span class="num">LINUX · LAS PIEZAS</span></div>
+  <h2>De qué está hecho un GNOME</h2>
+  <p class="note">Adwaita es el lenguaje de GNOME y tiene reglas muy claras. La más importante para nosotros: <b>no hay barra de menú ni barra de herramientas separada</b>. La barra de título es la barra de herramientas, y ahí entra todo.</p>
+
+  <div class="card">
+    <div class="card-head"><h3>Vocabulario</h3><span class="meta">referencia · Adwaita 1, Loupe, Archivos</span></div>
+    <div class="parts">
+      <div class="part">
+        <div class="stage"><span class="gn" style="background:none"><span class="link">
+          <span class="b on"><svg viewBox="0 0 20 20"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg></span>
+          <span class="b"><svg viewBox="0 0 20 20"><path d="M4 4h12M10 4v12"/></svg></span>
+          <span class="b"><svg viewBox="0 0 20 20"><rect x="3.5" y="3.5" width="13" height="13"/></svg></span>
+        </span></span></div>
+        <span class="nm">Botones enlazados</span>
+        <span class="dsc">Fundidos en un grupo con las esquinas exteriores redondeadas. Inconfundible.</span>
+      </div>
+      <div class="part">
+        <div class="stage"><span class="gn" style="background:none"><span class="sq">
+          <svg viewBox="0 0 20 20"><path d="M3 5.5h14M3 10h14M3 14.5h14"/></svg>
+        </span></span></div>
+        <span class="nm">Menú principal</span>
+        <span class="dsc">Las tres rayas al final de la barra. Todo lo que no es acción frecuente vive ahí.</span>
+      </div>
+      <div class="part">
+        <div class="stage"><span class="gn" style="background:none"><span class="sugg">Guardar</span></span></div>
+        <span class="nm">Acción sugerida</span>
+        <span class="dsc">Una sola por ventana, en azul lleno. GNOME no permite dos.</span>
+      </div>
+      <div class="part">
+        <div class="stage"><span style="text-align:center;display:block;width:100%">
+          <b style="font:700 12px/1 Cantarell,system-ui;color:#241F31">sin título.png</b>
+          <small style="display:block;font:400 10px/1.7 Cantarell;color:#5E5C64">1152 × 648</small>
+        </span></div>
+        <span class="nm">Título y subtítulo</span>
+        <span class="dsc">Centrado, en negrita, con el dato secundario debajo.</span>
+      </div>
+      <div class="part">
+        <div class="stage"><span style="display:block;width:100%;padding:7px 10px;border-radius:12px;
+          background:#FAFAFA;border:1px solid #E0E0E0;box-shadow:0 2px 5px rgba(0,0,0,.14),0 8px 20px rgba(0,0,0,.16);
+          font:400 11px/1 Cantarell;color:#5E5C64;text-align:center">panel flotante</span></div>
+        <span class="nm">Píldora flotante</span>
+        <span class="dsc">Los controles del momento flotan sobre el contenido, no le quitan sitio.</span>
+      </div>
+      <div class="part">
+        <div class="stage"><span style="display:block;width:56px;height:34px;border-radius:12px;
+          background:#fff;border:1px solid #E0E0E0"></span></div>
+        <span class="nm">Esquinas y planos</span>
+        <span class="dsc">Radio 12 en ventana, 6 en botón. Cero degradados y cero relieves.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================== APP GNOME ======= -->
+<section style="padding-top:34px">
+  <div class="card">
+    <div class="card-head"><h3>Linux</h3><span class="meta">barra de cabecera · píldora flotante</span></div>
+    <div class="gn">
+      <div class="hb">
+        <span class="link">
+          <span class="b on"><svg viewBox="0 0 20 20"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg></span>
+          <span class="b"><svg viewBox="0 0 20 20"><path d="M2.5 17.5l4-6 4 4-6 4z" fill="currentColor"/><path d="M8 10.5L16.5 3"/></svg></span>
+          <span class="b"><svg viewBox="0 0 20 20"><path d="M4 4h12M10 4v12"/></svg></span>
+          <span class="b"><svg viewBox="0 0 20 20"><rect x="3.5" y="3.5" width="13" height="13"/></svg></span>
+        </span>
+        <span class="link">
+          <span class="b"><svg viewBox="0 0 20 20"><path d="M7.5 6.5L3.5 10.5l4 4"/><path d="M3.5 10.5h8a3.5 3.5 0 010 7h-2"/></svg></span>
+          <span class="b"><svg viewBox="0 0 20 20"><path d="M12.5 6.5l4 4-4 4"/><path d="M16.5 10.5h-8a3.5 3.5 0 000 7h2"/></svg></span>
+        </span>
+        <span class="ti"><b>sin título.png</b><small>1152 × 648 · modificado</small></span>
+        <span class="right">
+          <span class="sugg">Guardar</span>
+          <span class="sq"><svg viewBox="0 0 20 20"><path d="M3 5.5h14M3 10h14M3 14.5h14"/></svg></span>
+        </span>
+      </div>
+      <div class="stage">
+        <div class="sheet">
+          <svg width="330" height="182" viewBox="0 0 420 230">
+            <rect width="420" height="230" fill="#fff"/>
+            <circle cx="104" cy="102" r="56" fill="#FFC90E" stroke="#1A1917" stroke-width="2.5"/>
+            <path d="M196 160 L252 56 L308 160 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2.5"/>
+            <rect x="326" y="72" width="68" height="68" fill="#00A2E8" stroke="#1A1917" stroke-width="2.5"/>
+            <path d="M30 200 q66 -30 132 0 t132 0 t100 0" fill="none" stroke="#ED1C24" stroke-width="4"/>
+          </svg>
+        </div>
+        <div class="pill">
+          <span class="dot" style="background:#1A1917"></span>
+          <span class="dot" style="background:#fff"></span>
+          <span class="sepv"></span>
+          <span class="pal">
+            <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+            <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+          </span>
+          <span class="sepv"></span>
+          <span class="link">
+            <span class="b"><svg viewBox="0 0 20 20"><path d="M3 10h14" stroke-width="1"/></svg></span>
+            <span class="b on"><svg viewBox="0 0 20 20"><path d="M3 10h14" stroke-width="3"/></svg></span>
+            <span class="b"><svg viewBox="0 0 20 20"><path d="M3 10h14" stroke-width="6"/></svg></span>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="card-note">
+      Toda la interfaz son <b>47 px de barra</b>, y lo del momento flota sobre el lienzo sin quitarle sitio. Es lo que hacen las aplicaciones nuevas de GNOME.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Linux oscuro</h3><span class="meta">misma estructura</span></div>
+    <div class="gn dark">
+      <div class="hb">
+        <span class="link">
+          <span class="b on"><svg viewBox="0 0 20 20"><path d="M3 17l3-1L16 6l-2-2L4 14z"/></svg></span>
+          <span class="b"><svg viewBox="0 0 20 20"><path d="M2.5 17.5l4-6 4 4-6 4z" fill="currentColor"/><path d="M8 10.5L16.5 3"/></svg></span>
+          <span class="b"><svg viewBox="0 0 20 20"><path d="M4 4h12M10 4v12"/></svg></span>
+        </span>
+        <span class="ti"><b>sin título.png</b><small>1152 × 648 · modificado</small></span>
+        <span class="right">
+          <span class="sugg">Guardar</span>
+          <span class="sq"><svg viewBox="0 0 20 20"><path d="M3 5.5h14M3 10h14M3 14.5h14"/></svg></span>
+        </span>
+      </div>
+      <div class="stage">
+        <div class="sheet">
+          <svg width="330" height="182" viewBox="0 0 420 230">
+            <rect width="420" height="230" fill="#fff"/>
+            <circle cx="104" cy="102" r="56" fill="#FFC90E" stroke="#1A1917" stroke-width="2.5"/>
+            <path d="M196 160 L252 56 L308 160 Z" fill="#22B14C" stroke="#1A1917" stroke-width="2.5"/>
+            <rect x="326" y="72" width="68" height="68" fill="#00A2E8" stroke="#1A1917" stroke-width="2.5"/>
+            <path d="M30 200 q66 -30 132 0 t132 0 t100 0" fill="none" stroke="#ED1C24" stroke-width="4"/>
+          </svg>
+        </div>
+        <div class="pill">
+          <span class="dot" style="background:#fff"></span>
+          <span class="dot" style="background:#242424"></span>
+          <span class="sepv"></span>
+          <span class="pal">
+            <i style="background:#000"></i><i style="background:#7F7F7F"></i><i style="background:#880015"></i><i style="background:#ED1C24"></i><i style="background:#FF7F27"></i>
+            <i style="background:#FFF200"></i><i style="background:#22B14C"></i><i style="background:#00A2E8"></i><i style="background:#3F48CC"></i><i style="background:#A349A4"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="ants-rule">
+
+<!-- ==================================================== DIFERENCIA ===== -->
+<section>
+  <div class="eyebrow"><span class="num">LA DIFERENCIA</span></div>
+  <h2>Ahora sí son dos cosas</h2>
+
+  <table class="cmp">
+    <tr><th></th><th>macOS</th><th>Linux</th></tr>
+    <tr><td>Herramientas</td><td>Barra lateral izquierda con nombre y sección</td><td>Botones enlazados en la barra de cabecera</td></tr>
+    <tr><td>Opciones</td><td>Inspector a la derecha, en secciones</td><td>Píldora flotante sobre el lienzo</td></tr>
+    <tr><td>Título</td><td>Centrado con el estado debajo, en la barra unificada</td><td>Centrado con el tamaño debajo, en la cabecera</td></tr>
+    <tr><td>Ventana</td><td>Semáforos a la izquierda, radio 10</td><td>Sin semáforos propios, radio 12</td></tr>
+    <tr><td>Acentos</td><td>Azul de sistema en lo elegido de la lateral</td><td>Una sola acción sugerida por ventana</td></tr>
+    <tr><td>Alto de chrome</td><td>50 px arriba, 366 px a los costados</td><td>47 px arriba y nada más</td></tr>
+  </table>
+
+  <ol class="redlist">
+    <li><span class="dot">1</span><span><b>Un quinto y un sexto chrome.</b> Hoy hay cuatro —cinta, paleta, unificado y el propio—. <code>Unified</code> desaparece, porque era el sitio donde estos dos se confundían.</span></li>
+    <li><span class="dot">2</span><span><b>El inspector de Mac es sitio nuevo.</b> Todo lo que en la cinta está apretado —grosor, estilo, tamaño del lienzo— acá entra escrito y con su nombre.</span></li>
+    <li><span class="dot">3</span><span><b>La píldora de GNOME es la única forma honesta</b> de tener 47 px de chrome y aun así poder elegir color y grosor.</span></li>
+  </ol>
+</section>
+
+<p class="foot">
+  <b>Lienzo</b> · macOS y Linux · para revisión<br>
+  Maqueta en HTML, no capturas del programa.
+</p>
+
+</div>
