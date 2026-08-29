@@ -38,7 +38,12 @@ impl Rect {
         if x1 <= x0 || y1 <= y0 {
             return None;
         }
-        Some(Self { x: x0, y: y0, w: x1 - x0, h: y1 - y0 })
+        Some(Self {
+            x: x0,
+            y: y0,
+            w: x1 - x0,
+            h: y1 - y0,
+        })
     }
 
     pub fn union(self, o: Self) -> Self {
@@ -46,7 +51,12 @@ impl Rect {
         let y = self.y.min(o.y);
         let x1 = (self.x + self.w).max(o.x + o.w);
         let y1 = (self.y + self.h).max(o.y + o.h);
-        Self { x, y, w: x1 - x, h: y1 - y }
+        Self {
+            x,
+            y,
+            w: x1 - x,
+            h: y1 - y,
+        }
     }
 
     pub fn area(self) -> usize {
@@ -165,7 +175,11 @@ impl Canvas {
             return;
         }
         let Some(d) = self.geti(x, y) else { return };
-        let mix = |s: u8, d: u8| (s as f32 * a + d as f32 * (1.0 - a)).round().clamp(0.0, 255.0) as u8;
+        let mix = |s: u8, d: u8| {
+            (s as f32 * a + d as f32 * (1.0 - a))
+                .round()
+                .clamp(0.0, 255.0) as u8
+        };
         let out = Color32::from_rgb(mix(c.r(), d.r()), mix(c.g(), d.g()), mix(c.b(), d.b()));
         self.set(x, y, out);
     }
@@ -199,7 +213,12 @@ impl Canvas {
     /// Fuerza que el próximo frame suba el lienzo entero. Se usa tras cargar,
     /// redimensionar o rotar, donde cambió todo.
     pub fn mark_all(&mut self) {
-        self.upload = Some(Rect { x: 0, y: 0, w: self.w, h: self.h });
+        self.upload = Some(Rect {
+            x: 0,
+            y: 0,
+            w: self.w,
+            h: self.h,
+        });
     }
 
     /// La UI lo consume cada frame para subir sólo esa zona a la textura.
@@ -232,7 +251,10 @@ impl Canvas {
             // El lienzo cambió de tamaño en el medio: no hay patch coherente.
             return;
         }
-        let patch = Patch { r, px: extract(&self.scratch, self.w, r) };
+        let patch = Patch {
+            r,
+            px: extract(&self.scratch, self.w, r),
+        };
         self.push_undo(patch);
         self.redo.clear();
     }
@@ -257,12 +279,19 @@ impl Canvas {
     }
 
     fn step(&mut self, undoing: bool) {
-        let popped = if undoing { self.undo.pop() } else { self.redo.pop() };
+        let popped = if undoing {
+            self.undo.pop()
+        } else {
+            self.redo.pop()
+        };
         let Some(p) = popped else { return };
         if undoing {
             self.undo_bytes -= p.bytes();
         }
-        let inverse = Patch { r: p.r, px: extract(&self.px, self.w, p.r) };
+        let inverse = Patch {
+            r: p.r,
+            px: extract(&self.px, self.w, p.r),
+        };
         blit(&mut self.px, self.w, p.r, &p.px);
         self.mark(p.r);
         self.dirty = None; // deshacer no es un trazo
@@ -322,7 +351,12 @@ impl Canvas {
             y1 = y1.max(ry + 1);
         }
 
-        self.mark(Rect { x: x0, y: y0, w: x1 - x0, h: y1 - y0 });
+        self.mark(Rect {
+            x: x0,
+            y: y0,
+            w: x1 - x0,
+            h: y1 - y0,
+        });
     }
 
     /// Reemplaza sólo los píxeles que coinciden con `from`. Es el borrador
@@ -388,8 +422,7 @@ impl Canvas {
         for y in r.y..r.y + r.h {
             for x in r.x..r.x + r.w {
                 let c = self.px[y * self.w + x];
-                self.px[y * self.w + x] =
-                    Color32::from_rgb(255 - c.r(), 255 - c.g(), 255 - c.b());
+                self.px[y * self.w + x] = Color32::from_rgb(255 - c.r(), 255 - c.g(), 255 - c.b());
             }
         }
         self.mark(r);
@@ -399,8 +432,16 @@ impl Canvas {
     // Cambian `w`/`h`, así que se registran con `snapshot_all` y no con trazos.
 
     fn snapshot_all(&mut self) {
-        let r = Rect { x: 0, y: 0, w: self.w, h: self.h };
-        let patch = Patch { r, px: self.px.clone() };
+        let r = Rect {
+            x: 0,
+            y: 0,
+            w: self.w,
+            h: self.h,
+        };
+        let patch = Patch {
+            r,
+            px: self.px.clone(),
+        };
         self.push_undo(patch);
         self.redo.clear();
     }
@@ -554,7 +595,12 @@ impl Canvas {
 fn clip(r: Rect, w: usize, h: usize) -> Rect {
     let x = r.x.min(w);
     let y = r.y.min(h);
-    Rect { x, y, w: (r.x + r.w).min(w).saturating_sub(x), h: (r.y + r.h).min(h).saturating_sub(y) }
+    Rect {
+        x,
+        y,
+        w: (r.x + r.w).min(w).saturating_sub(x),
+        h: (r.y + r.h).min(h).saturating_sub(y),
+    }
 }
 
 fn extract(src: &[Color32], stride: usize, r: Rect) -> Vec<Color32> {
@@ -622,28 +668,56 @@ mod tests {
         c.fill(20, 20, Color32::RED);
         c.end_stroke();
 
-        assert_eq!(c.geti(20, 20).unwrap(), Color32::RED, "no rellenó el interior");
-        assert_eq!(c.geti(11, 11).unwrap(), Color32::RED, "no llegó a la esquina interior");
+        assert_eq!(
+            c.geti(20, 20).unwrap(),
+            Color32::RED,
+            "no rellenó el interior"
+        );
+        assert_eq!(
+            c.geti(11, 11).unwrap(),
+            Color32::RED,
+            "no llegó a la esquina interior"
+        );
         assert_eq!(c.geti(10, 10).unwrap(), Color32::BLACK, "se comió el borde");
-        assert_eq!(c.geti(31, 20).unwrap(), Color32::WHITE, "se filtró hacia afuera");
-        assert_eq!(c.geti(0, 0).unwrap(), Color32::WHITE, "se filtró hasta el origen");
+        assert_eq!(
+            c.geti(31, 20).unwrap(),
+            Color32::WHITE,
+            "se filtró hacia afuera"
+        );
+        assert_eq!(
+            c.geti(0, 0).unwrap(),
+            Color32::WHITE,
+            "se filtró hasta el origen"
+        );
 
         // Ida y vuelta: byte a byte, no "parecido".
         c.undo();
-        assert_eq!(c.pixels(), &con_caja[..], "deshacer el relleno no fue exacto");
+        assert_eq!(
+            c.pixels(),
+            &con_caja[..],
+            "deshacer el relleno no fue exacto"
+        );
         c.undo();
         assert_eq!(c.pixels(), &limpio[..], "deshacer la caja no fue exacto");
 
         c.redo();
         assert_eq!(c.pixels(), &con_caja[..], "rehacer la caja no fue exacto");
         c.redo();
-        assert_eq!(c.geti(20, 20).unwrap(), Color32::RED, "rehacer el relleno no funcionó");
+        assert_eq!(
+            c.geti(20, 20).unwrap(),
+            Color32::RED,
+            "rehacer el relleno no funcionó"
+        );
 
         // Deshacer de más no debe romper ni hacer nada raro.
         for _ in 0..5 {
             c.undo();
         }
-        assert_eq!(c.pixels(), &limpio[..], "deshacer de más corrompió el lienzo");
+        assert_eq!(
+            c.pixels(),
+            &limpio[..],
+            "deshacer de más corrompió el lienzo"
+        );
         assert_eq!(c.undo_len(), 0);
     }
 
@@ -669,7 +743,11 @@ mod tests {
         }
         assert_eq!(c.w, 7);
         assert_eq!(c.h, 3);
-        assert_eq!(c.pixels(), &original[..], "cuatro giros no volvieron al origen");
+        assert_eq!(
+            c.pixels(),
+            &original[..],
+            "cuatro giros no volvieron al origen"
+        );
     }
 
     #[test]
@@ -682,10 +760,18 @@ mod tests {
         c.flip_horizontal();
         assert_ne!(c.pixels(), &original[..], "voltear no hizo nada");
         c.flip_horizontal();
-        assert_eq!(c.pixels(), &original[..], "voltear horizontal no es su propio inverso");
+        assert_eq!(
+            c.pixels(),
+            &original[..],
+            "voltear horizontal no es su propio inverso"
+        );
 
         c.flip_vertical();
         c.flip_vertical();
-        assert_eq!(c.pixels(), &original[..], "voltear vertical no es su propio inverso");
+        assert_eq!(
+            c.pixels(),
+            &original[..],
+            "voltear vertical no es su propio inverso"
+        );
     }
 }

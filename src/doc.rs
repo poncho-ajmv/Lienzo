@@ -174,24 +174,50 @@ impl Selection {
 /// Con 0.5 ese eje no se mueve, así que estirar es una sola cuenta para las
 /// ocho en vez de ocho casos distintos.
 pub const SEL_HANDLES: [(f32, f32); 8] = [
-    (0.0, 0.0), (0.5, 0.0), (1.0, 0.0), (1.0, 0.5),
-    (1.0, 1.0), (0.5, 1.0), (0.0, 1.0), (0.0, 0.5),
+    (0.0, 0.0),
+    (0.5, 0.0),
+    (1.0, 0.0),
+    (1.0, 0.5),
+    (1.0, 1.0),
+    (0.5, 1.0),
+    (0.0, 1.0),
+    (0.0, 0.5),
 ];
 
 /// Lo que está pasando con el puntero en este momento.
 enum Drag {
     None,
-    Freehand { last: Pt },
-    Shape { a: Pt, b: Pt },
+    Freehand {
+        last: Pt,
+    },
+    Shape {
+        a: Pt,
+        b: Pt,
+    },
     /// La curva de Paint: primero el segmento, después dos tirones.
-    Curve { a: Pt, b: Pt, ctrl: Option<Pt> },
-    Polygon { pts: Vec<Pt> },
-    SelectNew { a: Pt, lasso: Vec<Pt> },
-    SelectMove { grab: Pt, origin: (usize, usize) },
+    Curve {
+        a: Pt,
+        b: Pt,
+        ctrl: Option<Pt>,
+    },
+    Polygon {
+        pts: Vec<Pt>,
+    },
+    SelectNew {
+        a: Pt,
+        lasso: Vec<Pt>,
+    },
+    SelectMove {
+        grab: Pt,
+        origin: (usize, usize),
+    },
     /// Estirando la selección por una manija. `orig` es la caja de antes de
     /// empezar: sin ella cada frame estiraría sobre lo estirado y el tirón se
     /// aceleraría solo.
-    SelectScale { handle: usize, orig: Rect },
+    SelectScale {
+        handle: usize,
+        orig: Rect,
+    },
 }
 
 pub struct Doc {
@@ -242,15 +268,33 @@ impl Doc {
         }
     }
 
+    /// Reemplaza el bitmap y cancela cualquier interacción del documento viejo.
+    pub fn load(&mut self, w: usize, h: usize, px: Vec<Color32>) {
+        self.sel = None;
+        self.drag = Drag::None;
+        self.preview.clear();
+        self.preview_closed = false;
+        self.swap = false;
+        self.canvas.load(w, h, px);
+    }
+
     /// Color de trazo, ya considerando si se está usando el botón derecho.
     pub fn fg(&self) -> Color32 {
-        if self.swap { self.color2 } else { self.color1 }
+        if self.swap {
+            self.color2
+        } else {
+            self.color1
+        }
     }
 
     /// El otro color. Es con el que borra el borrador y con el que se rellena
     /// el hueco al mover una selección.
     pub fn bg(&self) -> Color32 {
-        if self.swap { self.color1 } else { self.color2 }
+        if self.swap {
+            self.color1
+        } else {
+            self.color2
+        }
     }
 
     pub fn set_tool(&mut self, t: Tool) {
@@ -351,7 +395,9 @@ impl Doc {
         let px = if (cw, ch) == (w, h) {
             px
         } else {
-            (0..ch).flat_map(|y| px[y * w..y * w + cw].to_vec()).collect()
+            (0..ch)
+                .flat_map(|y| px[y * w..y * w + cw].to_vec())
+                .collect()
         };
         self.sel = Some(Selection {
             r: Rect::new(0, 0, cw, ch),
@@ -368,15 +414,21 @@ impl Doc {
     }
 
     pub fn invert_selection_colors(&mut self) {
+        let r =
+            self.sel
+                .as_ref()
+                .map(|s| s.r)
+                .unwrap_or(Rect::new(0, 0, self.canvas.w, self.canvas.h));
         self.commit_selection();
-        let r = self.sel.as_ref().map(|s| s.r).unwrap_or(Rect::new(0, 0, self.canvas.w, self.canvas.h));
         self.canvas.begin_stroke();
         self.canvas.invert_region(r);
         self.canvas.end_stroke();
     }
 
     pub fn crop_to_selection(&mut self) {
-        let Some(r) = self.sel.as_ref().map(|s| s.r) else { return };
+        let Some(r) = self.sel.as_ref().map(|s| s.r) else {
+            return;
+        };
         // Primero baja la selección: si está flotando, el lienzo tiene el hueco
         // y recortaríamos un rectángulo vacío.
         self.commit_selection();
@@ -384,12 +436,7 @@ impl Doc {
         // afuera, y `region` indexa sin red.
         let x = r.x.min(self.canvas.w);
         let y = r.y.min(self.canvas.h);
-        let r = Rect::new(
-            x,
-            y,
-            r.w.min(self.canvas.w - x),
-            r.h.min(self.canvas.h - y),
-        );
+        let r = Rect::new(x, y, r.w.min(self.canvas.w - x), r.h.min(self.canvas.h - y));
         if r.area() == 0 {
             return;
         }
@@ -430,15 +477,16 @@ impl Doc {
                 if let Some(i) = manija {
                     self.canvas.begin_stroke();
                     self.lift();
-                    let orig = self.sel.as_ref().map(|s| s.r).unwrap_or(Rect::new(0, 0, 1, 1));
+                    let orig = self
+                        .sel
+                        .as_ref()
+                        .map(|s| s.r)
+                        .unwrap_or(Rect::new(0, 0, 1, 1));
                     self.drag = Drag::SelectScale { handle: i, orig };
                     return;
                 }
 
-                let inside = self
-                    .sel
-                    .as_ref()
-                    .is_some_and(|s| s.r.contains(ip.0, ip.1));
+                let inside = self.sel.as_ref().is_some_and(|s| s.r.contains(ip.0, ip.1));
                 if inside {
                     self.canvas.begin_stroke();
                     self.lift();
@@ -447,7 +495,10 @@ impl Doc {
                     return;
                 }
                 self.commit_selection();
-                self.drag = Drag::SelectNew { a: p, lasso: vec![p] };
+                self.drag = Drag::SelectNew {
+                    a: p,
+                    lasso: vec![p],
+                };
             }
 
             Tool::Picker => {
@@ -475,7 +526,11 @@ impl Doc {
                 self.commit_selection();
                 self.canvas.begin_stroke();
                 self.drag = match self.shape {
-                    Shape::Curve => Drag::Curve { a: p, b: p, ctrl: None },
+                    Shape::Curve => Drag::Curve {
+                        a: p,
+                        b: p,
+                        ctrl: None,
+                    },
                     Shape::Polygon => Drag::Polygon { pts: vec![p] },
                     _ => Drag::Shape { a: p, b: p },
                 };
@@ -504,14 +559,25 @@ impl Doc {
             }
 
             Drag::Shape { a, .. } => {
-                let b = if shift { constrain(a, p, self.shape) } else { p };
+                let b = if shift {
+                    constrain(a, p, self.shape)
+                } else {
+                    p
+                };
                 self.update_shape_preview(a, b);
                 self.drag = Drag::Shape { a, b };
             }
 
             Drag::Curve { a, b, ctrl } => {
                 let (b, ctrl) = if ctrl.is_none() {
-                    (if shift { constrain(a, p, Shape::Line) } else { p }, None)
+                    (
+                        if shift {
+                            constrain(a, p, Shape::Line)
+                        } else {
+                            p
+                        },
+                        None,
+                    )
                 } else {
                     (b, Some(p))
                 };
@@ -540,7 +606,12 @@ impl Doc {
                     self.canvas.w,
                     self.canvas.h,
                 ) {
-                    self.sel = Some(Selection { r, px: None, lasso: poly, src: (r.w, r.h) });
+                    self.sel = Some(Selection {
+                        r,
+                        px: None,
+                        lasso: poly,
+                        src: (r.w, r.h),
+                    });
                 }
                 self.drag = Drag::SelectNew { a, lasso };
             }
@@ -627,7 +698,11 @@ impl Doc {
         match std::mem::replace(&mut self.drag, Drag::None) {
             Drag::Curve { a, b, ctrl } => {
                 if ctrl.is_none() {
-                    self.drag = Drag::Curve { a, b, ctrl: Some(p) };
+                    self.drag = Drag::Curve {
+                        a,
+                        b,
+                        ctrl: Some(p),
+                    };
                 } else {
                     // Segundo tirón: se confirma.
                     let pts = shapes::quadratic(a, p, b, 48);
@@ -780,10 +855,26 @@ impl Doc {
         let mut rng = std::mem::take(&mut self.rng);
         let n = pts.len();
         for i in 0..n.saturating_sub(1) {
-            shapes::brush_stroke(&mut self.canvas, brush, pts[i], pts[i + 1], w, col, &mut rng);
+            shapes::brush_stroke(
+                &mut self.canvas,
+                brush,
+                pts[i],
+                pts[i + 1],
+                w,
+                col,
+                &mut rng,
+            );
         }
         if closed && n > 1 {
-            shapes::brush_stroke(&mut self.canvas, brush, pts[n - 1], pts[0], w, col, &mut rng);
+            shapes::brush_stroke(
+                &mut self.canvas,
+                brush,
+                pts[n - 1],
+                pts[0],
+                w,
+                col,
+                &mut rng,
+            );
         }
         self.rng = rng;
     }
@@ -801,7 +892,8 @@ fn dist(a: Pt, b: Pt) -> f32 {
 fn constrain(a: Pt, b: Pt, shape: Shape) -> Pt {
     let (dx, dy) = (b.0 - a.0, b.1 - a.1);
     if matches!(shape, Shape::Line | Shape::Curve) {
-        let ang = (dy.atan2(dx) / std::f32::consts::FRAC_PI_4).round() * std::f32::consts::FRAC_PI_4;
+        let ang =
+            (dy.atan2(dx) / std::f32::consts::FRAC_PI_4).round() * std::f32::consts::FRAC_PI_4;
         let d = (dx * dx + dy * dy).sqrt();
         (a.0 + ang.cos() * d, a.1 + ang.sin() * d)
     } else {
@@ -864,11 +956,19 @@ mod tests {
         d.tool = Tool::Pencil;
         d.width = 1.0;
         dibujar(&mut d, (10.0, 10.0), (40.0, 40.0));
-        assert_eq!(d.canvas.undo_len(), 1, "el lápiz no dejó exactamente un paso");
+        assert_eq!(
+            d.canvas.undo_len(),
+            1,
+            "el lápiz no dejó exactamente un paso"
+        );
         assert_ne!(d.canvas.pixels(), &limpio[..], "el lápiz no pintó nada");
 
         d.canvas.undo();
-        assert_eq!(d.canvas.pixels(), &limpio[..], "deshacer el lápiz no fue exacto");
+        assert_eq!(
+            d.canvas.pixels(),
+            &limpio[..],
+            "deshacer el lápiz no fue exacto"
+        );
     }
 
     /// El borrador con clic derecho sólo debe tocar el Color 1.
@@ -887,8 +987,16 @@ mod tests {
         d.down((20.0, 20.0), true, 3.0);
         d.up((20.0, 20.0));
 
-        assert_eq!(d.canvas.geti(20, 20).unwrap(), Color32::WHITE, "no borró el color objetivo");
-        assert_eq!(d.canvas.geti(21, 20).unwrap(), Color32::BLUE, "se comió un color que no era");
+        assert_eq!(
+            d.canvas.geti(20, 20).unwrap(),
+            Color32::WHITE,
+            "no borró el color objetivo"
+        );
+        assert_eq!(
+            d.canvas.geti(21, 20).unwrap(),
+            Color32::BLUE,
+            "se comió un color que no era"
+        );
     }
 
     /// Mover una selección deja el Color 2 atrás, no blanco ni transparente.
@@ -943,14 +1051,21 @@ mod tests {
         assert!(d.is_multistep_active(), "la curva no quedó armada");
 
         d.set_tool(Tool::Pencil);
-        assert!(!d.is_multistep_active(), "la curva sobrevivió al cambio de herramienta");
+        assert!(
+            !d.is_multistep_active(),
+            "la curva sobrevivió al cambio de herramienta"
+        );
 
         // Y ahora el lápiz pinta de verdad, sin que le roben el clic.
         let antes = d.canvas.pixels().to_vec();
         d.down((10.0, 50.0), false, 3.0);
         d.drag_to((30.0, 50.0), false);
         d.up((30.0, 50.0));
-        assert_ne!(d.canvas.pixels(), &antes[..], "el lápiz no pintó tras el cambio");
+        assert_ne!(
+            d.canvas.pixels(),
+            &antes[..],
+            "el lápiz no pintó tras el cambio"
+        );
     }
 
     /// Pegar tiene que reusar la maquinaria de selección flotante.
@@ -968,7 +1083,11 @@ mod tests {
 
         // Al confirmar, los píxeles bajan al lienzo.
         d.commit_selection();
-        assert_eq!(d.canvas.geti(1, 1).unwrap(), Color32::RED, "lo pegado no bajó al lienzo");
+        assert_eq!(
+            d.canvas.geti(1, 1).unwrap(),
+            Color32::RED,
+            "lo pegado no bajó al lienzo"
+        );
     }
 
     /// Copiar y pegar dentro de la app, sin tocar el sistema operativo.
@@ -987,7 +1106,11 @@ mod tests {
         d.sel = None;
         d.paste_from_clipboard();
         d.commit_selection();
-        assert_eq!(d.canvas.geti(1, 1).unwrap(), Color32::BLUE, "no pegó en el origen");
+        assert_eq!(
+            d.canvas.geti(1, 1).unwrap(),
+            Color32::BLUE,
+            "no pegó en el origen"
+        );
     }
 
     /// Estirar por una manija remuestrea, y remuestrea **desde el original**.
@@ -1013,7 +1136,12 @@ mod tests {
             let r = d.sel.as_ref().unwrap().r;
             (r.w, r.h)
         };
-        let antes = d.sel.as_ref().unwrap().pixels().expect("levantar dejó píxeles");
+        let antes = d
+            .sel
+            .as_ref()
+            .unwrap()
+            .pixels()
+            .expect("levantar dejó píxeles");
 
         d.drag_to((esquina.0 + w0 as f32, esquina.1 + h0 as f32), false);
         let estirada = d.sel.as_ref().unwrap().pixels().unwrap();
@@ -1030,5 +1158,38 @@ mod tests {
             antes,
             "volver al tamaño de antes tiene que dar la imagen de antes"
         );
+    }
+
+    #[test]
+    fn invertir_respeta_la_seleccion() {
+        let mut d = Doc::new(8, 8);
+        d.canvas.set(1, 1, Color32::BLACK);
+        d.canvas.set(6, 6, Color32::BLACK);
+        d.tool = Tool::Select;
+        d.down((0.0, 0.0), false, 1.0);
+        d.drag_to((3.0, 3.0), false);
+        d.up((3.0, 3.0));
+
+        d.invert_selection_colors();
+
+        assert_eq!(d.canvas.geti(1, 1), Some(Color32::WHITE));
+        assert_eq!(d.canvas.geti(6, 6), Some(Color32::BLACK));
+    }
+
+    #[test]
+    fn cargar_cancela_una_figura_multietapa() {
+        let mut d = Doc::new(20, 20);
+        d.tool = Tool::Shape;
+        d.shape = Shape::Curve;
+        d.down((2.0, 2.0), false, 1.0);
+        d.drag_to((10.0, 10.0), false);
+        d.up((10.0, 10.0));
+        assert!(d.is_multistep_active());
+
+        d.load(6, 6, vec![Color32::WHITE; 36]);
+
+        assert!(!d.is_multistep_active());
+        assert!(d.preview.is_empty());
+        assert!(!d.canvas.can_undo());
     }
 }

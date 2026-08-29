@@ -14,9 +14,10 @@ cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
 
-> **Estado:** el motor está probado y la aplicación corre. Falta imprimir,
-> empaquetar para las tres plataformas y terminar la versión web. El detalle
-> completo está más abajo y en `ESTADO.md`.
+> **Estado:** el motor está probado, la aplicación corre y la versión 0.1.0
+> tiene formatos portables e instalables para macOS, Windows y Linux. Falta
+> imprimir, validar Windows/Linux en equipos reales y terminar la versión web.
+> El detalle completo está más abajo y en `ESTADO.md`.
 
 ---
 
@@ -25,13 +26,26 @@ cargo run     # la aplicación
 | Qué | Versión | Por qué |
 |---|---|---|
 | Rust | **1.95 o superior** | Es lo que pide egui 0.36 en su `rust-version` |
-| macOS | Cualquiera con Metal | Probado acá |
-| Windows | 10 u 11 | Sin probar todavía |
-| Linux | X11 o Wayland | Sin probar. Hacen falta las cabeceras de X11 y Wayland, y `xdg-desktop-portal` para los diálogos de archivo |
+| macOS | 11 o superior, Apple Silicon | Compilado y probado en ARM64 |
+| Windows | 10 u 11, x86_64 | Compilado; falta validarlo en un equipo Windows real |
+| Linux | x86_64, glibc 2.35+, X11 o Wayland | Compilado; falta validarlo en una distribución real |
 
 No hay base de datos, ni servidor, ni variables de entorno. Nada que configurar.
 
-## Instalación desde cero
+## Descargas e instalación
+
+Los binarios se publican en [GitHub Releases](https://github.com/poncho-ajmv/lienzo/releases).
+
+| Sistema | Portable | Instalación en el sistema |
+|---|---|---|
+| macOS Apple Silicon | ZIP con `Lienzo.app` | DMG: arrastrar Lienzo a Aplicaciones |
+| Windows x86_64 | ZIP con `Lienzo.exe` | `Setup.exe`, con accesos directos y desinstalador |
+| Linux x86_64 | AppImage | Paquete DEB para Debian y Ubuntu |
+
+Los binarios todavía no tienen firma comercial. macOS Gatekeeper y Windows
+SmartScreen pueden mostrar una advertencia la primera vez que se abren.
+
+## Compilar desde el código
 
 ```sh
 git clone https://github.com/poncho-ajmv/lienzo.git
@@ -87,9 +101,9 @@ C4Context
 ```
 
 No hay nivel 2. Un contenedor en C4 es una pieza que se despliega y ejecuta por
-separado, y acá hay **una sola**: el ejecutable. Los temas y los idiomas no son
-archivos que se leen al arrancar sino texto embebido en el binario con
-`include_str!`, así que tampoco son contenedores. Dibujar un nivel 2 con una
+separado, y acá hay **una sola**: el ejecutable. Los temas de fábrica y los
+idiomas van embebidos con `include_str!`; sólo los temas personalizados se leen
+de `themes/` al arrancar. Tampoco son contenedores. Dibujar un nivel 2 con una
 caja adentro no diría nada que no diga el nivel 1.
 
 ### Nivel 3 · Componentes
@@ -127,7 +141,7 @@ C4Component
 ```
 
 **La frontera está entre `doc` y `main`.** `canvas`, `shapes` y `doc` no saben
-que egui existe: dependen sólo de `ecolor` para el tipo de color. Por eso los 23
+que egui existe: dependen sólo de `ecolor` para el tipo de color. Por eso los 26
 tests corren sin ventana, sin GPU y sin bucle de eventos. Todo lo que toque egui
 vive del otro lado.
 
@@ -165,6 +179,7 @@ lang/           diez tablas de idioma. es.json va vacío a propósito
 mockups/        los bocetos HTML con los que se validó cada rediseño
 ESTADO.md       la bitácora: qué se revisó, qué se corrigió, qué falta
 target/         no viene en el repo. Lo crea cargo
+dist/           artefactos locales de release; Git los ignora
 ```
 
 ## Temas
@@ -193,9 +208,10 @@ Cada tema declara su pareja del modo contrario en el campo `pair`: al cambiar
 entre claro y oscuro, Lienzo salta a la variante de la misma familia en vez de
 al tema de al lado. Un test verifica que la pareja sea de ida y de vuelta.
 
-Para agregar uno: poné el JSON en `themes/`, sumá la línea en `BUILTIN` de
-`src/theme.rs` y recompilá. **No se leen del disco al arrancar** — van
-embebidos, que es lo que hace que el ejecutable sea uno solo.
+Para agregar uno de fábrica: poné el JSON en `themes/`, sumá la línea en
+`BUILTIN` de `src/theme.rs` y recompilá. También podés dejar un JSON adicional
+en `themes/`: se carga al arrancar sin recompilar, siempre que su nombre no
+duplique uno embebido.
 
 ## Idiomas
 
@@ -234,9 +250,9 @@ sesiones.
 |---|---|
 | Imprimir y vista previa | Sólo dejan un mensaje en la barra de estado |
 | Web (WASM) | Compila, pero abrir, guardar y pegar no están |
-| Empaquetado | Sin hacer. Notarizar en macOS cuesta 99 USD al año |
+| Empaquetado | Portable e instalador listos para las tres plataformas; sin firma comercial |
 | Selección libre | Recorta bien, pero el marco que dibuja es el rectángulo que la contiene |
-| Windows y Linux | Sin probar |
+| Windows y Linux | Compilan para x86_64; falta probarlos en sistemas reales |
 
 ## Licencia
 

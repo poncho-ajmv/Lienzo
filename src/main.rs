@@ -48,6 +48,13 @@ enum Pane {
     Settings,
 }
 
+#[derive(Clone, Debug)]
+enum PendingAction {
+    New(usize, usize),
+    Open(std::path::PathBuf),
+    Exit,
+}
+
 /// Lo que sobrevive a cerrar el programa.
 ///
 /// El tema se guarda **por nombre y no por índice**: el índice se corre en
@@ -66,19 +73,63 @@ const AJUSTES: &str = "lienzo";
 
 /// Los 48 colores básicos del diálogo de color de Windows, en su orden.
 const BASIC_COLORS: [[u8; 3]; 48] = [
-    [0xff, 0x80, 0x80], [0xff, 0xff, 0x80], [0x80, 0xff, 0x80], [0x00, 0xff, 0x80],
-    [0x80, 0xff, 0xff], [0x00, 0x80, 0xff], [0xff, 0x80, 0xc0], [0xff, 0x80, 0xff],
-    [0xff, 0x00, 0x00], [0xff, 0xff, 0x00], [0x80, 0xff, 0x00], [0x00, 0xff, 0x40],
-    [0x00, 0xff, 0xff], [0x00, 0x80, 0xc0], [0x80, 0x80, 0xc0], [0xff, 0x00, 0xff],
-    [0x80, 0x40, 0x40], [0xff, 0x80, 0x40], [0x00, 0xff, 0x00], [0x00, 0x80, 0x80],
-    [0x00, 0x40, 0x80], [0x80, 0x80, 0xff], [0x80, 0x00, 0x40], [0xff, 0x00, 0x80],
-    [0x80, 0x00, 0x00], [0xff, 0x80, 0x00], [0x00, 0x80, 0x00], [0x00, 0x80, 0x40],
-    [0x00, 0x00, 0xff], [0x00, 0x00, 0xa0], [0x80, 0x00, 0x80], [0x80, 0x00, 0xff],
-    [0x40, 0x00, 0x00], [0x80, 0x40, 0x00], [0x00, 0x40, 0x00], [0x00, 0x40, 0x40],
-    [0x00, 0x00, 0x80], [0x00, 0x00, 0x40], [0x40, 0x00, 0x40], [0x40, 0x00, 0x80],
-    [0x00, 0x00, 0x00], [0x80, 0x80, 0x00], [0x80, 0x80, 0x40], [0x80, 0x80, 0x80],
-    [0x40, 0x80, 0x80], [0xc0, 0xc0, 0xc0], [0x40, 0x00, 0x40], [0xff, 0xff, 0xff],
+    [0xff, 0x80, 0x80],
+    [0xff, 0xff, 0x80],
+    [0x80, 0xff, 0x80],
+    [0x00, 0xff, 0x80],
+    [0x80, 0xff, 0xff],
+    [0x00, 0x80, 0xff],
+    [0xff, 0x80, 0xc0],
+    [0xff, 0x80, 0xff],
+    [0xff, 0x00, 0x00],
+    [0xff, 0xff, 0x00],
+    [0x80, 0xff, 0x00],
+    [0x00, 0xff, 0x40],
+    [0x00, 0xff, 0xff],
+    [0x00, 0x80, 0xc0],
+    [0x80, 0x80, 0xc0],
+    [0xff, 0x00, 0xff],
+    [0x80, 0x40, 0x40],
+    [0xff, 0x80, 0x40],
+    [0x00, 0xff, 0x00],
+    [0x00, 0x80, 0x80],
+    [0x00, 0x40, 0x80],
+    [0x80, 0x80, 0xff],
+    [0x80, 0x00, 0x40],
+    [0xff, 0x00, 0x80],
+    [0x80, 0x00, 0x00],
+    [0xff, 0x80, 0x00],
+    [0x00, 0x80, 0x00],
+    [0x00, 0x80, 0x40],
+    [0x00, 0x00, 0xff],
+    [0x00, 0x00, 0xa0],
+    [0x80, 0x00, 0x80],
+    [0x80, 0x00, 0xff],
+    [0x40, 0x00, 0x00],
+    [0x80, 0x40, 0x00],
+    [0x00, 0x40, 0x00],
+    [0x00, 0x40, 0x40],
+    [0x00, 0x00, 0x80],
+    [0x00, 0x00, 0x40],
+    [0x40, 0x00, 0x40],
+    [0x40, 0x00, 0x80],
+    [0x00, 0x00, 0x00],
+    [0x80, 0x80, 0x00],
+    [0x80, 0x80, 0x40],
+    [0x80, 0x80, 0x80],
+    [0x40, 0x80, 0x80],
+    [0xc0, 0xc0, 0xc0],
+    [0x40, 0x00, 0x40],
+    [0xff, 0xff, 0xff],
 ];
+
+/// El lienzo es opaco: al importar RGBA se compone sobre blanco, no se revelan
+/// los canales RGB invisibles que pueda guardar un PNG transparente.
+fn opaque_rgba(p: &[u8]) -> Color32 {
+    let a = p[3] as u16;
+    let mix = |c: u8| ((c as u16 * a + 255 * (255 - a) + 127) / 255) as u8;
+    Color32::from_rgb(mix(p[0]), mix(p[1]), mix(p[2]))
+}
 
 /// Una muestra de color. `None` es un hueco libre de los personalizados: va
 /// con borde punteado, porque con borde sólido parece un botón blanco.
@@ -101,15 +152,19 @@ fn swatch(ui: &mut egui::Ui, theme: &Theme, c: Option<Color32>, selected: bool) 
             let mut x = rect.left();
             while x < rect.right() {
                 let x2 = (x + 2.0).min(rect.right());
-                ui.painter().line_segment([Pos2::new(x, rect.top()), Pos2::new(x2, rect.top())], d);
                 ui.painter()
-                    .line_segment([Pos2::new(x, rect.bottom()), Pos2::new(x2, rect.bottom())], d);
+                    .line_segment([Pos2::new(x, rect.top()), Pos2::new(x2, rect.top())], d);
+                ui.painter().line_segment(
+                    [Pos2::new(x, rect.bottom()), Pos2::new(x2, rect.bottom())],
+                    d,
+                );
                 x += 4.0;
             }
             let mut y = rect.top();
             while y < rect.bottom() {
                 let y2 = (y + 2.0).min(rect.bottom());
-                ui.painter().line_segment([Pos2::new(rect.left(), y), Pos2::new(rect.left(), y2)], d);
+                ui.painter()
+                    .line_segment([Pos2::new(rect.left(), y), Pos2::new(rect.left(), y2)], d);
                 ui.painter()
                     .line_segment([Pos2::new(rect.right(), y), Pos2::new(rect.right(), y2)], d);
                 y += 4.0;
@@ -205,10 +260,19 @@ impl Dialogs {
     /// sin bloquear los atajos hasta que alguien se acordaba de agregarlo.
     fn popups(&mut self) -> [&mut bool; 14] {
         [
-            &mut self.resize, &mut self.properties, &mut self.color, &mut self.about,
-            &mut self.file_menu, &mut self.qat_menu, &mut self.paste_menu,
-            &mut self.outline_menu, &mut self.fill_menu, &mut self.rotate_menu,
-            &mut self.size_menu, &mut self.theme_menu, &mut self.brushes,
+            &mut self.resize,
+            &mut self.properties,
+            &mut self.color,
+            &mut self.about,
+            &mut self.file_menu,
+            &mut self.qat_menu,
+            &mut self.paste_menu,
+            &mut self.outline_menu,
+            &mut self.fill_menu,
+            &mut self.rotate_menu,
+            &mut self.size_menu,
+            &mut self.theme_menu,
+            &mut self.brushes,
             &mut self.select_menu,
         ]
     }
@@ -292,6 +356,8 @@ struct App {
     t_orig: (f32, f32, f32, f32),
     /// Cuál de los dos colores recibe lo que se elija en la paleta.
     picking_c1: bool,
+    pending_action: Option<PendingAction>,
+    allow_close: bool,
     status: String,
 }
 
@@ -308,7 +374,13 @@ impl App {
             drawing: false,
             zoom_idx: 3, // 100%
             path: None,
-            dialogs: Dialogs { keep_ratio: true, by_percent: true, rw: 100.0, rh: 100.0, ..Default::default() },
+            dialogs: Dialogs {
+                keep_ratio: true,
+                by_percent: true,
+                rw: 100.0,
+                rh: 100.0,
+                ..Default::default()
+            },
             show_grid: false,
             show_rulers: false,
             show_status: true,
@@ -336,6 +408,8 @@ impl App {
             t_from: (0.0, 0.0),
             t_orig: (0.0, 0.0, 0.0, 0.0),
             picking_c1: true,
+            pending_action: None,
+            allow_close: false,
             status: String::new(),
         };
         // Lo guardado pisa los valores de fábrica, antes de instalar el estilo.
@@ -396,7 +470,7 @@ impl App {
 
     fn sync_texture(&mut self, ctx: &egui::Context) {
         let (w, h) = (self.doc.canvas.w, self.doc.canvas.h);
-        let stale = self.tex.as_ref().map_or(true, |t| t.size() != [w, h]);
+        let stale = self.tex.as_ref().is_none_or(|t| t.size() != [w, h]);
 
         if stale {
             let img = egui::ColorImage::new([w, h], self.doc.canvas.pixels().to_vec());
@@ -426,7 +500,7 @@ impl App {
             return;
         };
         let size = [sel.r.w, sel.r.h];
-        let stale = self.sel_dirty || self.sel_tex.as_ref().map_or(true, |t| t.size() != size);
+        let stale = self.sel_dirty || self.sel_tex.as_ref().is_none_or(|t| t.size() != size);
         // Estirar cambia `r` sin tocar `px`; el tamaño distinto es justo lo que
         // hace que se rehaga la textura, así que no hace falta nada más.
         if stale {
@@ -481,7 +555,12 @@ impl App {
             let y = (i * H) as f32;
             match st.brush() {
                 Some(b) => {
-                    let pts = [(6.0, y + 19.0), (16.0, y + 8.0), (26.0, y + 18.0), (34.0, y + 7.0)];
+                    let pts = [
+                        (6.0, y + 19.0),
+                        (16.0, y + 8.0),
+                        (26.0, y + 18.0),
+                        (34.0, y + 7.0),
+                    ];
                     for w in pts.windows(2) {
                         shapes::brush_stroke(&mut c, b, w[0], w[1], 6.0, col, &mut rng);
                     }
@@ -525,17 +604,64 @@ impl App {
 
     // ------------------------------------------------------------- comandos
 
-    fn apply(&mut self, cmd: Cmd, ctx: &egui::Context) {
-        match cmd {
-            Cmd::New => self.apply(Cmd::NewSized(DEFAULT_W, DEFAULT_H), ctx),
-            Cmd::NewSized(w, h) => {
+    fn has_unsaved_changes(&self) -> bool {
+        self.doc.canvas.dirty_file || self.text_box.as_ref().is_some_and(|t| !t.s.is_empty())
+    }
+
+    fn reset_document_ui(&mut self) {
+        self.text_box = None;
+        self.t_grab = None;
+        self.resizing = None;
+        self.drawing = false;
+        self.sel_tex = None;
+        self.sel_dirty = false;
+        self.tex = None;
+        self.dialogs.close_all();
+    }
+
+    fn request_action(&mut self, action: PendingAction, ctx: &egui::Context) {
+        if self.has_unsaved_changes() {
+            self.dialogs.close_all();
+            self.pending_action = Some(action);
+        } else {
+            self.perform_action(action, ctx);
+        }
+    }
+
+    fn perform_action(&mut self, action: PendingAction, ctx: &egui::Context) {
+        match action {
+            PendingAction::New(w, h) => {
                 self.doc = Doc::new(w.max(1), h.max(1));
                 self.path = None;
-                self.tex = None;
+                self.reset_document_ui();
             }
+            PendingAction::Open(path) => self.open_path(&path),
+            PendingAction::Exit => {
+                self.allow_close = true;
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+        }
+    }
+
+    fn save_current(&mut self, ctx: &egui::Context) -> bool {
+        match self.path.clone() {
+            Some(path) => {
+                if self.text_box.is_some() {
+                    self.commit_text(ctx);
+                }
+                self.save_to(&path)
+            }
+            None => self.save_as(ctx),
+        }
+    }
+
+    fn apply(&mut self, cmd: Cmd, ctx: &egui::Context) {
+        match cmd {
+            Cmd::New => self.request_action(PendingAction::New(DEFAULT_W, DEFAULT_H), ctx),
+            Cmd::NewSized(w, h) => self.request_action(PendingAction::New(w, h), ctx),
             Cmd::OpenRecent(i) => {
                 if let Some(p) = self.recent.get(i).cloned() {
-                    self.open_path(&p);
+                    self.request_action(PendingAction::Open(p), ctx);
                 }
             }
             Cmd::Export(scale) => self.export(scale),
@@ -546,12 +672,13 @@ impl App {
                 self.copy_to_system();
             }
             Cmd::Reveal => self.reveal(),
-            Cmd::Open => self.open_file(),
-            Cmd::Save => match self.path.clone() {
-                Some(p) => self.save_to(&p),
-                None => self.save_as(),
-            },
-            Cmd::SaveAs => self.save_as(),
+            Cmd::Open => self.open_file(ctx),
+            Cmd::Save => {
+                self.save_current(ctx);
+            }
+            Cmd::SaveAs => {
+                self.save_as(ctx);
+            }
             Cmd::Undo => {
                 self.doc.commit_selection();
                 self.doc.canvas.undo();
@@ -602,6 +729,7 @@ impl App {
             Cmd::ZoomIn => self.zoom_idx = (self.zoom_idx + 1).min(ZOOMS.len() - 1),
             Cmd::ZoomOut => self.zoom_idx = self.zoom_idx.saturating_sub(1),
             Cmd::Zoom100 => self.zoom_idx = 3,
+            Cmd::ZoomTo(i) => self.zoom_idx = i.min(ZOOMS.len() - 1),
             Cmd::SetTheme(i) => {
                 if i < self.themes.len() {
                     self.theme_idx = i;
@@ -624,7 +752,7 @@ impl App {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(self.fullscreen));
             }
             Cmd::About => self.dialogs.about = true,
-            Cmd::Exit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
+            Cmd::Exit => self.request_action(PendingAction::Exit, ctx),
         }
     }
 
@@ -639,14 +767,17 @@ impl App {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    fn open_file(&mut self) {
+    fn open_file(&mut self, ctx: &egui::Context) {
         let Some(path) = rfd::FileDialog::new()
-            .add_filter("Imágenes", &["png", "jpg", "jpeg", "bmp", "gif", "tif", "tiff", "ico"])
+            .add_filter(
+                "Imágenes",
+                &["png", "jpg", "jpeg", "bmp", "gif", "tif", "tiff", "ico"],
+            )
             .pick_file()
         else {
             return;
         };
-        self.open_path(&path);
+        self.request_action(PendingAction::Open(path), ctx);
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -655,13 +786,9 @@ impl App {
             Ok(img) => {
                 let rgba = img.to_rgba8();
                 let (w, h) = (rgba.width() as usize, rgba.height() as usize);
-                let px = rgba
-                    .pixels()
-                    .map(|p| Color32::from_rgb(p[0], p[1], p[2]))
-                    .collect();
-                self.doc.sel = None;
-                self.doc.canvas.load(w, h, px);
-                self.tex = None;
+                let px = rgba.pixels().map(|p| opaque_rgba(&p.0)).collect();
+                self.doc.load(w, h, px);
+                self.reset_document_ui();
                 self.path = Some(path.to_path_buf());
                 self.remember(path);
                 self.status = "Abierto".into();
@@ -712,7 +839,10 @@ impl App {
             return;
         };
         let r = if cfg!(target_os = "macos") {
-            std::process::Command::new("open").arg("-R").arg(&path).spawn()
+            std::process::Command::new("open")
+                .arg("-R")
+                .arg(&path)
+                .spawn()
         } else if cfg!(target_os = "windows") {
             std::process::Command::new("explorer")
                 .arg(format!("/select,{}", path.display()))
@@ -740,7 +870,10 @@ impl App {
     #[cfg(not(target_arch = "wasm32"))]
     fn paste_from_file(&mut self) {
         let Some(path) = rfd::FileDialog::new()
-            .add_filter("Imágenes", &["png", "jpg", "jpeg", "bmp", "gif", "tif", "tiff", "ico"])
+            .add_filter(
+                "Imágenes",
+                &["png", "jpg", "jpeg", "bmp", "gif", "tif", "tiff", "ico"],
+            )
             .pick_file()
         else {
             return;
@@ -749,10 +882,7 @@ impl App {
             Ok(img) => {
                 let rgba = img.to_rgba8();
                 let (w, h) = (rgba.width() as usize, rgba.height() as usize);
-                let px = rgba
-                    .pixels()
-                    .map(|p| Color32::from_rgb(p[0], p[1], p[2]))
-                    .collect();
+                let px = rgba.pixels().map(|p| opaque_rgba(&p.0)).collect();
                 self.doc.paste(w, h, px);
                 self.sel_dirty = true;
                 self.status = format!("Pegado desde {}", path.display());
@@ -767,7 +897,7 @@ impl App {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    fn save_as(&mut self) {
+    fn save_as(&mut self, ctx: &egui::Context) -> bool {
         let Some(path) = rfd::FileDialog::new()
             .add_filter("PNG", &["png"])
             .add_filter("JPEG", &["jpg", "jpeg"])
@@ -777,14 +907,21 @@ impl App {
             .set_file_name("dibujo.png")
             .save_file()
         else {
-            return;
+            return false;
         };
-        self.save_to(&path);
-        self.path = Some(path);
+        if self.text_box.is_some() {
+            self.commit_text(ctx);
+        }
+        if self.save_to(&path) {
+            self.path = Some(path);
+            true
+        } else {
+            false
+        }
     }
 
     #[cfg(not(target_arch = "wasm32"))]
-    fn save_to(&mut self, path: &std::path::Path) {
+    fn save_to(&mut self, path: &std::path::Path) -> bool {
         self.doc.commit_selection();
         let (w, h) = (self.doc.canvas.w, self.doc.canvas.h);
         let mut buf = image::RgbaImage::new(w as u32, h as u32);
@@ -800,21 +937,28 @@ impl App {
                 self.doc.canvas.dirty_file = false;
                 self.remember(path);
                 self.status = format!("Guardado en {}", path.display());
+                true
             }
-            Err(e) => self.status = format!("No pude guardar: {e}"),
+            Err(e) => {
+                self.status = format!("No pude guardar: {e}");
+                false
+            }
         }
     }
 
     #[cfg(target_arch = "wasm32")]
-    fn open_file(&mut self) {
+    fn open_file(&mut self, _ctx: &egui::Context) {
         self.status = "Abrir archivos en web todavía no está".into();
     }
     #[cfg(target_arch = "wasm32")]
-    fn save_as(&mut self) {
+    fn save_as(&mut self, _ctx: &egui::Context) -> bool {
         self.status = "Guardar en web todavía no está".into();
+        false
     }
     #[cfg(target_arch = "wasm32")]
-    fn save_to(&mut self, _path: &std::path::Path) {}
+    fn save_to(&mut self, _path: &std::path::Path) -> bool {
+        false
+    }
 
     // --------------------------------------------------------- portapapeles
 
@@ -823,7 +967,9 @@ impl App {
     /// direcciones.
     #[cfg(not(target_arch = "wasm32"))]
     fn copy_to_system(&mut self) {
-        let Some((w, h, px)) = self.doc.clipboard.clone() else { return };
+        let Some((w, h, px)) = self.doc.clipboard.clone() else {
+            return;
+        };
         let mut bytes = Vec::with_capacity(w * h * 4);
         for p in &px {
             bytes.extend_from_slice(&[p.r(), p.g(), p.b(), 255]);
@@ -851,8 +997,10 @@ impl App {
                 // arboard entrega RGBA sin premultiplicar; el lienzo es opaco.
                 let px: Vec<Color32> = img
                     .bytes
-                    .chunks_exact(4)
-                    .map(|c| Color32::from_rgb(c[0], c[1], c[2]))
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .map(|c| opaque_rgba(c))
                     .collect();
                 if px.len() == w * h {
                     self.doc.paste(w, h, px);
@@ -878,6 +1026,13 @@ impl App {
 
     fn keyboard(&mut self, ctx: &egui::Context) -> Vec<Cmd> {
         let mut cmds = Vec::new();
+        if self.pending_action.is_some() {
+            if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
+                self.pending_action = None;
+                self.allow_close = false;
+            }
+            return cmds;
+        }
         // Si hay un cuadro de texto o un diálogo abierto, las teclas son suyos.
         // Antes esto miraba `memory().focused()`, que devuelve `Some` en cuanto
         // *cualquier* widget toma el foco —un botón recién clickeado incluido—
@@ -965,7 +1120,8 @@ impl App {
             }
         });
         // Escape y Enter cierran una curva o un polígono a medio hacer.
-        let close = ctx.input(|i| i.key_pressed(egui::Key::Escape) || i.key_pressed(egui::Key::Enter));
+        let close =
+            ctx.input(|i| i.key_pressed(egui::Key::Escape) || i.key_pressed(egui::Key::Enter));
         if close {
             if self.doc.is_multistep_active() {
                 self.doc.finish_multistep();
@@ -983,7 +1139,8 @@ impl App {
         let zoom = self.zoom();
         let (cw, ch) = (self.doc.canvas.w, self.doc.canvas.h);
 
-        ui.painter().rect_filled(ui.max_rect(), 0.0, Color32::from(theme.workspace));
+        ui.painter()
+            .rect_filled(ui.max_rect(), 0.0, Color32::from(theme.workspace));
 
         // Con reglas hay que reservarles el lugar: antes se dibujaban 8 px por
         // encima del lienzo con sólo 6 px de margen, así que quedaban
@@ -1003,201 +1160,228 @@ impl App {
             // gris a la derecha, en vez de pegada al borde como en Paint.
             .auto_shrink([false, false])
             .show(ui, |ui| {
-            ui.add_space(pad);
-            ui.horizontal(|ui| {
                 ui.add_space(pad);
-                let size = vec2(cw as f32 * zoom, ch as f32 * zoom);
-                let (rect, resp) = ui.allocate_exact_size(size, Sense::click_and_drag());
-                self.canvas_rect = rect;
+                ui.horizontal(|ui| {
+                    ui.add_space(pad);
+                    let size = vec2(cw as f32 * zoom, ch as f32 * zoom);
+                    let (rect, resp) = ui.allocate_exact_size(size, Sense::click_and_drag());
+                    self.canvas_rect = rect;
 
-                // SW: corchetes de puntería en las cuatro esquinas. Marcan
-                // el área sin encerrarla, que es la diferencia entre un visor
-                // y una ventana.
-                if theme.chrome == theme::Chrome::Holo {
-                    let p = ui.painter();
-                    let s = egui::Stroke::new(1.0, Color32::from(theme.accent_hot));
-                    let l = 18.0;
-                    let o = rect.expand(6.0);
-                    for (esq, dx, dy) in [
-                        (o.left_top(), 1.0, 1.0),
-                        (o.right_top(), -1.0, 1.0),
-                        (o.left_bottom(), 1.0, -1.0),
-                        (o.right_bottom(), -1.0, -1.0),
-                    ] {
-                        p.line_segment([esq, esq + vec2(l * dx, 0.0)], s);
-                        p.line_segment([esq, esq + vec2(0.0, l * dy)], s);
+                    // SW: corchetes de puntería en las cuatro esquinas. Marcan
+                    // el área sin encerrarla, que es la diferencia entre un visor
+                    // y una ventana.
+                    if theme.chrome == theme::Chrome::Holo {
+                        let p = ui.painter();
+                        let s = egui::Stroke::new(1.0, Color32::from(theme.accent_hot));
+                        let l = 18.0;
+                        let o = rect.expand(6.0);
+                        for (esq, dx, dy) in [
+                            (o.left_top(), 1.0, 1.0),
+                            (o.right_top(), -1.0, 1.0),
+                            (o.left_bottom(), 1.0, -1.0),
+                            (o.right_bottom(), -1.0, -1.0),
+                        ] {
+                            p.line_segment([esq, esq + vec2(l * dx, 0.0)], s);
+                            p.line_segment([esq, esq + vec2(0.0, l * dy)], s);
+                        }
                     }
-                }
 
-                // 2077: los canales separados en los bordes, en vez de sombra.
-                // En un editor de píxeles la aberración cromática es una
-                // referencia que se entiende sola.
-                if theme.chrome == theme::Chrome::Neon {
-                    let p = ui.painter();
-                    for (dx, dy, c) in [
-                        (-3.0, 0.0, theme.accent),
-                        (3.0, 0.0, theme.accent_alt),
-                        (0.0, 4.0, theme.accent_hot),
-                    ] {
-                        p.rect_stroke(
-                            rect.translate(vec2(dx, dy)),
-                            0.0,
-                            egui::Stroke::new(2.0, Color32::from(c)),
-                            egui::StrokeKind::Outside,
+                    // 2077: los canales separados en los bordes, en vez de sombra.
+                    // En un editor de píxeles la aberración cromática es una
+                    // referencia que se entiende sola.
+                    if theme.chrome == theme::Chrome::Neon {
+                        let p = ui.painter();
+                        for (dx, dy, c) in [
+                            (-3.0, 0.0, theme.accent),
+                            (3.0, 0.0, theme.accent_alt),
+                            (0.0, 4.0, theme.accent_hot),
+                        ] {
+                            p.rect_stroke(
+                                rect.translate(vec2(dx, dy)),
+                                0.0,
+                                egui::Stroke::new(2.0, Color32::from(c)),
+                                egui::StrokeKind::Outside,
+                            );
+                        }
+                    }
+
+                    // En el chrome propio el lienzo flota: papel sobre una mesa,
+                    // no un widget dentro de otro. Los clones no llevan sombra —
+                    // Paint no la tiene y ahí la gracia es parecerse.
+                    // Marco hundido de Windows clásico alrededor del lienzo.
+                    if theme.chrome == theme::Chrome::Palette {
+                        let sombra = egui::Stroke::new(1.0, Color32::from_rgb(0x80, 0x80, 0x80));
+                        let luz = egui::Stroke::new(1.0, Color32::WHITE);
+                        let o = rect.expand(2.0);
+                        let p = ui.painter();
+                        p.line_segment([o.left_bottom(), o.left_top()], sombra);
+                        p.line_segment([o.left_top(), o.right_top()], sombra);
+                        p.line_segment([o.right_top(), o.right_bottom()], luz);
+                        p.line_segment([o.right_bottom(), o.left_bottom()], luz);
+                    }
+                    if theme.chrome == theme::Chrome::Studio {
+                        for (d, a) in [(10.0, 22u8), (6.0, 26), (3.0, 30), (1.0, 46)] {
+                            ui.painter().rect_filled(
+                                rect.translate(vec2(0.0, d * 0.45)).expand(d),
+                                0.0,
+                                Color32::from_black_alpha(a),
+                            );
+                        }
+                    }
+
+                    // El bitmap.
+                    if let Some(t) = &self.tex {
+                        ui.painter().image(
+                            t.id(),
+                            rect,
+                            egui::Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
+                            Color32::WHITE,
                         );
                     }
-                }
-
-                // En el chrome propio el lienzo flota: papel sobre una mesa,
-                // no un widget dentro de otro. Los clones no llevan sombra —
-                // Paint no la tiene y ahí la gracia es parecerse.
-                // Marco hundido de Windows clásico alrededor del lienzo.
-                if theme.chrome == theme::Chrome::Palette {
-                    let sombra = egui::Stroke::new(1.0, Color32::from_rgb(0x80, 0x80, 0x80));
-                    let luz = egui::Stroke::new(1.0, Color32::WHITE);
-                    let o = rect.expand(2.0);
-                    let p = ui.painter();
-                    p.line_segment([o.left_bottom(), o.left_top()], sombra);
-                    p.line_segment([o.left_top(), o.right_top()], sombra);
-                    p.line_segment([o.right_top(), o.right_bottom()], luz);
-                    p.line_segment([o.right_bottom(), o.left_bottom()], luz);
-                }
-                if theme.chrome == theme::Chrome::Studio {
-                    for (d, a) in [(10.0, 22u8), (6.0, 26), (3.0, 30), (1.0, 46)] {
-                        ui.painter().rect_filled(
-                            rect.translate(vec2(0.0, d * 0.45)).expand(d),
-                            0.0,
-                            Color32::from_black_alpha(a),
-                        );
-                    }
-                }
-
-                // El bitmap.
-                if let Some(t) = &self.tex {
-                    ui.painter().image(
-                        t.id(),
+                    ui.painter().rect_stroke(
                         rect,
-                        egui::Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
-                        Color32::WHITE,
+                        0.0,
+                        egui::Stroke::new(1.0, Color32::from(theme.border_strong)),
+                        egui::StrokeKind::Outside,
                     );
-                }
-                ui.painter().rect_stroke(
-                    rect,
-                    0.0,
-                    egui::Stroke::new(1.0, Color32::from(theme.border_strong)),
-                    egui::StrokeKind::Outside,
-                );
 
-                // Reglas: dos franjas graduadas con números, como en Paint.
-                if self.show_rulers {
-                    let p = ui.painter();
-                    let bg = Color32::from(theme.surface_alt);
-                    let line = Color32::from(theme.border_strong);
-                    let txt = Color32::from(theme.text_dim);
+                    // Reglas: dos franjas graduadas con números, como en Paint.
+                    if self.show_rulers {
+                        let p = ui.painter();
+                        let bg = Color32::from(theme.surface_alt);
+                        let line = Color32::from(theme.border_strong);
+                        let txt = Color32::from(theme.text_dim);
 
-                    let top = egui::Rect::from_min_max(
-                        Pos2::new(rect.left() - RULER, rect.top() - RULER),
-                        Pos2::new(rect.right(), rect.top()),
-                    );
-                    let left = egui::Rect::from_min_max(
-                        Pos2::new(rect.left() - RULER, rect.top() - RULER),
-                        Pos2::new(rect.left(), rect.bottom()),
-                    );
-                    for r in [top, left] {
-                        p.rect_filled(r, 0.0, bg);
-                        p.rect_stroke(r, 0.0, egui::Stroke::new(1.0, line), egui::StrokeKind::Inside);
-                    }
-
-                    // Marca gruesa y número cada 100 px de lienzo; fina cada 10.
-                    // Con poco zoom se ralea para que no quede un borrón.
-                    let minor = if zoom >= 2.0 { 10 } else if zoom >= 0.5 { 50 } else { 200 };
-                    let major = if zoom >= 0.5 { 100 } else { 500 };
-                    let f = egui::FontId::proportional(9.0);
-
-                    for x in (0..=cw).step_by(minor) {
-                        let sx = rect.left() + x as f32 * zoom;
-                        if sx > rect.right() {
-                            break;
-                        }
-                        let big = x % major == 0;
-                        let h = if big { 9.0 } else { 4.0 };
-                        p.line_segment(
-                            [Pos2::new(sx, rect.top() - h), Pos2::new(sx, rect.top() - 1.0)],
-                            egui::Stroke::new(1.0, line),
+                        let top = egui::Rect::from_min_max(
+                            Pos2::new(rect.left() - RULER, rect.top() - RULER),
+                            Pos2::new(rect.right(), rect.top()),
                         );
-                        if big && x > 0 {
-                            p.text(
-                                Pos2::new(sx + 2.0, rect.top() - RULER + 2.0),
-                                egui::Align2::LEFT_TOP,
-                                x.to_string(),
-                                f.clone(),
-                                txt,
+                        let left = egui::Rect::from_min_max(
+                            Pos2::new(rect.left() - RULER, rect.top() - RULER),
+                            Pos2::new(rect.left(), rect.bottom()),
+                        );
+                        for r in [top, left] {
+                            p.rect_filled(r, 0.0, bg);
+                            p.rect_stroke(
+                                r,
+                                0.0,
+                                egui::Stroke::new(1.0, line),
+                                egui::StrokeKind::Inside,
+                            );
+                        }
+
+                        // Marca gruesa y número cada 100 px de lienzo; fina cada 10.
+                        // Con poco zoom se ralea para que no quede un borrón.
+                        let minor = if zoom >= 2.0 {
+                            10
+                        } else if zoom >= 0.5 {
+                            50
+                        } else {
+                            200
+                        };
+                        let major = if zoom >= 0.5 { 100 } else { 500 };
+                        let f = egui::FontId::proportional(9.0);
+
+                        for x in (0..=cw).step_by(minor) {
+                            let sx = rect.left() + x as f32 * zoom;
+                            if sx > rect.right() {
+                                break;
+                            }
+                            let big = x % major == 0;
+                            let h = if big { 9.0 } else { 4.0 };
+                            p.line_segment(
+                                [
+                                    Pos2::new(sx, rect.top() - h),
+                                    Pos2::new(sx, rect.top() - 1.0),
+                                ],
+                                egui::Stroke::new(1.0, line),
+                            );
+                            if big && x > 0 {
+                                p.text(
+                                    Pos2::new(sx + 2.0, rect.top() - RULER + 2.0),
+                                    egui::Align2::LEFT_TOP,
+                                    x.to_string(),
+                                    f.clone(),
+                                    txt,
+                                );
+                            }
+                        }
+                        for y in (0..=ch).step_by(minor) {
+                            let sy = rect.top() + y as f32 * zoom;
+                            if sy > rect.bottom() {
+                                break;
+                            }
+                            let big = y % major == 0;
+                            let w = if big { 9.0 } else { 4.0 };
+                            p.line_segment(
+                                [
+                                    Pos2::new(rect.left() - w, sy),
+                                    Pos2::new(rect.left() - 1.0, sy),
+                                ],
+                                egui::Stroke::new(1.0, line),
+                            );
+                            if big && y > 0 {
+                                p.text(
+                                    Pos2::new(rect.left() - RULER + 2.0, sy + 1.0),
+                                    egui::Align2::LEFT_TOP,
+                                    y.to_string(),
+                                    f.clone(),
+                                    txt,
+                                );
+                            }
+                        }
+
+                        // Dónde está el cursor, como el original.
+                        if let Some(m) = resp.hover_pos() {
+                            let s = egui::Stroke::new(1.0, Color32::from(theme.accent));
+                            p.line_segment(
+                                [
+                                    Pos2::new(m.x, rect.top() - RULER),
+                                    Pos2::new(m.x, rect.top()),
+                                ],
+                                s,
+                            );
+                            p.line_segment(
+                                [
+                                    Pos2::new(rect.left() - RULER, m.y),
+                                    Pos2::new(rect.left(), m.y),
+                                ],
+                                s,
                             );
                         }
                     }
-                    for y in (0..=ch).step_by(minor) {
-                        let sy = rect.top() + y as f32 * zoom;
-                        if sy > rect.bottom() {
-                            break;
+
+                    // Cuadrícula. Antes tenía una compuerta a 400% de zoom, así que
+                    // a tamaño normal la casilla no hacía nada visible.
+                    if self.show_grid && zoom >= 1.0 {
+                        let g = Color32::from_rgba_unmultiplied(0, 0, 0, 36);
+                        let s = egui::Stroke::new(1.0, g);
+                        // Con celdas de menos de 4 px la grilla es un borrón gris:
+                        // se salta de a diez, como hace Paint.
+                        let step = if zoom >= 4.0 { 1 } else { 10 };
+                        for x in (0..=cw).step_by(step) {
+                            let px = rect.left() + x as f32 * zoom;
+                            ui.painter().line_segment(
+                                [Pos2::new(px, rect.top()), Pos2::new(px, rect.bottom())],
+                                s,
+                            );
                         }
-                        let big = y % major == 0;
-                        let w = if big { 9.0 } else { 4.0 };
-                        p.line_segment(
-                            [Pos2::new(rect.left() - w, sy), Pos2::new(rect.left() - 1.0, sy)],
-                            egui::Stroke::new(1.0, line),
-                        );
-                        if big && y > 0 {
-                            p.text(
-                                Pos2::new(rect.left() - RULER + 2.0, sy + 1.0),
-                                egui::Align2::LEFT_TOP,
-                                y.to_string(),
-                                f.clone(),
-                                txt,
+                        for y in (0..=ch).step_by(step) {
+                            let py = rect.top() + y as f32 * zoom;
+                            ui.painter().line_segment(
+                                [Pos2::new(rect.left(), py), Pos2::new(rect.right(), py)],
+                                s,
                             );
                         }
                     }
 
-                    // Dónde está el cursor, como el original.
-                    if let Some(m) = resp.hover_pos() {
-                        let s = egui::Stroke::new(1.0, Color32::from(theme.accent));
-                        p.line_segment(
-                            [Pos2::new(m.x, rect.top() - RULER), Pos2::new(m.x, rect.top())],
-                            s,
-                        );
-                        p.line_segment(
-                            [Pos2::new(rect.left() - RULER, m.y), Pos2::new(rect.left(), m.y)],
-                            s,
-                        );
-                    }
-                }
-
-                // Cuadrícula. Antes tenía una compuerta a 400% de zoom, así que
-                // a tamaño normal la casilla no hacía nada visible.
-                if self.show_grid && zoom >= 1.0 {
-                    let g = Color32::from_rgba_unmultiplied(0, 0, 0, 36);
-                    let s = egui::Stroke::new(1.0, g);
-                    // Con celdas de menos de 4 px la grilla es un borrón gris:
-                    // se salta de a diez, como hace Paint.
-                    let step = if zoom >= 4.0 { 1 } else { 10 };
-                    for x in (0..=cw).step_by(step) {
-                        let px = rect.left() + x as f32 * zoom;
-                        ui.painter()
-                            .line_segment([Pos2::new(px, rect.top()), Pos2::new(px, rect.bottom())], s);
-                    }
-                    for y in (0..=ch).step_by(step) {
-                        let py = rect.top() + y as f32 * zoom;
-                        ui.painter()
-                            .line_segment([Pos2::new(rect.left(), py), Pos2::new(rect.right(), py)], s);
-                    }
-                }
-
-                self.handle_pointer(ui, &resp, rect, zoom);
-                self.set_cursor(ui, &resp, rect, zoom);
-                self.draw_overlays(ui, rect, zoom, &theme);
-                self.resize_handles(ui, rect, zoom, &theme);
+                    self.handle_pointer(ui, &resp, rect, zoom);
+                    self.set_cursor(ui, &resp, rect, zoom);
+                    self.draw_overlays(ui, rect, zoom, &theme);
+                    self.resize_handles(ui, rect, zoom, &theme);
+                });
+                ui.add_space(6.0);
             });
-            ui.add_space(6.0);
-        });
     }
 
     /// El cursor cambia con la herramienta, como en Paint.
@@ -1222,10 +1406,7 @@ impl App {
         // estirar por la manija, o mover desde adentro.
         if self.doc.tool == Tool::Select {
             if let (Some(sel), Some(m)) = (&self.doc.sel, ui.input(|i| i.pointer.hover_pos())) {
-                let c = (
-                    (m.x - rect.left()) / zoom,
-                    (m.y - rect.top()) / zoom,
-                );
+                let c = ((m.x - rect.left()) / zoom, (m.y - rect.top()) / zoom);
                 let grab = 7.0 / zoom;
                 for i in 0..8 {
                     let h = sel.handle(i);
@@ -1259,7 +1440,8 @@ impl App {
                         // La goma de Paint es cuadrada, y se nota al borrar.
                         let q = egui::Rect::from_center_size(m, vec2(w, w));
                         for s in [fuera, dentro] {
-                            ui.painter().rect_stroke(q, 0.0, s, egui::StrokeKind::Middle);
+                            ui.painter()
+                                .rect_stroke(q, 0.0, s, egui::StrokeKind::Middle);
                         }
                     } else {
                         for s in [fuera, dentro] {
@@ -1293,7 +1475,8 @@ impl App {
                         let cx = ((pos.x - rect.left()) / zoom) as i32;
                         let cy = ((pos.y - rect.top()) / zoom) as i32;
                         if let Some(c) = self.doc.canvas.geti(cx, cy) {
-                            let sw = egui::Rect::from_min_size(m + vec2(8.0, 4.0), vec2(16.0, 16.0));
+                            let sw =
+                                egui::Rect::from_min_size(m + vec2(8.0, 4.0), vec2(16.0, 16.0));
                             p.rect_filled(sw, 0.0, c);
                             p.rect_stroke(
                                 sw,
@@ -1322,7 +1505,13 @@ impl App {
     /// `drag_started` llega tarde y todo trazo perdía su comienzo. Para una
     /// superficie de dibujo eso es inaceptable: acá el trazo empieza donde
     /// bajaste el botón.
-    fn handle_pointer(&mut self, ui: &egui::Ui, resp: &egui::Response, rect: egui::Rect, zoom: f32) {
+    fn handle_pointer(
+        &mut self,
+        ui: &egui::Ui,
+        resp: &egui::Response,
+        rect: egui::Rect,
+        zoom: f32,
+    ) {
         let to_canvas = |p: Pos2| ((p.x - rect.left()) / zoom, (p.y - rect.top()) / zoom);
 
         let (l_down, r_down, released, pos, shift, held) = ui.input(|i| {
@@ -1416,10 +1605,8 @@ impl App {
                         let py = tb.y + hy * tb.h;
                         (c.0 - px).abs() <= grab && (c.1 - py).abs() <= grab
                     });
-                    let inside = c.0 >= tb.x
-                        && c.0 <= tb.x + tb.w
-                        && c.1 >= tb.y
-                        && c.1 <= tb.y + tb.h;
+                    let inside =
+                        c.0 >= tb.x && c.0 <= tb.x + tb.w && c.1 >= tb.y && c.1 <= tb.y + tb.h;
                     match hit {
                         Some(i) => {
                             self.t_grab = Some(TGrab::Handle(i));
@@ -1464,7 +1651,9 @@ impl App {
         let from = self.t_from;
         // Los tres se leen antes de pedir el préstamo mutable: `self` no puede
         // estar prestado de las dos formas en la misma expresión.
-        let Some(tb) = self.text_box.as_mut() else { return };
+        let Some(tb) = self.text_box.as_mut() else {
+            return;
+        };
         match g {
             TGrab::New => {
                 tb.x = from.0.min(c.0);
@@ -1502,15 +1691,22 @@ impl App {
     /// Vuelca el cuadro al lienzo y lo cierra. Sin cuadro, o vacío, no hace
     /// nada: confirmar algo que no escribiste no debería ensuciar el historial.
     fn commit_text(&mut self, ctx: &egui::Context) {
-        let Some(tb) = self.text_box.take() else { return };
+        let Some(tb) = self.text_box.take() else {
+            return;
+        };
         self.t_grab = None;
         self.tab = Tab::Home;
         if !tb.s.is_empty() {
             self.doc.commit_selection();
-            text::rasterize(ctx, &mut self.doc.canvas, &tb, self.doc.color1, self.doc.color2);
+            text::rasterize(
+                ctx,
+                &mut self.doc.canvas,
+                &tb,
+                self.doc.color1,
+                self.doc.color2,
+            );
         }
     }
-
 
     fn resize_handles(&mut self, ui: &mut egui::Ui, rect: egui::Rect, zoom: f32, theme: &Theme) {
         let (cw, ch) = (self.doc.canvas.w, self.doc.canvas.h);
@@ -1522,7 +1718,8 @@ impl App {
         for (i, (p, hx, hy)) in spots.iter().enumerate() {
             let hr = egui::Rect::from_center_size(*p, vec2(10.0, 10.0));
             let resp = ui.interact(hr, ui.id().with(("tirador", i)), Sense::drag());
-            ui.painter().rect_filled(hr.shrink(2.0), 0.0, Color32::WHITE);
+            ui.painter()
+                .rect_filled(hr.shrink(2.0), 0.0, Color32::WHITE);
             ui.painter().rect_stroke(
                 hr.shrink(2.0),
                 0.0,
@@ -1532,8 +1729,16 @@ impl App {
 
             if resp.dragged() {
                 if let Some(m) = resp.interact_pointer_pos() {
-                    let nw = if *hx { (((m.x - rect.left()) / zoom).round() as i64).max(1) as usize } else { cw };
-                    let nh = if *hy { (((m.y - rect.top()) / zoom).round() as i64).max(1) as usize } else { ch };
+                    let nw = if *hx {
+                        (((m.x - rect.left()) / zoom).round() as i64).max(1) as usize
+                    } else {
+                        cw
+                    };
+                    let nh = if *hy {
+                        (((m.y - rect.top()) / zoom).round() as i64).max(1) as usize
+                    } else {
+                        ch
+                    };
                     self.resizing = Some((nw.min(8000), nh.min(8000)));
                 }
             }
@@ -1549,10 +1754,7 @@ impl App {
 
         // Contorno de lo que va a quedar, mientras se arrastra.
         if let Some((nw, nh)) = self.resizing {
-            let pv = egui::Rect::from_min_size(
-                rect.min,
-                vec2(nw as f32 * zoom, nh as f32 * zoom),
-            );
+            let pv = egui::Rect::from_min_size(rect.min, vec2(nw as f32 * zoom, nh as f32 * zoom));
             ui.painter().rect_stroke(
                 pv,
                 0.0,
@@ -1573,7 +1775,10 @@ impl App {
             let s = egui::Stroke::new(1.0, self.doc.color1);
             for i in 0..pts.len().saturating_sub(1) {
                 p.line_segment(
-                    [to_screen(pts[i].0, pts[i].1), to_screen(pts[i + 1].0, pts[i + 1].1)],
+                    [
+                        to_screen(pts[i].0, pts[i].1),
+                        to_screen(pts[i + 1].0, pts[i + 1].1),
+                    ],
                     s,
                 );
             }
@@ -1599,7 +1804,12 @@ impl App {
             }
             // Doble marco para que se vea sobre cualquier fondo. egui no tiene
             // línea punteada de fábrica, y esto cumple igual.
-            p.rect_stroke(sr, 0.0, egui::Stroke::new(1.0, Color32::WHITE), egui::StrokeKind::Outside);
+            p.rect_stroke(
+                sr,
+                0.0,
+                egui::Stroke::new(1.0, Color32::WHITE),
+                egui::StrokeKind::Outside,
+            );
             p.rect_stroke(
                 sr.expand(1.0),
                 0.0,
@@ -1676,7 +1886,13 @@ impl App {
                     stay = false;
                 }
                 ui::menu_sep(ui, theme);
-                if ui::menu_row(ui, theme, Icon::None, lang::t("Selección transparente"), Some(transp)) {
+                if ui::menu_row(
+                    ui,
+                    theme,
+                    Icon::None,
+                    lang::t("Selección transparente"),
+                    Some(transp),
+                ) {
                     flip_transp = true;
                 }
                 stay
@@ -1706,8 +1922,11 @@ impl App {
                             let (r, resp) =
                                 ui.allocate_exact_size(vec2(40.0, 40.0), Sense::click());
                             if *b == cur {
-                                ui.painter()
-                                    .rect_filled(r, 2.0, Color32::from(theme.button_active));
+                                ui.painter().rect_filled(
+                                    r,
+                                    2.0,
+                                    Color32::from(theme.button_active),
+                                );
                                 ui.painter().rect_stroke(
                                     r,
                                     2.0,
@@ -1746,14 +1965,26 @@ impl App {
         }
 
         for is_outline in [true, false] {
-            let open = if is_outline { self.dialogs.outline_menu } else { self.dialogs.fill_menu };
+            let open = if is_outline {
+                self.dialogs.outline_menu
+            } else {
+                self.dialogs.fill_menu
+            };
             if !open {
                 continue;
             }
             self.build_stroke_previews(ctx);
             let tex = self.stroke_tex.clone();
-            let cur = if is_outline { self.doc.outline } else { self.doc.fill_style };
-            let id = if is_outline { "m_contorno" } else { "m_relleno" };
+            let cur = if is_outline {
+                self.doc.outline
+            } else {
+                self.doc.fill_style
+            };
+            let id = if is_outline {
+                "m_contorno"
+            } else {
+                "m_relleno"
+            };
             let mut pick = None;
             let keep = ui::menu_panel(ctx, theme, id, anchor, 182.0, |ui| {
                 let mut stay = true;
@@ -1763,7 +1994,11 @@ impl App {
                         Pos2::new(0.0, i as f32 / n),
                         Pos2::new(1.0, (i + 1) as f32 / n),
                     );
-                    let label = if is_outline { st.outline_label() } else { st.fill_label() };
+                    let label = if is_outline {
+                        st.outline_label()
+                    } else {
+                        st.fill_label()
+                    };
                     if ui::menu_row_sample(
                         ui,
                         theme,
@@ -1796,8 +2031,16 @@ impl App {
             let keep = ui::menu_panel(ctx, theme, "m_girar", anchor, 236.0, |ui| {
                 let mut stay = true;
                 for (label, icon, cmd) in [
-                    ("Girar 90° a la derecha", Icon::I(Ico::Rotate), Cmd::Rotate(1)),
-                    ("Girar 90° a la izquierda", Icon::I(Ico::Rotate), Cmd::Rotate(3)),
+                    (
+                        "Girar 90° a la derecha",
+                        Icon::I(Ico::Rotate),
+                        Cmd::Rotate(1),
+                    ),
+                    (
+                        "Girar 90° a la izquierda",
+                        Icon::I(Ico::Rotate),
+                        Cmd::Rotate(3),
+                    ),
                     ("Girar 180°", Icon::I(Ico::Rotate), Cmd::Rotate(2)),
                     ("Voltear horizontalmente", Icon::I(Ico::FlipH), Cmd::FlipH),
                     ("Voltear verticalmente", Icon::I(Ico::FlipV), Cmd::FlipV),
@@ -1888,7 +2131,11 @@ impl App {
                     pending.push(Cmd::ToggleQatBelow);
                     stay = false;
                 }
-                let colapsar = if minimized { "Expandir la cinta" } else { "Minimizar la cinta" };
+                let colapsar = if minimized {
+                    "Expandir la cinta"
+                } else {
+                    "Minimizar la cinta"
+                };
                 if ui::menu_row(ui, theme, Icon::None, colapsar, None) {
                     pending.push(Cmd::ToggleRibbonMin);
                     stay = false;
@@ -1972,15 +2219,29 @@ impl App {
 
                             let mut rw = self.dialogs.rw;
                             let mut rh = self.dialogs.rh;
-                            if ui::dlg_field(ui, &theme, lang::t("Horizontal"), &mut rw, tope.clone(), suf)
-                                && self.dialogs.keep_ratio
+                            if ui::dlg_field(
+                                ui,
+                                &theme,
+                                lang::t("Horizontal"),
+                                &mut rw,
+                                tope.clone(),
+                                suf,
+                            ) && self.dialogs.keep_ratio
                             {
-                                rh = if self.dialogs.by_percent { rw } else { (rw * prop).round() };
+                                rh = if self.dialogs.by_percent {
+                                    rw
+                                } else {
+                                    (rw * prop).round()
+                                };
                             }
                             if ui::dlg_field(ui, &theme, lang::t("Vertical"), &mut rh, tope, suf)
                                 && self.dialogs.keep_ratio
                             {
-                                rw = if self.dialogs.by_percent { rh } else { (rh / prop).round() };
+                                rw = if self.dialogs.by_percent {
+                                    rh
+                                } else {
+                                    (rh / prop).round()
+                                };
                             }
                             self.dialogs.rw = rw;
                             self.dialogs.rh = rh;
@@ -2001,8 +2262,22 @@ impl App {
                             ui.add_space(4.0);
                             let mut sx = self.dialogs.skew_x;
                             let mut sy = self.dialogs.skew_y;
-                            ui::dlg_field(ui, &theme, lang::t("Horizontal"), &mut sx, -89.0..=89.0, "°");
-                            ui::dlg_field(ui, &theme, lang::t("Vertical"), &mut sy, -89.0..=89.0, "°");
+                            ui::dlg_field(
+                                ui,
+                                &theme,
+                                lang::t("Horizontal"),
+                                &mut sx,
+                                -89.0..=89.0,
+                                "°",
+                            );
+                            ui::dlg_field(
+                                ui,
+                                &theme,
+                                lang::t("Vertical"),
+                                &mut sy,
+                                -89.0..=89.0,
+                                "°",
+                            );
                             self.dialogs.skew_x = sx;
                             self.dialogs.skew_y = sy;
                             ui.add_space(12.0);
@@ -2031,7 +2306,9 @@ impl App {
                             }
                             if self.dialogs.skew_x != 0.0 || self.dialogs.skew_y != 0.0 {
                                 let bg = self.doc.color2;
-                                self.doc.canvas.skew(self.dialogs.skew_x, self.dialogs.skew_y, bg);
+                                self.doc
+                                    .canvas
+                                    .skew(self.dialogs.skew_x, self.dialogs.skew_y, bg);
                             }
                             self.tex = None;
                             resize = false;
@@ -2176,7 +2453,11 @@ impl App {
             self.build_hs_texture(ctx);
             let hs = self.hs_tex.clone();
             let mut hsv = self.dialogs.hsv;
-            let target = if self.picking_c1 { "Color 1" } else { "Color 2" };
+            let target = if self.picking_c1 {
+                "Color 1"
+            } else {
+                "Color 2"
+            };
             let mut add_custom = false;
             let mut accept = false;
 
@@ -2206,7 +2487,8 @@ impl App {
 
                     // --- cabecera ---
                     let (hd, _) = ui.allocate_exact_size(vec2(560.0, 34.0), Sense::hover());
-                    ui.painter().rect_filled(hd, 0.0, Color32::from(theme.surface_alt));
+                    ui.painter()
+                        .rect_filled(hd, 0.0, Color32::from(theme.surface_alt));
                     ui.painter().line_segment(
                         [
                             Pos2::new(hd.left(), hd.bottom() - 0.5),
@@ -2227,13 +2509,18 @@ impl App {
                     );
                     let xresp = ui.interact(xr, ui.id().with("cerrar_color"), Sense::click());
                     if xresp.hovered() {
-                        ui.painter().rect_filled(xr, 2.0, Color32::from(theme.button_hover));
+                        ui.painter()
+                            .rect_filled(xr, 2.0, Color32::from(theme.button_hover));
                     }
                     let st = egui::Stroke::new(1.2, Color32::from(theme.text_dim));
-                    ui.painter()
-                        .line_segment([xr.center() + vec2(-4.5, -4.5), xr.center() + vec2(4.5, 4.5)], st);
-                    ui.painter()
-                        .line_segment([xr.center() + vec2(4.5, -4.5), xr.center() + vec2(-4.5, 4.5)], st);
+                    ui.painter().line_segment(
+                        [xr.center() + vec2(-4.5, -4.5), xr.center() + vec2(4.5, 4.5)],
+                        st,
+                    );
+                    ui.painter().line_segment(
+                        [xr.center() + vec2(4.5, -4.5), xr.center() + vec2(-4.5, 4.5)],
+                        st,
+                    );
                     if xresp.clicked() {
                         color = false;
                     }
@@ -2308,8 +2595,10 @@ impl App {
                         ui.vertical(|ui| {
                             caption(ui, &theme, lang::t("Matiz y saturación"));
                             ui.horizontal(|ui| {
-                                let (rect, resp) = ui
-                                    .allocate_exact_size(vec2(232.0, 184.0), Sense::click_and_drag());
+                                let (rect, resp) = ui.allocate_exact_size(
+                                    vec2(232.0, 184.0),
+                                    Sense::click_and_drag(),
+                                );
                                 if let Some(t) = &hs {
                                     ui.painter().image(
                                         t.id(),
@@ -2341,26 +2630,22 @@ impl App {
                                 let w = egui::Stroke::new(1.0, Color32::WHITE);
                                 for dx in [-7.0f32, 3.0] {
                                     ui.painter().line_segment(
-                                        [
-                                            Pos2::new(c.x + dx, c.y),
-                                            Pos2::new(c.x + dx + 4.0, c.y),
-                                        ],
+                                        [Pos2::new(c.x + dx, c.y), Pos2::new(c.x + dx + 4.0, c.y)],
                                         w,
                                     );
                                 }
                                 for dy in [-7.0f32, 3.0] {
                                     ui.painter().line_segment(
-                                        [
-                                            Pos2::new(c.x, c.y + dy),
-                                            Pos2::new(c.x, c.y + dy + 4.0),
-                                        ],
+                                        [Pos2::new(c.x, c.y + dy), Pos2::new(c.x, c.y + dy + 4.0)],
                                         w,
                                     );
                                 }
 
                                 ui.add_space(7.0);
-                                let (bar, bresp) = ui
-                                    .allocate_exact_size(vec2(18.0, 184.0), Sense::click_and_drag());
+                                let (bar, bresp) = ui.allocate_exact_size(
+                                    vec2(18.0, 184.0),
+                                    Sense::click_and_drag(),
+                                );
                                 const BANDS: usize = 48;
                                 for i in 0..BANDS {
                                     let v = 1.0 - i as f32 / (BANDS - 1) as f32;
@@ -2383,8 +2668,8 @@ impl App {
                                 );
                                 if bresp.dragged() || bresp.clicked() {
                                     if let Some(p) = bresp.interact_pointer_pos() {
-                                        hsv[2] =
-                                            1.0 - ((p.y - bar.top()) / bar.height()).clamp(0.0, 1.0);
+                                        hsv[2] = 1.0
+                                            - ((p.y - bar.top()) / bar.height()).clamp(0.0, 1.0);
                                     }
                                 }
                                 let py = bar.top() + (1.0 - hsv[2]) * bar.height();
@@ -2463,7 +2748,8 @@ impl App {
                     // --- pie ---
                     ui.add_space(10.0);
                     let (ft, _) = ui.allocate_exact_size(vec2(560.0, 48.0), Sense::hover());
-                    ui.painter().rect_filled(ft, 0.0, Color32::from(theme.surface_alt));
+                    ui.painter()
+                        .rect_filled(ft, 0.0, Color32::from(theme.surface_alt));
                     ui.painter().line_segment(
                         [
                             Pos2::new(ft.left(), ft.top() + 0.5),
@@ -2481,12 +2767,14 @@ impl App {
                         Pos2::new(ok.left() - 8.0 - 84.0, ft.center().y - 14.0),
                         vec2(84.0, 28.0),
                     );
-                    for (r, label, primary) in
-                        [(ok, "Aceptar", true), (cancel, "Cancelar", false)]
+                    for (r, label, primary) in [(ok, "Aceptar", true), (cancel, "Cancelar", false)]
                     {
                         let resp = ui.interact(r, ui.id().with(label), Sense::click());
                         let (bg, fg) = if primary {
-                            (Color32::from(theme.accent), Color32::from(theme.accent_text))
+                            (
+                                Color32::from(theme.accent),
+                                Color32::from(theme.accent_text),
+                            )
                         } else if resp.hovered() {
                             (Color32::from(theme.button_hover), Color32::from(theme.text))
                         } else {
@@ -2577,7 +2865,8 @@ impl App {
 
                     // Cabecera del color de la pestaña Archivo.
                     let (hd, _) = ui.allocate_exact_size(vec2(660.0, 34.0), Sense::hover());
-                    ui.painter().rect_filled(hd, 0.0, Color32::from(theme.file_tab));
+                    ui.painter()
+                        .rect_filled(hd, 0.0, Color32::from(theme.file_tab));
                     ui.painter().text(
                         Pos2::new(hd.left() + 12.0, hd.center().y),
                         egui::Align2::LEFT_CENTER,
@@ -2591,10 +2880,14 @@ impl App {
                     );
                     let xresp = ui.interact(xr, ui.id().with("cerrar_archivo"), Sense::click());
                     let st = egui::Stroke::new(1.3, Color32::from(theme.file_tab_text));
-                    ui.painter()
-                        .line_segment([xr.center() + vec2(-4.5, -4.5), xr.center() + vec2(4.5, 4.5)], st);
-                    ui.painter()
-                        .line_segment([xr.center() + vec2(4.5, -4.5), xr.center() + vec2(-4.5, 4.5)], st);
+                    ui.painter().line_segment(
+                        [xr.center() + vec2(-4.5, -4.5), xr.center() + vec2(4.5, 4.5)],
+                        st,
+                    );
+                    ui.painter().line_segment(
+                        [xr.center() + vec2(4.5, -4.5), xr.center() + vec2(-4.5, 4.5)],
+                        st,
+                    );
                     if xresp.clicked() {
                         fm = false;
                     }
@@ -2614,8 +2907,8 @@ impl App {
                                                 sub: Option<Pane>,
                                                 enabled: bool|
                                  -> bool {
-                                    let (rect, resp) = ui
-                                        .allocate_exact_size(vec2(250.0, 34.0), Sense::click());
+                                    let (rect, resp) =
+                                        ui.allocate_exact_size(vec2(250.0, 34.0), Sense::click());
                                     let active = sub.is_some() && sub == Some(pane);
                                     if active {
                                         ui.painter().rect_filled(
@@ -2687,7 +2980,13 @@ impl App {
                                     );
                                 };
 
-                                if item(ui, Icon::I(Ico::New), lang::t("Nuevo"), Some(Pane::New), true) {
+                                if item(
+                                    ui,
+                                    Icon::I(Ico::New),
+                                    lang::t("Nuevo"),
+                                    Some(Pane::New),
+                                    true,
+                                ) {
                                     pending.push(Cmd::New);
                                     fm = false;
                                 }
@@ -2695,7 +2994,13 @@ impl App {
                                     pending.push(Cmd::Open);
                                     fm = false;
                                 }
-                                item(ui, Icon::I(Ico::Clock), lang::t("Recientes"), Some(Pane::Recent), true);
+                                item(
+                                    ui,
+                                    Icon::I(Ico::Clock),
+                                    lang::t("Recientes"),
+                                    Some(Pane::Recent),
+                                    true,
+                                );
 
                                 sep(ui);
 
@@ -2703,21 +3008,44 @@ impl App {
                                     pending.push(Cmd::Save);
                                     fm = false;
                                 }
-                                if item(ui, Icon::I(Ico::Save), lang::t("Guardar como…"), None, true) {
+                                if item(
+                                    ui,
+                                    Icon::I(Ico::Save),
+                                    lang::t("Guardar como…"),
+                                    None,
+                                    true,
+                                ) {
                                     pending.push(Cmd::SaveAs);
                                     fm = false;
                                 }
-                                item(ui, Icon::I(Ico::Export), lang::t("Exportar"), Some(Pane::Export), true);
+                                item(
+                                    ui,
+                                    Icon::I(Ico::Export),
+                                    lang::t("Exportar"),
+                                    Some(Pane::Export),
+                                    true,
+                                );
 
                                 sep(ui);
 
-                                if item(ui, Icon::I(Ico::Copy), lang::t("Copiar imagen"), None, true) {
+                                if item(
+                                    ui,
+                                    Icon::I(Ico::Copy),
+                                    lang::t("Copiar imagen"),
+                                    None,
+                                    true,
+                                ) {
                                     pending.push(Cmd::CopyImage);
                                     fm = false;
                                 }
                                 let has_path = self.path.is_some();
-                                if item(ui, Icon::I(Ico::Reveal), lang::t("Mostrar en el explorador"), None, has_path)
-                                {
+                                if item(
+                                    ui,
+                                    Icon::I(Ico::Reveal),
+                                    lang::t("Mostrar en el explorador"),
+                                    None,
+                                    has_path,
+                                ) {
                                     pending.push(Cmd::Reveal);
                                     fm = false;
                                 }
@@ -2732,11 +3060,18 @@ impl App {
                                     true,
                                 );
 
-                                if item(ui, Icon::I(Ico::Info), lang::t("Propiedades…"), None, true) {
+                                if item(ui, Icon::I(Ico::Info), lang::t("Propiedades…"), None, true)
+                                {
                                     pending.push(Cmd::PropertiesDialog);
                                     fm = false;
                                 }
-                                if item(ui, Icon::I(Ico::Palette), lang::t("Acerca de Lienzo"), None, true) {
+                                if item(
+                                    ui,
+                                    Icon::I(Ico::Palette),
+                                    lang::t("Acerca de Lienzo"),
+                                    None,
+                                    true,
+                                ) {
                                     pending.push(Cmd::About);
                                     fm = false;
                                 }
@@ -2748,7 +3083,8 @@ impl App {
 
                         // --- panel derecho, contextual ---
                         let (pr, _) = ui.allocate_exact_size(vec2(410.0, 404.0), Sense::hover());
-                        ui.painter().rect_filled(pr, 0.0, Color32::from(theme.surface_alt));
+                        ui.painter()
+                            .rect_filled(pr, 0.0, Color32::from(theme.surface_alt));
                         ui.painter().line_segment(
                             [
                                 Pos2::new(pr.left() + 0.5, pr.top()),
@@ -2772,10 +3108,8 @@ impl App {
                                     for (label, want_dark) in
                                         [(lang::t("Claro"), false), (lang::t("Oscuro"), true)]
                                     {
-                                        let (r, resp) = ui.allocate_exact_size(
-                                            vec2(182.0, 40.0),
-                                            Sense::click(),
-                                        );
+                                        let (r, resp) = ui
+                                            .allocate_exact_size(vec2(182.0, 40.0), Sense::click());
                                         let on = theme.dark == want_dark;
                                         ui.painter().rect_filled(
                                             r,
@@ -2806,7 +3140,10 @@ impl App {
                                             vec2(22.0, 22.0),
                                         );
                                         let (paper, ink) = if want_dark {
-                                            (Color32::from_rgb(0x2b, 0x2b, 0x2b), Color32::from_rgb(0xe8, 0xe8, 0xe8))
+                                            (
+                                                Color32::from_rgb(0x2b, 0x2b, 0x2b),
+                                                Color32::from_rgb(0xe8, 0xe8, 0xe8),
+                                            )
                                         } else {
                                             (Color32::WHITE, Color32::from_rgb(0x1a, 0x1a, 0x1a))
                                         };
@@ -2814,7 +3151,10 @@ impl App {
                                         ui.painter().rect_stroke(
                                             sw,
                                             2.0,
-                                            egui::Stroke::new(1.0, Color32::from(theme.border_strong)),
+                                            egui::Stroke::new(
+                                                1.0,
+                                                Color32::from(theme.border_strong),
+                                            ),
                                             egui::StrokeKind::Inside,
                                         );
                                         ui.painter().line_segment(
@@ -2956,9 +3296,7 @@ impl App {
                                 let all: Vec<(String, usize, usize)> =
                                     std::iter::once(("Igual que ahora".to_string(), cw, ch))
                                         .chain(
-                                            PRESETS
-                                                .iter()
-                                                .map(|(n, w, h)| (n.to_string(), *w, *h)),
+                                            PRESETS.iter().map(|(n, w, h)| (n.to_string(), *w, *h)),
                                         )
                                         .collect();
                                 for row in all.chunks(2) {
@@ -2969,13 +3307,16 @@ impl App {
                                                 Sense::click(),
                                             );
                                             let on = *w == cw && *h == ch;
-                                            ui.painter()
-                                                .rect_filled(r, 3.0, Color32::from(theme.surface));
+                                            ui.painter().rect_filled(
+                                                r,
+                                                3.0,
+                                                Color32::from(theme.surface),
+                                            );
                                             ui.painter().rect_stroke(
                                                 r,
                                                 3.0,
                                                 egui::Stroke::new(
-                                                    if on || resp.hovered() { 1.0 } else { 1.0 },
+                                                    1.0,
                                                     if on || resp.hovered() {
                                                         Color32::from(theme.accent)
                                                     } else {
@@ -3066,10 +3407,7 @@ impl App {
                                     }
                                 });
                                 ui.add_space(8.0);
-                                let (w, h) = (
-                                    cw * scale as usize / 100,
-                                    ch * scale as usize / 100,
-                                );
+                                let (w, h) = (cw * scale as usize / 100, ch * scale as usize / 100);
                                 ui.label(
                                     egui::RichText::new(format!("Saldrá en {w} × {h} px"))
                                         .size(theme.font_size)
@@ -3164,9 +3502,18 @@ impl App {
                             let iw = W - 36.0;
                             // Salen de Cargo.toml, no escritos acá: así el
                             // diálogo no puede desfasarse del paquete.
-                            ui::info_row(ui, &theme, iw, lang::t("Autor"), env!("CARGO_PKG_AUTHORS"));
                             ui::info_row(
-                                ui, &theme, iw, lang::t("Repositorio"),
+                                ui,
+                                &theme,
+                                iw,
+                                lang::t("Autor"),
+                                env!("CARGO_PKG_AUTHORS"),
+                            );
+                            ui::info_row(
+                                ui,
+                                &theme,
+                                iw,
+                                lang::t("Repositorio"),
                                 env!("CARGO_PKG_REPOSITORY").trim_start_matches("https://"),
                             );
                             ui::info_row(ui, &theme, iw, lang::t("Licencia"), "MIT");
@@ -3184,15 +3531,103 @@ impl App {
                     });
 
                     ui.add_space(16.0);
-                    match ui::dialog_footer(ui, &theme, W, "Cerrar", None) {
-                        Some(_) => about = false,
-                        None => {}
+                    if ui::dialog_footer(ui, &theme, W, "Cerrar", None).is_some() {
+                        about = false;
                     }
                 });
         }
         self.dialogs.about = about;
 
         pending
+    }
+
+    fn unsaved_dialog(&mut self, ctx: &egui::Context) {
+        const W: f32 = 360.0;
+        let Some(action) = self.pending_action.clone() else {
+            return;
+        };
+        let theme = self.theme().clone();
+        let name = self
+            .path
+            .as_ref()
+            .and_then(|p| p.file_name())
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_else(|| "Sin título".into());
+        let mut choice = None;
+
+        egui::Modal::new(egui::Id::new("cambios_sin_guardar"))
+            .frame(ui::dialog_frame(&theme))
+            .show(ctx, |ui| {
+                ui.set_width(W);
+                if ui::dialog_header(ui, &theme, W, "Cambios sin guardar") {
+                    choice = Some(2);
+                }
+
+                ui.add_space(18.0);
+                ui.horizontal(|ui| {
+                    ui.add_space(16.0);
+                    ui.vertical(|ui| {
+                        ui.set_width(W - 32.0);
+                        ui.label(format!("¿Querés guardar los cambios de «{name}»?"));
+                    });
+                    ui.add_space(16.0);
+                });
+                ui.add_space(18.0);
+
+                if let Some(i) = ui::dialog_footer_buttons(
+                    ui,
+                    &theme,
+                    W,
+                    &[
+                        (lang::t("Guardar"), true),
+                        ("No guardar", false),
+                        (lang::t("Cancelar"), false),
+                    ],
+                ) {
+                    choice = Some(i);
+                }
+            });
+
+        match choice {
+            Some(0) if self.save_current(ctx) => {
+                self.pending_action = None;
+                self.perform_action(action, ctx);
+            }
+            Some(1) => {
+                self.pending_action = None;
+                self.perform_action(action, ctx);
+            }
+            Some(2) => {
+                self.pending_action = None;
+                self.allow_close = false;
+            }
+            _ => {}
+        }
+    }
+
+    fn thumbnail(&mut self, ctx: &egui::Context) {
+        if !self.show_thumbnail {
+            return;
+        }
+        let Some(tex) = self.tex.as_ref() else { return };
+        let id = tex.id();
+        let (w, h) = (self.doc.canvas.w as f32, self.doc.canvas.h as f32);
+        let scale = (240.0 / w).min(180.0 / h).min(1.0);
+        let size = vec2((w * scale).max(1.0), (h * scale).max(1.0));
+        let mut open = true;
+        egui::Window::new(lang::t("Miniatura"))
+            .open(&mut open)
+            .resizable(false)
+            .show(ctx, |ui| {
+                let (rect, _) = ui.allocate_exact_size(size, Sense::hover());
+                ui.painter().image(
+                    id,
+                    rect,
+                    egui::Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
+                    Color32::WHITE,
+                );
+            });
+        self.show_thumbnail = open;
     }
 
     /// El cuadro de texto flotante. Va sobre un `TextEdit` de verdad y no sobre
@@ -3207,7 +3642,9 @@ impl App {
     /// escribís, y de paso heredamos cursor, selección, flechas, Ctrl+A y —lo
     /// que más importa acá— las teclas muertas de los acentos y la ñ.
     fn text_overlay(&mut self, ctx: &egui::Context, origin: egui::Rect, zoom: f32) {
-        let Some(mut tb) = self.text_box.take() else { return };
+        let Some(mut tb) = self.text_box.take() else {
+            return;
+        };
         let theme = self.theme().clone();
         let scr = |x: f32, y: f32| Pos2::new(origin.left() + x * zoom, origin.top() + y * zoom);
         let r = egui::Rect::from_min_max(scr(tb.x, tb.y), scr(tb.x + tb.w, tb.y + tb.h));
@@ -3251,7 +3688,12 @@ impl App {
         let t = ctx.input(|i| i.time) as f32;
         let offset = (t * 16.0) % 8.0;
         let s_ants = egui::Stroke::new(1.0, Color32::from(theme.text));
-        let corners = [r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()];
+        let corners = [
+            r.left_top(),
+            r.right_top(),
+            r.right_bottom(),
+            r.left_bottom(),
+        ];
         for i in 0..4 {
             p.extend(egui::Shape::dashed_line_with_offset(
                 &[corners[i], corners[(i + 1) % 4]],
@@ -3283,8 +3725,14 @@ impl App {
 /// borde y 1 el opuesto. Con 0.5 ese eje no se mueve, así que redimensionar es
 /// una sola cuenta para las ocho en vez de ocho casos distintos.
 const T_HANDLES: [(f32, f32); 8] = [
-    (0.0, 0.0), (0.5, 0.0), (1.0, 0.0), (1.0, 0.5),
-    (1.0, 1.0), (0.5, 1.0), (0.0, 1.0), (0.0, 0.5),
+    (0.0, 0.0),
+    (0.5, 0.0),
+    (1.0, 0.0),
+    (1.0, 0.5),
+    (1.0, 1.0),
+    (0.5, 1.0),
+    (0.0, 1.0),
+    (0.0, 0.5),
 ];
 
 /// Qué se está arrastrando del cuadro de texto.
@@ -3323,6 +3771,14 @@ impl eframe::App for App {
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
+        if ctx.input(|i| i.viewport().close_requested())
+            && !self.allow_close
+            && self.has_unsaved_changes()
+        {
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            self.dialogs.close_all();
+            self.pending_action = Some(PendingAction::Exit);
+        }
         ctx.send_viewport_cmd(egui::ViewportCommand::Title(self.title()));
 
         for c in self.keyboard(&ctx) {
@@ -3347,101 +3803,105 @@ impl eframe::App for App {
         // panel de abajo es el que queda pegado al borde de la ventana. Yendo
         // después, la paleta de XP le quedaba *debajo*, al revés que en Paint.
         if self.show_status {
-        egui::Panel::bottom("estado")
-            .exact_size(28.0)
-            .show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    ui.set_min_height(22.0);
-                    ui.add_space(4.0);
-                    ui.label(&self.status);
-                    if let Some(s) = &self.doc.sel {
-                        ui.separator();
-                        ui.label(format!("{} × {} px", s.r.w, s.r.h));
-                    }
-                    // El grosor, a mano y con **todos** los valores: arriba la
-                    // cinta ofrece cuatro y nada más. Repetir esos cuatro acá
-                    // abajo no agregaría nada; el motor acepta cualquier ancho.
-                    //
-                    // Siempre a la vista, apagado con las herramientas que no
-                    // llevan grosor —bote, cuentagotas, lupa, selección—, igual
-                    // que Paint apaga su botón Tamaño. Escondiéndolo del todo no
-                    // se encuentra nunca: quien tomó el bote no sabe que existe.
-                    //
-                    // En XP ya vive en la caja de opciones y en SW en el lector,
-                    // así que ahí sería el tercer sitio para lo mismo.
-                    if !matches!(theme.chrome, theme::Chrome::Palette | theme::Chrome::Holo) {
-                        let usa = matches!(
-                            self.doc.tool,
-                            Tool::Pencil | Tool::Brush | Tool::Eraser | Tool::Shape
-                        );
-                        ui.separator();
-                        ui.add_enabled(usa, egui::Label::new(lang::t("Grosor")));
-                        // La muestra al ancho real, topada al alto de la barra.
-                        let (r, _) = ui.allocate_exact_size(vec2(30.0, 20.0), Sense::hover());
-                        ui.painter().line_segment(
-                            [
-                                Pos2::new(r.left() + 5.0, r.center().y),
-                                Pos2::new(r.right() - 5.0, r.center().y),
-                            ],
-                            egui::Stroke::new(
-                                self.doc.width.min(16.0),
-                                Color32::from(if usa { theme.text } else { theme.text_dim }),
-                            ),
-                        );
-                        // La goma llega más lejos: borrar de a 50 px es lento.
-                        let tope = if self.doc.tool == Tool::Eraser { 100.0 } else { 50.0 };
-                        ui.add_enabled_ui(usa, |ui| {
-                            ui.add_sized(
-                                vec2(128.0, 18.0),
-                                egui::Slider::new(&mut self.doc.width, 1.0..=tope)
-                                    .step_by(1.0)
-                                    .suffix(" px")
-                                    .fixed_decimals(0),
-                            );
-                        });
-                    }
-                    // En el chrome de macOS la derecha de la barra queda vacía:
-                    // el tamaño ya está en el título y el zoom en la barra de
-                    // herramientas, y repetirlos abajo es decirlos dos veces.
-                    if theme.chrome == theme::Chrome::Mac {
-                        return;
-                    }
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            egui::Panel::bottom("estado")
+                .exact_size(28.0)
+                .show(ui, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.set_min_height(22.0);
                         ui.add_space(4.0);
-                        if ui.small_button("+").clicked() {
-                            self.zoom_idx = (self.zoom_idx + 1).min(ZOOMS.len() - 1);
+                        ui.label(&self.status);
+                        if let Some(s) = &self.doc.sel {
+                            ui.separator();
+                            ui.label(format!("{} × {} px", s.r.w, s.r.h));
                         }
-                        // Deslizador sobre el índice, no sobre el porcentaje:
-                        // los once niveles no son lineales.
-                        let mut idx = self.zoom_idx as f32;
-                        if ui
-                            .add_sized(
-                                vec2(110.0, 18.0),
-                                egui::Slider::new(&mut idx, 0.0..=(ZOOMS.len() - 1) as f32)
-                                    .show_value(false),
-                            )
-                            .changed()
-                        {
-                            self.zoom_idx = idx.round() as usize;
+                        // El grosor, a mano y con **todos** los valores: arriba la
+                        // cinta ofrece cuatro y nada más. Repetir esos cuatro acá
+                        // abajo no agregaría nada; el motor acepta cualquier ancho.
+                        //
+                        // Siempre a la vista, apagado con las herramientas que no
+                        // llevan grosor —bote, cuentagotas, lupa, selección—, igual
+                        // que Paint apaga su botón Tamaño. Escondiéndolo del todo no
+                        // se encuentra nunca: quien tomó el bote no sabe que existe.
+                        //
+                        // En XP ya vive en la caja de opciones y en SW en el lector,
+                        // así que ahí sería el tercer sitio para lo mismo.
+                        if !matches!(theme.chrome, theme::Chrome::Palette | theme::Chrome::Holo) {
+                            let usa = matches!(
+                                self.doc.tool,
+                                Tool::Pencil | Tool::Brush | Tool::Eraser | Tool::Shape
+                            );
+                            ui.separator();
+                            ui.add_enabled(usa, egui::Label::new(lang::t("Grosor")));
+                            // La muestra al ancho real, topada al alto de la barra.
+                            let (r, _) = ui.allocate_exact_size(vec2(30.0, 20.0), Sense::hover());
+                            ui.painter().line_segment(
+                                [
+                                    Pos2::new(r.left() + 5.0, r.center().y),
+                                    Pos2::new(r.right() - 5.0, r.center().y),
+                                ],
+                                egui::Stroke::new(
+                                    self.doc.width.min(16.0),
+                                    Color32::from(if usa { theme.text } else { theme.text_dim }),
+                                ),
+                            );
+                            // La goma llega más lejos: borrar de a 50 px es lento.
+                            let tope = if self.doc.tool == Tool::Eraser {
+                                100.0
+                            } else {
+                                50.0
+                            };
+                            ui.add_enabled_ui(usa, |ui| {
+                                ui.add_sized(
+                                    vec2(128.0, 18.0),
+                                    egui::Slider::new(&mut self.doc.width, 1.0..=tope)
+                                        .step_by(1.0)
+                                        .suffix(" px")
+                                        .fixed_decimals(0),
+                                );
+                            });
                         }
-                        if ui.small_button("−").clicked() {
-                            self.zoom_idx = self.zoom_idx.saturating_sub(1);
+                        // En el chrome de macOS la derecha de la barra queda vacía:
+                        // el tamaño ya está en el título y el zoom en la barra de
+                        // herramientas, y repetirlos abajo es decirlos dos veces.
+                        if theme.chrome == theme::Chrome::Mac {
+                            return;
                         }
-                        ui.label(format!("{}%", (zoom * 100.0).round() as i32));
-                        ui.separator();
-                        // Lo que va a pesar el PNG, aproximado por los píxeles
-                        // crudos: da la escala sin tener que comprimir nada.
-                        let bytes = self.doc.canvas.w * self.doc.canvas.h * 4;
-                        ui.label(if bytes >= 1 << 20 {
-                            format!("{:.1} MB", bytes as f32 / (1 << 20) as f32)
-                        } else {
-                            format!("{} KB", bytes / 1024)
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            ui.add_space(4.0);
+                            if ui.small_button("+").clicked() {
+                                self.zoom_idx = (self.zoom_idx + 1).min(ZOOMS.len() - 1);
+                            }
+                            // Deslizador sobre el índice, no sobre el porcentaje:
+                            // los once niveles no son lineales.
+                            let mut idx = self.zoom_idx as f32;
+                            if ui
+                                .add_sized(
+                                    vec2(110.0, 18.0),
+                                    egui::Slider::new(&mut idx, 0.0..=(ZOOMS.len() - 1) as f32)
+                                        .show_value(false),
+                                )
+                                .changed()
+                            {
+                                self.zoom_idx = idx.round() as usize;
+                            }
+                            if ui.small_button("−").clicked() {
+                                self.zoom_idx = self.zoom_idx.saturating_sub(1);
+                            }
+                            ui.label(format!("{}%", (zoom * 100.0).round() as i32));
+                            ui.separator();
+                            // Lo que va a pesar el PNG, aproximado por los píxeles
+                            // crudos: da la escala sin tener que comprimir nada.
+                            let bytes = self.doc.canvas.w * self.doc.canvas.h * 4;
+                            ui.label(if bytes >= 1 << 20 {
+                                format!("{:.1} MB", bytes as f32 / (1 << 20) as f32)
+                            } else {
+                                format!("{} KB", bytes / 1024)
+                            });
+                            ui.separator();
+                            ui.label(format!("{} × {} px", self.doc.canvas.w, self.doc.canvas.h));
                         });
-                        ui.separator();
-                        ui.label(format!("{} × {} px", self.doc.canvas.w, self.doc.canvas.h));
                     });
                 });
-            });
         }
 
         let names = theme::families(&self.themes, theme.dark);
@@ -3458,6 +3918,7 @@ impl eframe::App for App {
                 show_grid: self.show_grid,
                 show_status: self.show_status,
                 show_thumbnail: self.show_thumbnail,
+                zoom,
                 qat: self.qat,
                 qat_below: self.qat_below,
                 ribbon_min: self.ribbon_min,
@@ -3471,9 +3932,15 @@ impl eframe::App for App {
         // Todos los que se anclan a un botón. El de acceso rápido faltaba acá,
         // así que se abría con el ancla del menú anterior —o en el origen— y
         // caía en medio del lienzo.
-        if out.open_paste_menu || out.open_select_menu || out.open_brushes
-            || out.open_outline_menu || out.open_fill_menu || out.open_rotate_menu
-            || out.open_size_menu || out.open_theme_menu || out.open_qat_menu
+        if out.open_paste_menu
+            || out.open_select_menu
+            || out.open_brushes
+            || out.open_outline_menu
+            || out.open_fill_menu
+            || out.open_rotate_menu
+            || out.open_size_menu
+            || out.open_theme_menu
+            || out.open_qat_menu
         {
             self.menu_anchor = out.menu_anchor;
         }
@@ -3515,7 +3982,11 @@ impl eframe::App for App {
             self.dialogs.file_menu = true;
         }
         if out.open_color_dialog {
-            let c = if self.picking_c1 { self.doc.color1 } else { self.doc.color2 };
+            let c = if self.picking_c1 {
+                self.doc.color1
+            } else {
+                self.doc.color2
+            };
             let h = ecolor::Hsva::from_srgb([c.r(), c.g(), c.b()]);
             self.dialogs.hsv = [h.h, h.s, h.v];
             self.dialogs.color = true;
@@ -3528,12 +3999,12 @@ impl eframe::App for App {
         egui::CentralPanel::default()
             .frame(egui::Frame::NONE)
             .show(ui, |ui| {
-            self.canvas_area(ui);
-            if self.text_box.is_some() {
-                let origin = self.canvas_rect;
-                self.text_overlay(&ctx, origin, zoom);
-            }
-        });
+                self.canvas_area(ui);
+                if self.text_box.is_some() {
+                    let origin = self.canvas_rect;
+                    self.text_overlay(&ctx, origin, zoom);
+                }
+            });
 
         // Lo que va **encima** del lienzo y no en un panel: la píldora de
         // GNOME y la consola de SW. Si les diéramos un panel les comería
@@ -3546,6 +4017,7 @@ impl eframe::App for App {
                 show_grid: self.show_grid,
                 show_status: self.show_status,
                 show_thumbnail: self.show_thumbnail,
+                zoom,
                 qat: self.qat,
                 qat_below: self.qat_below,
                 ribbon_min: self.ribbon_min,
@@ -3578,5 +4050,22 @@ impl eframe::App for App {
         for c in self.dialogs(&ctx) {
             self.apply(c, &ctx);
         }
+        self.thumbnail(&ctx);
+        self.unsaved_dialog(&ctx);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rgba_se_compone_sobre_blanco() {
+        assert_eq!(opaque_rgba(&[255, 0, 0, 0]), Color32::WHITE);
+        assert_eq!(opaque_rgba(&[0, 0, 0, 255]), Color32::BLACK);
+        assert_eq!(
+            opaque_rgba(&[255, 0, 0, 128]),
+            Color32::from_rgb(255, 127, 127)
+        );
     }
 }

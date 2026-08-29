@@ -120,9 +120,6 @@ pub struct Theme {
     pub text: Col,
     pub text_dim: Col,
     pub font_size: f32,
-    /// Ruta opcional a un .ttf. Si no parsea, se ignora con un aviso: un
-    /// archivo de fuente corrupto hace `panic!` adentro de egui, no `Result`.
-    pub font_path: Option<String>,
 
     /// Los iconos de herramientas y formas. En Paint son azules, no negros:
     /// es la diferencia que más se nota de lejos.
@@ -196,7 +193,6 @@ impl Default for Theme {
             text: Col::rgb(0x1a, 0x1a, 0x1a),
             text_dim: Col::rgb(0x6b, 0x6b, 0x6b),
             font_size: 12.0,
-            font_path: None,
 
             icon: Col::rgb(0x1e, 0x6f, 0xc4),
 
@@ -245,7 +241,11 @@ impl Theme {
         // seis temas claros dejaba el cursor de texto, las sombras y los bordes
         // de ventana con valores pensados para fondo negro.
         let mut s = egui::Style {
-            visuals: if self.dark { egui::Visuals::dark() } else { egui::Visuals::light() },
+            visuals: if self.dark {
+                egui::Visuals::dark()
+            } else {
+                egui::Visuals::light()
+            },
             ..Default::default()
         };
         let v = &mut s.visuals;
@@ -336,7 +336,7 @@ impl Theme {
         s.spacing.item_spacing = egui::vec2(self.item_spacing, self.item_spacing);
         s.spacing.button_padding = egui::vec2(self.button_padding, self.button_padding * 0.6);
 
-        for (_, f) in s.text_styles.iter_mut() {
+        for f in s.text_styles.values_mut() {
             f.size = self.font_size * (f.size / 12.0).max(0.8);
         }
         s.text_styles.insert(
@@ -350,7 +350,6 @@ impl Theme {
 
         s
     }
-
 }
 
 /// Pinta un degradé vertical de dos paradas. egui no los tiene, así que las
@@ -376,7 +375,10 @@ pub fn gradient_bar(painter: &egui::Painter, rect: egui::Rect, top: Color32, bot
         );
         let y = rect.top() + i as f32 * h;
         painter.rect_filled(
-            egui::Rect::from_min_size(egui::pos2(rect.left(), y), egui::vec2(rect.width(), h + 1.0)),
+            egui::Rect::from_min_size(
+                egui::pos2(rect.left(), y),
+                egui::vec2(rect.width(), h + 1.0),
+            ),
             0.0,
             c,
         );
@@ -412,7 +414,11 @@ pub fn families(themes: &[Theme], dark: bool) -> Vec<(String, usize)> {
         } else {
             t.name.clone()
         };
-        let idx = if t.dark == dark { i } else { pareja.unwrap_or(i) };
+        let idx = if t.dark == dark {
+            i
+        } else {
+            pareja.unwrap_or(i)
+        };
         out.push((claro, idx));
     }
     out
@@ -430,13 +436,22 @@ pub const BUILTIN: [(&str, &str); 20] = [
     ("SW", include_str!("../themes/sw.json")),
     ("SW nocturno", include_str!("../themes/sw-noche.json")),
     ("Windows 10", include_str!("../themes/win10.json")),
-    ("Windows 10 oscuro", include_str!("../themes/win10-dark.json")),
+    (
+        "Windows 10 oscuro",
+        include_str!("../themes/win10-dark.json"),
+    ),
     ("Windows 11", include_str!("../themes/win11.json")),
-    ("Windows 11 oscuro", include_str!("../themes/win11-dark.json")),
+    (
+        "Windows 11 oscuro",
+        include_str!("../themes/win11-dark.json"),
+    ),
     ("Windows 7", include_str!("../themes/win7.json")),
     ("Windows 7 oscuro", include_str!("../themes/win7-dark.json")),
     ("Windows XP", include_str!("../themes/winxp.json")),
-    ("Windows XP oscuro", include_str!("../themes/winxp-dark.json")),
+    (
+        "Windows XP oscuro",
+        include_str!("../themes/winxp-dark.json"),
+    ),
     ("GNOME", include_str!("../themes/linux.json")),
     ("GNOME oscuro", include_str!("../themes/linux-dark.json")),
     ("KDE", include_str!("../themes/kde.json")),
@@ -465,7 +480,10 @@ pub fn load_all() -> Vec<Theme> {
             if path.extension().and_then(|e| e.to_str()) != Some("json") {
                 continue;
             }
-            match std::fs::read_to_string(&path).map_err(|e| e.to_string()).and_then(|s| Theme::from_json(&s)) {
+            match std::fs::read_to_string(&path)
+                .map_err(|e| e.to_string())
+                .and_then(|s| Theme::from_json(&s))
+            {
                 Ok(t) => {
                     if !out.iter().any(|e| e.name == t.name) {
                         out.push(t);
@@ -498,12 +516,19 @@ mod tests {
             .map(|(n, src)| Theme::from_json(src).unwrap_or_else(|e| panic!("{n}: {e}")))
             .collect();
         for t in &ts {
-            let par = t.pair.as_ref().unwrap_or_else(|| panic!("{} no tiene pareja", t.name));
+            let par = t
+                .pair
+                .as_ref()
+                .unwrap_or_else(|| panic!("{} no tiene pareja", t.name));
             let otro = ts
                 .iter()
                 .find(|o| &o.name == par)
                 .unwrap_or_else(|| panic!("{}: la pareja {par:?} no existe", t.name));
-            assert_ne!(otro.dark, t.dark, "{} y {par} son los dos del mismo modo", t.name);
+            assert_ne!(
+                otro.dark, t.dark,
+                "{} y {par} son los dos del mismo modo",
+                t.name
+            );
             assert_eq!(
                 otro.pair.as_deref(),
                 Some(t.name.as_str()),
@@ -538,7 +563,10 @@ mod tests {
         assert_eq!(Color32::from(t.accent), Color32::from_rgb(255, 0, 0));
         // No especificado: viene del default de Windows 10.
         assert_eq!(t.chrome, Chrome::Ribbon);
-        assert_eq!(Color32::from(t.workspace), Color32::from_rgb(0x80, 0x80, 0x80));
+        assert_eq!(
+            Color32::from(t.workspace),
+            Color32::from_rgb(0x80, 0x80, 0x80)
+        );
     }
 
     #[test]
@@ -560,10 +588,14 @@ mod tests {
     fn todos_los_temas_de_fabrica_parsean_y_no_se_repiten() {
         let mut nombres = Vec::new();
         for (name, src) in BUILTIN {
-            let t = Theme::from_json(src)
-                .unwrap_or_else(|e| panic!("el tema {name} no parsea: {e}"));
+            let t =
+                Theme::from_json(src).unwrap_or_else(|e| panic!("el tema {name} no parsea: {e}"));
             assert!(!t.name.is_empty(), "{name} no tiene nombre");
-            assert!(!nombres.contains(&t.name), "el nombre «{}» está dos veces", t.name);
+            assert!(
+                !nombres.contains(&t.name),
+                "el nombre «{}» está dos veces",
+                t.name
+            );
             nombres.push(t.name);
         }
     }
