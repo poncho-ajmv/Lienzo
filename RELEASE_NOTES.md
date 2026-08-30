@@ -1,4 +1,4 @@
-# Lienzo 0.1.2
+# Lienzo 0.1.3
 
 Esta versión corrige el zoom por rueda, mejora la presentación pública del
 proyecto y renueva la instalación en Windows.
