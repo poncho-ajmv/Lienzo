@@ -16,6 +16,8 @@ proyecto y renueva la instalación en Windows.
   propiedades de Windows.
 - Nuevo logo oficial en el README y en los paquetes de los tres sistemas; el
   icono de Windows incluye siete resoluciones nativas, de 16 a 256 px.
+- La interfaz reemplaza la antigua paleta simplificada por la marca oficial sin
+  fondo; la ventana nativa también muestra el logo de Lienzo.
 - El README muestra por separado los diez temas claros y los diez oscuros.
 
 ## Descargas

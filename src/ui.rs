@@ -6,9 +6,9 @@
 //! parpadean un frame. La cinta de Paint es geometría fija de todos modos, así
 //! que se declaran las alturas y se dibuja una sola vez.
 //!
-//! El otro truco: **ningún archivo de iconos.** Las formas dibujan su propio
-//! icono con la misma lista de puntos que usan en el lienzo, y los iconos de
-//! herramienta son trazos vectoriales que toman el color del tema.
+//! Las formas dibujan su propio icono con la misma lista de puntos que usan en
+//! el lienzo, y los iconos de herramienta son trazos vectoriales que toman el
+//! color del tema. La única imagen es la marca oficial de Lienzo.
 
 use crate::doc::{Doc, SelectMode, Stroke, Tool};
 use crate::lang;
@@ -721,58 +721,31 @@ fn undo_arrow(ui: &Ui, r: Rect, col: Color32, forward: bool) {
     p.add(egui::Shape::line(pts, s));
 }
 
-/// El icono de la aplicación: una paleta de pintor con sus colores y el hueco
-/// del pulgar. Dibujado, como todo lo demás — cero archivos de imagen.
-/// La marca: la paleta de pintor.
-///
-/// El cuerpo y los pegotes tienen color propio y no el del tema, como cualquier
-/// icono de aplicación: es la única cosa de la interfaz que sí puede tener
-/// color, porque no es interfaz sino identidad. El contorno **sí** sale del
-/// tema, y es lo que hace que se despegue igual del blanco de la barra clara
-/// que del negro de la oscura.
-pub fn app_icon(ui: &Ui, r: Rect, col: Color32) {
-    let p = ui.painter();
-    let c = r.center();
-    let rx = r.width() * 0.44;
-    let ry = r.height() * 0.40;
+/// La marca oficial de Lienzo sin fondo, usada dentro de la interfaz.
+pub fn app_icon(ui: &Ui, r: Rect, _col: Color32) {
+    let id = egui::Id::new("lienzo_app_icon_texture");
+    let texture = ui.ctx().data_mut(|data| {
+        data.get_temp::<egui::TextureHandle>(id).unwrap_or_else(|| {
+            let icon = eframe::icon_data::from_png_bytes(include_bytes!(
+                "../assets/icons/lienzo-mark.png"
+            ))
+            .expect("la marca de Lienzo debe ser un PNG válido");
+            let texture = ui.ctx().load_texture(
+                "lienzo_app_icon",
+                egui::ColorImage::from(icon),
+                egui::TextureOptions::LINEAR,
+            );
+            data.insert_temp(id, texture.clone());
+            texture
+        })
+    });
 
-    // El cuerpo: una elipse con la muesca del pulgar abajo a la derecha.
-    let mut body = Vec::with_capacity(28);
-    for i in 0..28 {
-        let a = i as f32 / 28.0 * std::f32::consts::TAU;
-        let k = if a > 0.15 && a < 1.15 { 0.72 } else { 1.0 };
-        body.push(Pos2::new(c.x + rx * a.cos() * k, c.y + ry * a.sin() * k));
-    }
-    p.add(egui::Shape::convex_polygon(
-        body,
-        Color32::from_rgb(0xf3, 0xe4, 0xc8),
-        egui::Stroke::new((r.width() * 0.055).clamp(1.0, 2.4), col),
-    ));
-
-    // El hueco del pulgar.
-    p.circle_filled(
-        Pos2::new(c.x + rx * 0.34, c.y + ry * 0.30),
-        r.width() * 0.10,
+    ui.painter().image(
+        texture.id(),
+        r,
+        Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
         Color32::WHITE,
     );
-
-    // Los pegotes, en el orden de la paleta de Paint.
-    for (i, pig) in [
-        Color32::from_rgb(0xed, 0x1c, 0x24),
-        Color32::from_rgb(0xff, 0xf2, 0x00),
-        Color32::from_rgb(0x22, 0xb1, 0x4c),
-        Color32::from_rgb(0x00, 0xa2, 0xe8),
-    ]
-    .iter()
-    .enumerate()
-    {
-        let a = std::f32::consts::PI * (1.15 + i as f32 * 0.24);
-        p.circle_filled(
-            Pos2::new(c.x + rx * 0.52 * a.cos(), c.y + ry * 0.52 * a.sin()),
-            r.width() * 0.085,
-            *pig,
-        );
-    }
 }
 
 /// Qué botones puede llevar la barra de acceso rápido.

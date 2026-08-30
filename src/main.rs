@@ -240,6 +240,10 @@ fn main() -> eframe::Result {
             .with_titlebar_shown(true)
             .with_title_shown(true)
             .with_fullsize_content_view(false)
+            .with_icon(
+                eframe::icon_data::from_png_bytes(include_bytes!("../assets/icons/lienzo.png"))
+                    .expect("el logo de Lienzo debe ser un PNG válido"),
+            )
             .with_title("Sin título - Lienzo"),
         ..Default::default()
     };

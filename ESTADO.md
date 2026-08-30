@@ -66,6 +66,8 @@ publica con la versión en el nombre y su archivo `SHA256SUMS.txt`.
   advertir sobre una versión más reciente ya instalada.
 - El nuevo logo oficial aparece en el README y en los paquetes de macOS,
   Windows y Linux; el ICO incluye siete resoluciones nativas.
+- La barra y el diálogo Acerca de usan la marca oficial sin fondo, mientras la
+  ventana del sistema usa el logo completo.
 - Los veinte temas se muestran en galerías separadas por modo claro y oscuro.
 
 ## Cambios de 0.1.1
