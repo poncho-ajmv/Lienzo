@@ -16,8 +16,6 @@ GNOME, KDE, macOS y tres estilos propios. Comenzó como una necesidad personal y
 hoy lo comparto con la comunidad para que cualquiera pueda usarlo, estudiarlo y
 mejorarlo.
 
-![Lienzo en macOS con el tema Windows 10](assets/screenshots/lienzo-principal.png)
-
 ```sh
 cargo test    # el motor, sin ventana
 cargo run     # la aplicación
@@ -92,6 +90,19 @@ flotante, según el tema— y el grosor también en la barra de abajo.
 
 El tema, el idioma y los colores se eligen en **Archivo → Configuración** y se
 guardan solos para la próxima vez.
+
+## Apariencia y temas
+
+Lienzo adapta tanto los colores como la distribución de sus herramientas. Esta
+es la aplicación en macOS con el tema Windows 10:
+
+[![Lienzo en macOS con el tema Windows 10](assets/screenshots/lienzo-principal.png)](assets/screenshots/lienzo-principal.png)
+
+Incluye **20 temas en 10 familias**, cada una con variante clara y oscura. La
+galería reúne capturas de la aplicación real para compararlas de una sola vez;
+hacé clic en la imagen para verla a tamaño completo.
+
+[![Los 20 temas de Lienzo, agrupados por familia y modo](assets/screenshots/galeria-temas.png)](assets/screenshots/galeria-temas.png)
 
 ## Arquitectura — modelo C4
 
