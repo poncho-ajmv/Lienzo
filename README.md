@@ -99,10 +99,16 @@ es la aplicación en macOS con el tema Windows 10:
 [![Lienzo en macOS con el tema Windows 10](assets/screenshots/lienzo-principal.png)](assets/screenshots/lienzo-principal.png)
 
 Incluye **20 temas en 10 familias**, cada una con variante clara y oscura. La
-galería reúne capturas de la aplicación real para compararlas de una sola vez;
-hacé clic en la imagen para verla a tamaño completo.
+galería reúne capturas de la aplicación real y separa ambos modos para que cada
+interfaz pueda verse con claridad. Hacé clic en una imagen para ampliarla.
 
-[![Los 20 temas de Lienzo, agrupados por familia y modo](assets/screenshots/galeria-temas.png)](assets/screenshots/galeria-temas.png)
+### Temas claros
+
+[![Los 10 temas claros de Lienzo](assets/screenshots/temas-claros.png)](assets/screenshots/temas-claros.png)
+
+### Temas oscuros
+
+[![Los 10 temas oscuros de Lienzo](assets/screenshots/temas-oscuros.png)](assets/screenshots/temas-oscuros.png)
 
 ## Arquitectura — modelo C4
 
