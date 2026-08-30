@@ -1,23 +1,30 @@
 # Lienzo
 
-Un clon de Paint de Windows, escrito en Rust desde cero. Un solo ejecutable, sin
-runtime, sin navegador empaquetado y sin recolector de basura entre vos y los
-píxeles.
+En todos los sistemas operativos siempre me ha gustado tener a mano una
+herramienta sencilla para trabajar con imágenes, sin recurrir a programas
+demasiado sofisticados. Durante años, esa herramienta fue Paint.
 
-Fiel al Paint de Windows 10 que te acordás —la cinta, el borrador selectivo con
-clic derecho, la selección transparente, el bote de relleno sin tolerancia— con
-una diferencia: **se cambia la piel**. Veinte temas en diez familias, entre ellas
-Windows XP, 7, 10 y 11, GNOME, KDE, macOS y tres propias.
+Pero al moverme entre Windows, Linux y macOS ya no me sentía cómodo dependiendo
+de una aplicación ligada a un solo sistema. Entonces pensé: ¿por qué no crear
+una propia?
+
+Así nació **Lienzo**: un editor de imágenes libre, rápido, ligero y agradable a
+la vista, inspirado en la sencillez de Paint pero pensado para acompañarte en
+distintos sistemas operativos. También le puse detalles, temas y gustos
+personales para quienes disfrutamos la nostalgia: Windows XP, 7, 10 y 11,
+GNOME, KDE, macOS y tres estilos propios. Comenzó como una necesidad personal y
+hoy lo comparto con la comunidad para que cualquiera pueda usarlo, estudiarlo y
+mejorarlo.
 
 ```sh
 cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
 
-> **Estado:** el motor está probado, la aplicación corre y la versión 0.1.0
-> tiene formatos portables e instalables para macOS, Windows y Linux. Falta
-> imprimir, validar Windows/Linux en equipos reales y terminar la versión web.
-> El detalle completo está más abajo y en `ESTADO.md`.
+> **Estado:** la versión 0.1.1 está lista para publicarse con formatos portables
+> e instalables para macOS, Windows y Linux. Falta imprimir, validar Linux en un
+> equipo real y terminar la versión web. El detalle completo está más abajo y
+> en `ESTADO.md`.
 
 ---
 
@@ -27,7 +34,7 @@ cargo run     # la aplicación
 |---|---|---|
 | Rust | **1.95 o superior** | Es lo que pide egui 0.36 en su `rust-version` |
 | macOS | 11 o superior, Apple Silicon | Compilado y probado en ARM64 |
-| Windows | 10 u 11, x86_64 | Compilado; falta validarlo en un equipo Windows real |
+| Windows | 10 u 11, x86_64 | Compilado y probado en Windows x86_64 |
 | Linux | x86_64, glibc 2.35+, X11 o Wayland | Compilado; falta validarlo en una distribución real |
 
 No hay base de datos, ni servidor, ni variables de entorno. Nada que configurar.
@@ -44,6 +51,10 @@ Los binarios se publican en [GitHub Releases](https://github.com/poncho-ajmv/lie
 
 Los binarios todavía no tienen firma comercial. macOS Gatekeeper y Windows
 SmartScreen pueden mostrar una advertencia la primera vez que se abren.
+
+Cada etiqueta `vX.Y.Z` ejecuta `.github/workflows/release.yml`: valida el código,
+compila en los tres sistemas, crea todos los paquetes y publica el release con
+su archivo `SHA256SUMS.txt`.
 
 ## Compilar desde el código
 
@@ -73,6 +84,7 @@ flotante, según el tema— y el grosor también en la barra de abajo.
 | `Cmd/Ctrl + E` | Propiedades del lienzo |
 | `Cmd/Ctrl + Shift + I` | Invertir colores |
 | `Cmd/Ctrl + +` · `−` · `0` | Acercar · Alejar · Tamaño real |
+| `Cmd/Ctrl + rueda` | Acercar · Alejar sobre el lienzo |
 | `Supr` / `Retroceso` | Borrar la selección |
 | `Esc` | Cerrar lo que esté abierto |
 

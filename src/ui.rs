@@ -1136,13 +1136,22 @@ fn color_boxes(ui: &mut Ui, theme: &Theme, doc: &mut Doc, out: &mut UiOut) {
 /// Los grosores se dibujan a escala real (1, 3, 5 y 8 px) — antes salían casi
 /// iguales y no se entendía qué elegía uno.
 fn size_button(ui: &mut Ui, theme: &Theme, doc: &Doc, out: &mut UiOut) {
+    let enabled = matches!(
+        doc.tool,
+        Tool::Pencil | Tool::Brush | Tool::Eraser | Tool::Shape
+    );
     let widths = if doc.tool == Tool::Eraser {
         ERASER_WIDTHS
     } else {
         WIDTHS
     };
-    let (rect, resp) = ui.allocate_exact_size(vec2(46.0, 66.0), Sense::click());
-    if resp.hovered() {
+    let sense = if enabled {
+        Sense::click()
+    } else {
+        Sense::hover()
+    };
+    let (rect, resp) = ui.allocate_exact_size(vec2(46.0, 66.0), sense);
+    if enabled && resp.hovered() {
         ui.painter().rect_filled(
             rect,
             theme.button_rounding,
@@ -1163,7 +1172,7 @@ fn size_button(ui: &mut Ui, theme: &Theme, doc: &Doc, out: &mut UiOut) {
     // Escalar los cuatro por igual mantiene legible cuál es más gordo.
     let pide: f32 = widths.iter().sum::<f32>() + GAP * (widths.len() - 1) as f32;
     let k = ((tope - rect.top() - ARRIBA) / pide).min(1.0);
-    let col = Color32::from(theme.text);
+    let col = Color32::from(if enabled { theme.text } else { theme.text_dim });
     let mut y = rect.top() + ARRIBA;
     for (i, w) in widths.iter().enumerate() {
         let paso = if i == 0 {
@@ -1185,16 +1194,12 @@ fn size_button(ui: &mut Ui, theme: &Theme, doc: &Doc, out: &mut UiOut) {
         Align2::CENTER_CENTER,
         lang::t("Tamaño"),
         FontId::proportional(theme.font_size),
-        theme.text.into(),
+        col,
     );
-    caret(
-        ui,
-        Pos2::new(rect.center().x, rect.bottom() - 7.0),
-        theme.text.into(),
-    );
+    caret(ui, Pos2::new(rect.center().x, rect.bottom() - 7.0), col);
     // Antes ciclaba al hacer clic: cambiaba el grosor sin decir a cuál, y las
     // cuatro opciones no se veían nunca.
-    if resp.clicked() {
+    if enabled && resp.clicked() {
         out.menu_anchor = rect.left_bottom();
         out.open_size_menu = true;
     }

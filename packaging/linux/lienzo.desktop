@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Lienzo
+Comment=Editor de imágenes libre, rápido y multiplataforma
+Exec=lienzo
+Icon=lienzo
+Terminal=false
+Categories=Graphics;2DGraphics;RasterGraphics;
+MimeType=image/png;image/jpeg;image/bmp;image/gif;image/tiff;image/x-icon;

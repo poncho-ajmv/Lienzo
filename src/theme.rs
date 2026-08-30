@@ -312,14 +312,15 @@ impl Theme {
             dormant_handle_opacity: 1.0,
             active_handle_opacity: 1.0,
             interact_handle_opacity: 1.0,
-            // El tirador con el color del texto, no con el de relleno: de
-            // fábrica es un gris claro sobre fondo claro y con sesenta formas
-            // en la galería nadie se entera de que hay más abajo.
+            // El tirador suele usar el color del texto para que no desaparezca.
+            // En las cintas claras de Windows eso lo volvía casi negro: ahí se
+            // usa el relleno claro del botón sobre el canal gris, con contraste
+            // suave y el realce azul del estado hover.
             //
             // Menos en el chrome de paleta: la barra de Windows 98 y XP es un
             // bloque **claro** con relieve sobre un canal más oscuro, y con el
             // color del texto salía una viga negra cruzando la ventana.
-            foreground_color: !matches!(self.chrome, Chrome::Palette),
+            foreground_color: !matches!(self.chrome, Chrome::Palette | Chrome::Ribbon) || self.dark,
             ..egui::style::ScrollStyle::solid()
         };
         // El canal por donde corre. `extreme_bg_color` es lo que egui pinta de

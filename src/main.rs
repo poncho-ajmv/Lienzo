@@ -27,6 +27,16 @@ use ui::{Cmd, Ico, Icon, Tab, UiIn};
 /// versión de Windows 11.
 const ZOOMS: [f32; 11] = [0.125, 0.25, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
 
+fn zoom_step(index: usize, direction: f32) -> usize {
+    if direction > 0.0 {
+        (index + 1).min(ZOOMS.len() - 1)
+    } else if direction < 0.0 {
+        index.saturating_sub(1)
+    } else {
+        index
+    }
+}
+
 /// Los tamaños de lienzo que se ofrecen al crear un dibujo. Sin esto hay que
 /// crear, ir a Propiedades y escribir dos números para cada formato común.
 const PRESETS: [(&str, usize, usize); 5] = [
@@ -726,8 +736,8 @@ impl App {
                 self.doc.canvas.flip_vertical();
             }
             Cmd::InvertColors => self.doc.invert_selection_colors(),
-            Cmd::ZoomIn => self.zoom_idx = (self.zoom_idx + 1).min(ZOOMS.len() - 1),
-            Cmd::ZoomOut => self.zoom_idx = self.zoom_idx.saturating_sub(1),
+            Cmd::ZoomIn => self.zoom_idx = zoom_step(self.zoom_idx, 1.0),
+            Cmd::ZoomOut => self.zoom_idx = zoom_step(self.zoom_idx, -1.0),
             Cmd::Zoom100 => self.zoom_idx = 3,
             Cmd::ZoomTo(i) => self.zoom_idx = i.min(ZOOMS.len() - 1),
             Cmd::SetTheme(i) => {
@@ -1060,6 +1070,24 @@ impl App {
         }
         if self.text_box.is_some() || self.dialogs.any_open() {
             return cmds;
+        }
+        // Ctrl en Windows/Linux y Cmd en macOS + rueda: el gesto habitual de
+        // Paint. Sólo responde sobre el lienzo para no cambiar el zoom mientras
+        // se recorre un menú o una galería. `zoom_delta` también acepta el gesto
+        // de pellizcar del trackpad sin añadir otro camino de entrada.
+        let wheel_zoom = ctx.input(|i| {
+            i.pointer
+                .hover_pos()
+                .filter(|p| self.canvas_rect.contains(*p))
+                .map(|_| i.zoom_delta() - 1.0)
+                .filter(|delta| delta.abs() > f32::EPSILON)
+        });
+        if let Some(direction) = wheel_zoom {
+            cmds.push(if direction > 0.0 {
+                Cmd::ZoomIn
+            } else {
+                Cmd::ZoomOut
+            });
         }
         ctx.input(|i| {
             let m = i.modifiers;
@@ -2069,8 +2097,15 @@ impl App {
                 [1.0f32, 3.0, 5.0, 8.0]
             };
             let cur = self.doc.width;
+            let limit = if self.doc.tool == Tool::Eraser {
+                100.0
+            } else {
+                50.0
+            };
+            let mut custom = cur;
+            let mut custom_changed = false;
             let mut pick = None;
-            let keep = ui::menu_panel(ctx, theme, "m_tamano", anchor, 128.0, |ui| {
+            let keep = ui::menu_panel(ctx, theme, "m_tamano", anchor, 196.0, |ui| {
                 let mut stay = true;
                 for w in widths {
                     if ui::menu_row_width(ui, theme, w, (w - cur).abs() < 0.5) {
@@ -2078,10 +2113,22 @@ impl App {
                         stay = false;
                     }
                 }
+                ui::menu_sep(ui, theme);
+                ui.label(lang::t("Grosor"));
+                custom_changed = ui
+                    .add(
+                        egui::Slider::new(&mut custom, 1.0..=limit)
+                            .step_by(1.0)
+                            .suffix(" px")
+                            .fixed_decimals(0),
+                    )
+                    .changed();
                 stay
             });
             if let Some(w) = pick {
                 self.doc.width = w;
+            } else if custom_changed {
+                self.doc.width = custom;
             }
             self.dialogs.size_menu = keep;
         }
@@ -3609,25 +3656,87 @@ impl App {
         if !self.show_thumbnail {
             return;
         }
+        let theme = self.theme().clone();
         let Some(tex) = self.tex.as_ref() else { return };
         let id = tex.id();
         let (w, h) = (self.doc.canvas.w as f32, self.doc.canvas.h as f32);
-        let scale = (240.0 / w).min(180.0 / h).min(1.0);
-        let size = vec2((w * scale).max(1.0), (h * scale).max(1.0));
-        let mut open = true;
-        egui::Window::new(lang::t("Miniatura"))
-            .open(&mut open)
+        const W: f32 = 272.0;
+        const PW: f32 = 240.0;
+        const PH: f32 = 180.0;
+        let scale = (PW / w).min(PH / h).min(1.0);
+        let image_size = vec2((w * scale).max(1.0), (h * scale).max(1.0));
+        let mut close = false;
+
+        egui::Window::new("thumbnail_panel")
+            .default_pos(Pos2::new(
+                ctx.content_rect().right() - W - 18.0,
+                ctx.content_rect().top() + 132.0,
+            ))
+            .constrain(true)
+            .title_bar(false)
+            .collapsible(false)
             .resizable(false)
+            .frame(ui::dialog_frame(&theme))
             .show(ctx, |ui| {
-                let (rect, _) = ui.allocate_exact_size(size, Sense::hover());
-                ui.painter().image(
-                    id,
-                    rect,
-                    egui::Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
-                    Color32::WHITE,
+                ui.set_width(W);
+                if ui::dialog_header(ui, &theme, W, lang::t("Miniatura")) {
+                    close = true;
+                }
+
+                ui.add_space(12.0);
+                ui.horizontal(|ui| {
+                    ui.add_space(16.0);
+                    let (well, _) = ui.allocate_exact_size(vec2(PW, PH), Sense::hover());
+                    ui.painter()
+                        .rect_filled(well, 1.0, Color32::from(theme.workspace));
+                    ui.painter().rect_stroke(
+                        well,
+                        1.0,
+                        egui::Stroke::new(1.0, Color32::from(theme.border_strong)),
+                        egui::StrokeKind::Inside,
+                    );
+                    let rect = egui::Rect::from_center_size(well.center(), image_size);
+                    ui.painter().image(
+                        id,
+                        rect,
+                        egui::Rect::from_min_max(Pos2::ZERO, Pos2::new(1.0, 1.0)),
+                        Color32::WHITE,
+                    );
+                    ui.painter().rect_stroke(
+                        rect,
+                        0.0,
+                        egui::Stroke::new(1.0, Color32::from(theme.border)),
+                        egui::StrokeKind::Inside,
+                    );
+                    ui.add_space(16.0);
+                });
+
+                ui.add_space(8.0);
+                let (footer, _) = ui.allocate_exact_size(vec2(W, 28.0), Sense::hover());
+                ui.painter()
+                    .rect_filled(footer, 0.0, Color32::from(theme.surface_alt));
+                ui.painter().line_segment(
+                    [footer.left_top(), footer.right_top()],
+                    egui::Stroke::new(1.0, Color32::from(theme.border)),
+                );
+                ui.painter().text(
+                    Pos2::new(footer.left() + 12.0, footer.center().y),
+                    egui::Align2::LEFT_CENTER,
+                    format!("{} × {} px", self.doc.canvas.w, self.doc.canvas.h),
+                    egui::FontId::proportional(theme.font_size - 0.5),
+                    Color32::from(theme.text_dim),
+                );
+                ui.painter().text(
+                    Pos2::new(footer.right() - 12.0, footer.center().y),
+                    egui::Align2::RIGHT_CENTER,
+                    format!("{}%", (self.zoom() * 100.0).round() as i32),
+                    egui::FontId::proportional(theme.font_size - 0.5),
+                    Color32::from(theme.text),
                 );
             });
-        self.show_thumbnail = open;
+        if close {
+            self.show_thumbnail = false;
+        }
     }
 
     /// El cuadro de texto flotante. Va sobre un `TextEdit` de verdad y no sobre
@@ -4067,5 +4176,14 @@ mod tests {
             opaque_rgba(&[255, 0, 0, 128]),
             Color32::from_rgb(255, 127, 127)
         );
+    }
+
+    #[test]
+    fn zoom_por_rueda_respeta_los_limites() {
+        assert_eq!(zoom_step(3, 1.0), 4);
+        assert_eq!(zoom_step(3, -1.0), 2);
+        assert_eq!(zoom_step(0, -1.0), 0);
+        assert_eq!(zoom_step(ZOOMS.len() - 1, 1.0), ZOOMS.len() - 1);
+        assert_eq!(zoom_step(3, 0.0), 3);
     }
 }

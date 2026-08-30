@@ -1,0 +1,164 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  quality:
+    name: Pruebas
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust estable
+        run: rustup update stable && rustup default stable
+      - name: Dependencias de Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwayland-dev libxdo-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev
+      - name: Validar versión del tag
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          manifest_version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -n 1)"
+          test "$version" = "$manifest_version"
+      - run: cargo fmt --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+
+  macos:
+    name: macOS ARM64
+    needs: quality
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust estable
+        run: rustup update stable && rustup default stable
+      - run: cargo build --release --locked
+      - name: Crear APP, ZIP y DMG
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          app="dist/Lienzo.app"
+          mkdir -p "$app/Contents/MacOS" dist/dmg
+          cp target/release/lienzo "$app/Contents/MacOS/lienzo"
+          cp packaging/macos/Info.plist "$app/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $version" "$app/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $GITHUB_RUN_NUMBER" "$app/Contents/Info.plist"
+          codesign --force --deep --sign - "$app"
+          ditto -c -k --sequesterRsrc --keepParent "$app" "dist/Lienzo-$version-macOS-arm64-portable.zip"
+          cp -R "$app" dist/dmg/
+          ln -s /Applications dist/dmg/Applications
+          hdiutil create -volname Lienzo -srcfolder dist/dmg -ov -format UDZO "dist/Lienzo-$version-macOS-arm64.dmg"
+          rm -rf dist/dmg "$app"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: |
+            dist/*.zip
+            dist/*.dmg
+          if-no-files-found: error
+
+  windows:
+    name: Windows x86_64
+    needs: quality
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust estable
+        shell: pwsh
+        run: rustup update stable; rustup default stable
+      - run: cargo build --release --locked
+      - name: Crear portable
+        shell: pwsh
+        run: |
+          $version = $env:GITHUB_REF_NAME.Substring(1)
+          $portable = "dist/Lienzo-$version-Windows-x86_64-portable"
+          New-Item -ItemType Directory -Force $portable | Out-Null
+          Copy-Item target/release/lienzo.exe "$portable/Lienzo.exe"
+          Copy-Item LICENSE "$portable/LICENSE.txt"
+          Set-Content "$portable/LEEME.txt" "Lienzo $version portable. Extraiga la carpeta y ejecute Lienzo.exe."
+          Compress-Archive -Path "$portable/*" -DestinationPath "${portable}.zip"
+      - name: Crear instalador
+        shell: pwsh
+        run: |
+          choco install nsis --no-progress -y
+          $version = $env:GITHUB_REF_NAME.Substring(1)
+          $binary = (Resolve-Path target/release/lienzo.exe).Path
+          $license = (Resolve-Path LICENSE).Path
+          $output = "$PWD/dist/Lienzo-$version-Windows-x86_64-setup.exe"
+          & "${env:ProgramFiles(x86)}\NSIS\makensis.exe" "/DVERSION=$version" "/DBINARY=$binary" "/DLICENSE=$license" "/DOUTPUT=$output" packaging/windows/installer.nsi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: |
+            dist/*.zip
+            dist/*-setup.exe
+          if-no-files-found: error
+
+  linux:
+    name: Linux x86_64
+    needs: quality
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust estable
+        run: rustup update stable && rustup default stable
+      - name: Dependencias
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwayland-dev libxdo-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev
+      - run: cargo build --release --locked
+      - name: Crear AppImage y DEB
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p dist AppDir/usr/bin
+          install -m 755 target/release/lienzo AppDir/usr/bin/lienzo
+          curl -fsSL -o linuxdeploy.AppImage https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy.AppImage
+          OUTPUT="dist/Lienzo-$version-Linux-x86_64.AppImage" ./linuxdeploy.AppImage --appimage-extract-and-run --appdir AppDir --executable AppDir/usr/bin/lienzo --desktop-file packaging/linux/lienzo.desktop --icon-file packaging/linux/lienzo.svg --output appimage
+
+          deb="dist/deb"
+          mkdir -p "$deb/DEBIAN" "$deb/usr/bin" "$deb/usr/share/applications" "$deb/usr/share/icons/hicolor/scalable/apps"
+          install -m 755 target/release/lienzo "$deb/usr/bin/lienzo"
+          install -m 644 packaging/linux/lienzo.desktop "$deb/usr/share/applications/lienzo.desktop"
+          install -m 644 packaging/linux/lienzo.svg "$deb/usr/share/icons/hicolor/scalable/apps/lienzo.svg"
+          printf 'Package: lienzo\nVersion: %s\nSection: graphics\nPriority: optional\nArchitecture: amd64\nMaintainer: poncho-ajmv\nDepends: libc6 (>= 2.35), libgcc-s1, libgl1, libx11-6, libxcursor1, libxi6, libxrandr2, libwayland-client0, libxkbcommon0\nHomepage: https://github.com/poncho-ajmv/lienzo\nDescription: Editor de imágenes libre, rápido y multiplataforma.\n' "$version" > "$deb/DEBIAN/control"
+          dpkg-deb --build --root-owner-group "$deb" "dist/lienzo_${version}_amd64.deb"
+          rm -rf AppDir "$deb" linuxdeploy.AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+          if-no-files-found: error
+
+  publish:
+    name: Publicar GitHub Release
+    needs: [macos, windows, linux]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+          merge-multiple: true
+      - name: Sumas SHA-256
+        working-directory: release
+        run: sha256sum * > SHA256SUMS.txt
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" release/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" release/* --title "Lienzo $version" --notes-file RELEASE_NOTES.md --verify-tag
+          fi
