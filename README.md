@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icons/lienzo.png" width="180" alt="Logo de Lienzo">
+</p>
+
 # Lienzo
 
 En todos los sistemas operativos siempre me ha gustado tener a mano una
@@ -193,7 +197,8 @@ una textura nueva en cada llamada.
 **La interfaz no depende de imágenes.** Cada forma dibuja su icono de la galería
 con la misma lista de puntos con la que dibuja en el lienzo, y los iconos de
 herramienta son trazos vectoriales que toman el color del tema. Sólo el icono
-nativo de la aplicación se exporta como ICNS, ICO y SVG para cada sistema.
+nativo de la aplicación usa la imagen oficial y se exporta como ICNS, ICO o PNG
+según el sistema.
 
 **Los temas son datos, los armados son código.** Un tema elige entre ocho
 *chromes*, y un chrome es una función de Rust. egui no tiene layout por datos
@@ -205,7 +210,7 @@ inventar un armado nuevo desde un archivo.
 
 ```
 src/            los ocho módulos del diagrama de arriba
-assets/         icono original y capturas públicas
+assets/         logo oficial y capturas públicas
 themes/         veinte temas en diez familias, uno claro y uno oscuro cada una
 lang/           diez tablas de idioma. es.json va vacío a propósito
 mockups/        los bocetos HTML con los que se validó cada rediseño

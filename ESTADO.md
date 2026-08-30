@@ -64,8 +64,8 @@ publica con la versión en el nombre y su archivo `SHA256SUMS.txt`.
   macOS conserva además `Cmd + rueda` y el gesto de pellizcar.
 - El instalador de Windows usa MUI2 y detecta si debe actualizar, reparar o
   advertir sobre una versión más reciente ya instalada.
-- El EXE y el Setup incluyen metadatos de la versión 0.1.2 y un icono con siete
-  resoluciones nativas.
+- El nuevo logo oficial aparece en el README y en los paquetes de macOS,
+  Windows y Linux; el ICO incluye siete resoluciones nativas.
 - Los veinte temas se muestran en galerías separadas por modo claro y oscuro.
 
 ## Cambios de 0.1.1

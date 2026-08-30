@@ -14,7 +14,8 @@ proyecto y renueva la instalación en Windows.
   las preferencias; una instalación de la misma versión se puede reparar.
 - El ejecutable y el instalador muestran nombre, versión y editor en sus
   propiedades de Windows.
-- El icono de Windows incluye siete resoluciones nativas, de 16 a 256 px.
+- Nuevo logo oficial en el README y en los paquetes de los tres sistemas; el
+  icono de Windows incluye siete resoluciones nativas, de 16 a 256 px.
 - El README muestra por separado los diez temas claros y los diez oscuros.
 
 ## Descargas

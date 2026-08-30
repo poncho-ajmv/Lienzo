@@ -123,13 +123,13 @@ jobs:
           install -m 755 target/release/lienzo AppDir/usr/bin/lienzo
           curl -fsSL -o linuxdeploy.AppImage https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy.AppImage
-          OUTPUT="dist/Lienzo-$version-Linux-x86_64.AppImage" ./linuxdeploy.AppImage --appimage-extract-and-run --appdir AppDir --executable AppDir/usr/bin/lienzo --desktop-file packaging/linux/lienzo.desktop --icon-file assets/icons/lienzo.svg --output appimage
+          OUTPUT="dist/Lienzo-$version-Linux-x86_64.AppImage" ./linuxdeploy.AppImage --appimage-extract-and-run --appdir AppDir --executable AppDir/usr/bin/lienzo --desktop-file packaging/linux/lienzo.desktop --icon-file assets/icons/lienzo.png --output appimage
 
           deb="dist/deb"
-          mkdir -p "$deb/DEBIAN" "$deb/usr/bin" "$deb/usr/share/applications" "$deb/usr/share/icons/hicolor/scalable/apps"
+          mkdir -p "$deb/DEBIAN" "$deb/usr/bin" "$deb/usr/share/applications" "$deb/usr/share/icons/hicolor/1024x1024/apps"
           install -m 755 target/release/lienzo "$deb/usr/bin/lienzo"
           install -m 644 packaging/linux/lienzo.desktop "$deb/usr/share/applications/lienzo.desktop"
-          install -m 644 assets/icons/lienzo.svg "$deb/usr/share/icons/hicolor/scalable/apps/lienzo.svg"
+          install -m 644 assets/icons/lienzo.png "$deb/usr/share/icons/hicolor/1024x1024/apps/lienzo.png"
           printf 'Package: lienzo\nVersion: %s\nSection: graphics\nPriority: optional\nArchitecture: amd64\nMaintainer: poncho-ajmv\nDepends: libc6 (>= 2.35), libgcc-s1, libgl1, libx11-6, libxcursor1, libxi6, libxrandr2, libwayland-client0, libxkbcommon0\nHomepage: https://github.com/poncho-ajmv/lienzo\nDescription: Editor de imágenes libre, rápido y multiplataforma.\n' "$version" > "$deb/DEBIAN/control"
           dpkg-deb --build --root-owner-group "$deb" "dist/lienzo_${version}_amd64.deb"
           rm -rf AppDir "$deb" linuxdeploy.AppImage
