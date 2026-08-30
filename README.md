@@ -16,13 +16,15 @@ GNOME, KDE, macOS y tres estilos propios. Comenzó como una necesidad personal y
 hoy lo comparto con la comunidad para que cualquiera pueda usarlo, estudiarlo y
 mejorarlo.
 
+![Lienzo en macOS con el tema Windows 10](assets/screenshots/lienzo-principal.png)
+
 ```sh
 cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
 
-> **Estado:** la versión 0.1.1 está lista para publicarse con formatos portables
-> e instalables para macOS, Windows y Linux. Falta imprimir, validar Linux en un
+> **Estado:** la versión 0.1.1 está publicada con formatos portables e
+> instalables para macOS, Windows y Linux. Falta imprimir, validar Linux en un
 > equipo real y terminar la versión web. El detalle completo está más abajo y
 > en `ESTADO.md`.
 
@@ -153,7 +155,7 @@ C4Component
 ```
 
 **La frontera está entre `doc` y `main`.** `canvas`, `shapes` y `doc` no saben
-que egui existe: dependen sólo de `ecolor` para el tipo de color. Por eso los 26
+que egui existe: dependen sólo de `ecolor` para el tipo de color. Por eso los 27
 tests corren sin ventana, sin GPU y sin bucle de eventos. Todo lo que toque egui
 vive del otro lado.
 
@@ -171,10 +173,10 @@ operaciones de lienzo entero se degradan de a poco.
 textura. No es una optimización sino un requisito: una subida completa asigna
 una textura nueva en cada llamada.
 
-**No hay un solo archivo de icono.** Cada forma dibuja su icono de la galería
+**La interfaz no depende de imágenes.** Cada forma dibuja su icono de la galería
 con la misma lista de puntos con la que dibuja en el lienzo, y los iconos de
-herramienta son trazos vectoriales que toman el color del tema. Nada que
-exportar, nada borroso en pantallas HiDPI.
+herramienta son trazos vectoriales que toman el color del tema. Sólo el icono
+nativo de la aplicación se exporta como ICNS, ICO y SVG para cada sistema.
 
 **Los temas son datos, los armados son código.** Un tema elige entre ocho
 *chromes*, y un chrome es una función de Rust. egui no tiene layout por datos
@@ -186,9 +188,11 @@ inventar un armado nuevo desde un archivo.
 
 ```
 src/            los ocho módulos del diagrama de arriba
+assets/         icono original y capturas públicas
 themes/         veinte temas en diez familias, uno claro y uno oscuro cada una
 lang/           diez tablas de idioma. es.json va vacío a propósito
 mockups/        los bocetos HTML con los que se validó cada rediseño
+packaging/      metadatos e iconos nativos de los instaladores
 ESTADO.md       la bitácora: qué se revisó, qué se corrigió, qué falta
 target/         no viene en el repo. Lo crea cargo
 dist/           artefactos locales de release; Git los ignora

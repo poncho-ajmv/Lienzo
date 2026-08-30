@@ -6,6 +6,8 @@
     <string>Lienzo</string>
     <key>CFBundleExecutable</key>
     <string>lienzo</string>
+    <key>CFBundleIconFile</key>
+    <string>Lienzo</string>
     <key>CFBundleIdentifier</key>
     <string>com.poncho-ajmv.lienzo</string>
     <key>CFBundleName</key>

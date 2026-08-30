@@ -18,7 +18,7 @@ cargo fmt --check
 - Probado correctamente en Windows x86_64.
 - Compilado para Linux x86_64; todavía requiere validación en una distribución
   real.
-- DMG, ZIP portable, Setup.exe, AppImage y DEB generados para la versión 0.1.0.
+- DMG, ZIP portable, Setup.exe, AppImage y DEB publicados para la versión 0.1.1.
 - Integridad de ZIP, DMG, AppImage, DEB y sumas SHA-256 verificada.
 
 ## Funciona
