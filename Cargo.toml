@@ -1,6 +1,6 @@
 [package]
 name = "lienzo"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "MIT"
 description = "A Microsoft Paint clone in Rust, with Windows XP/7/10/11, Linux and macOS skins."
@@ -10,6 +10,13 @@ categories = ["multimedia::images", "graphics"]
 authors = ["poncho-ajmv"]
 repository = "https://github.com/poncho-ajmv/lienzo"
 homepage = "https://github.com/poncho-ajmv/lienzo"
+
+[package.metadata.winresource]
+ProductName = "Lienzo"
+FileDescription = "Lienzo - editor de imágenes"
+OriginalFilename = "Lienzo.exe"
+CompanyName = "poncho-ajmv"
+LegalCopyright = "Copyright © 2026 poncho-ajmv"
 
 [dependencies]
 # `ecolor` es la única dependencia del motor: da el tipo de color que permite

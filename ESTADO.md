@@ -1,7 +1,7 @@
 # Estado actual de Lienzo
 
-Actualizado para la versión 0.1.1 después de la revisión integral y la
-corrección de los flujos de archivo, selección y vista.
+Preparado para la versión 0.1.2 después de corregir el zoom por rueda y renovar
+la instalación en Windows.
 
 ## Validación
 
@@ -11,7 +11,7 @@ cargo clippy --locked --offline --all-targets -- -D warnings
 cargo fmt --check
 ```
 
-- 27 tests aprobados.
+- 28 tests aprobados.
 - Clippy sin advertencias tratadas como error.
 - Formato de Rust verificado.
 - Validado en macOS sobre `aarch64-apple-darwin`.
@@ -55,6 +55,18 @@ previsualización, texto flotante y arrastres del documento anterior.
 
 GitHub Actions genera los seis paquetes desde la etiqueta `v0.1.1` y los
 publica con la versión en el nombre y su archivo `SHA256SUMS.txt`.
+
+## Cambios preparados para 0.1.2
+
+- La rueda usa el evento original en lugar del desplazamiento suavizado: una
+  muesca cambia un nivel de zoom y no se repite durante varios cuadros.
+- `Ctrl + rueda` funciona sobre toda el área de trabajo en los tres sistemas;
+  macOS conserva además `Cmd + rueda` y el gesto de pellizcar.
+- El instalador de Windows usa MUI2 y detecta si debe actualizar, reparar o
+  advertir sobre una versión más reciente ya instalada.
+- El EXE y el Setup incluyen metadatos de la versión 0.1.2 y un icono con siete
+  resoluciones nativas.
+- Los veinte temas se muestran en galerías separadas por modo claro y oscuro.
 
 ## Cambios de 0.1.1
 

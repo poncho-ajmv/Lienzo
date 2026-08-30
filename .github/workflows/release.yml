@@ -91,8 +91,9 @@ jobs:
           $version = $env:GITHUB_REF_NAME.Substring(1)
           $binary = (Resolve-Path target/release/lienzo.exe).Path
           $license = (Resolve-Path LICENSE).Path
+          $icon = (Resolve-Path packaging/windows/lienzo.ico).Path
           $output = "$PWD/dist/Lienzo-$version-Windows-x86_64-setup.exe"
-          & "${env:ProgramFiles(x86)}\NSIS\makensis.exe" "/DVERSION=$version" "/DBINARY=$binary" "/DLICENSE=$license" "/DOUTPUT=$output" packaging/windows/installer.nsi
+          & "${env:ProgramFiles(x86)}\NSIS\makensis.exe" "/DVERSION=$version" "/DBINARY=$binary" "/DLICENSE=$license" "/DICON=$icon" "/DOUTPUT=$output" packaging/windows/installer.nsi
       - uses: actions/upload-artifact@v4
         with:
           name: windows

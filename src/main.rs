@@ -37,6 +37,20 @@ fn zoom_step(index: usize, direction: f32) -> usize {
     }
 }
 
+/// Dirección de un gesto de zoom sin el suavizado de la rueda de egui.
+///
+/// El suavizado repite una sola muesca durante varios frames; para niveles
+/// discretos como los de Paint necesitamos leer el evento original una vez.
+fn zoom_event_direction(event: &egui::Event) -> f32 {
+    match event {
+        egui::Event::MouseWheel {
+            delta, modifiers, ..
+        } if modifiers.ctrl || modifiers.command => delta.x + delta.y,
+        egui::Event::Zoom(factor) => factor - 1.0,
+        _ => 0.0,
+    }
+}
+
 /// Los tamaños de lienzo que se ofrecen al crear un dibujo. Sin esto hay que
 /// crear, ir a Propiedades y escribir dos números para cada formato común.
 const PRESETS: [(&str, usize, usize); 5] = [
@@ -332,6 +346,9 @@ struct App {
     /// posiciona contra esto y no contra el panel: el lienzo vive dentro de un
     /// área con scroll, así que el panel no dice dónde está de verdad.
     canvas_rect: egui::Rect,
+    /// Toda la zona de trabajo, incluido el gris alrededor del bitmap. El zoom
+    /// por rueda responde en esta área y no sólo encima de los píxeles blancos.
+    canvas_view_rect: egui::Rect,
     /// Dónde colgar el menú que se acaba de abrir.
     menu_anchor: Pos2,
     /// Las nueve muestras de pincel, pintadas una vez con el motor de verdad.
@@ -402,6 +419,7 @@ impl App {
             qat_below: false,
             ribbon_min: false,
             canvas_rect: egui::Rect::ZERO,
+            canvas_view_rect: egui::Rect::ZERO,
             menu_anchor: Pos2::ZERO,
             brush_tex: None,
             stroke_tex: None,
@@ -1071,15 +1089,15 @@ impl App {
         if self.text_box.is_some() || self.dialogs.any_open() {
             return cmds;
         }
-        // Ctrl en Windows/Linux y Cmd en macOS + rueda: el gesto habitual de
-        // Paint. Sólo responde sobre el lienzo para no cambiar el zoom mientras
-        // se recorre un menú o una galería. `zoom_delta` también acepta el gesto
-        // de pellizcar del trackpad sin añadir otro camino de entrada.
+        // Ctrl + rueda en todos los sistemas; Cmd también sirve en macOS. Se
+        // lee el evento crudo porque `zoom_delta` suaviza una muesca durante
+        // varios frames y hacía saltar más de un nivel. El gesto de pellizcar
+        // llega por `Event::Zoom` y comparte el mismo camino.
         let wheel_zoom = ctx.input(|i| {
             i.pointer
                 .hover_pos()
-                .filter(|p| self.canvas_rect.contains(*p))
-                .map(|_| i.zoom_delta() - 1.0)
+                .filter(|p| self.canvas_view_rect.contains(*p))
+                .map(|_| i.raw.events.iter().map(zoom_event_direction).sum::<f32>())
                 .filter(|delta| delta.abs() > f32::EPSILON)
         });
         if let Some(direction) = wheel_zoom {
@@ -1166,6 +1184,7 @@ impl App {
         let theme = self.theme().clone();
         let zoom = self.zoom();
         let (cw, ch) = (self.doc.canvas.w, self.doc.canvas.h);
+        self.canvas_view_rect = ui.max_rect();
 
         ui.painter()
             .rect_filled(ui.max_rect(), 0.0, Color32::from(theme.workspace));
@@ -4185,5 +4204,31 @@ mod tests {
         assert_eq!(zoom_step(0, -1.0), 0);
         assert_eq!(zoom_step(ZOOMS.len() - 1, 1.0), ZOOMS.len() - 1);
         assert_eq!(zoom_step(3, 0.0), 3);
+    }
+
+    #[test]
+    fn zoom_por_rueda_lee_cada_evento_una_sola_vez() {
+        let wheel = |delta, modifiers| egui::Event::MouseWheel {
+            unit: egui::MouseWheelUnit::Line,
+            delta: vec2(0.0, delta),
+            phase: egui::TouchPhase::Move,
+            modifiers,
+        };
+        let ctrl = egui::Modifiers {
+            ctrl: true,
+            ..Default::default()
+        };
+        let command = egui::Modifiers {
+            command: true,
+            ..Default::default()
+        };
+
+        assert!(zoom_event_direction(&wheel(1.0, ctrl)) > 0.0);
+        assert!(zoom_event_direction(&wheel(-1.0, command)) < 0.0);
+        assert_eq!(
+            zoom_event_direction(&wheel(1.0, egui::Modifiers::default())),
+            0.0
+        );
+        assert!(zoom_event_direction(&egui::Event::Zoom(1.1)) > 0.0);
     }
 }
