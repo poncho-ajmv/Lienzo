@@ -600,12 +600,17 @@ impl Doc {
                     lasso.push(p);
                 }
                 let poly = if free { Some(lasso.clone()) } else { None };
-                if let Some(r) = Rect::from_corners(
-                    (a.0 as i32, a.1 as i32),
-                    (p.0 as i32, p.1 as i32),
-                    self.canvas.w,
-                    self.canvas.h,
-                ) {
+                let bounds = if free {
+                    lasso_bounds(&lasso, self.canvas.w, self.canvas.h)
+                } else {
+                    Rect::from_corners(
+                        (a.0 as i32, a.1 as i32),
+                        (p.0 as i32, p.1 as i32),
+                        self.canvas.w,
+                        self.canvas.h,
+                    )
+                };
+                if let Some(r) = bounds {
                     self.sel = Some(Selection {
                         r,
                         px: None,
@@ -935,6 +940,24 @@ fn point_in_poly(p: Pt, poly: &[Pt]) -> bool {
     inside
 }
 
+/// Caja de todo el lazo, no sólo de su primer y último punto.
+fn lasso_bounds(poly: &[Pt], w: usize, h: usize) -> Option<Rect> {
+    let first = *poly.first()?;
+    let (mut min_x, mut min_y, mut max_x, mut max_y) = (first.0, first.1, first.0, first.1);
+    for &(x, y) in &poly[1..] {
+        min_x = min_x.min(x);
+        min_y = min_y.min(y);
+        max_x = max_x.max(x);
+        max_y = max_y.max(y);
+    }
+    Rect::from_corners(
+        (min_x.floor() as i32, min_y.floor() as i32),
+        (max_x.ceil() as i32, max_y.ceil() as i32),
+        w,
+        h,
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1111,6 +1134,23 @@ mod tests {
             Color32::BLUE,
             "no pegó en el origen"
         );
+    }
+
+    #[test]
+    fn la_seleccion_libre_abarca_todo_el_lazo() {
+        let mut d = Doc::new(50, 50);
+        d.tool = Tool::Select;
+        d.select_mode = SelectMode::FreeForm;
+        d.down((10.0, 10.0), false, 1.0);
+        d.drag_to((35.0, 10.0), false);
+        d.drag_to((35.0, 35.0), false);
+        d.drag_to((10.0, 35.0), false);
+        d.drag_to((12.0, 12.0), false);
+        d.up((12.0, 12.0));
+
+        let sel = d.sel.as_ref().expect("el lazo no creó una selección");
+        assert_eq!(sel.r, Rect::new(10, 10, 26, 26));
+        assert!(sel.lasso.as_ref().is_some_and(|p| p.len() == 5));
     }
 
     /// Estirar por una manija remuestrea, y remuestrea **desde el original**.

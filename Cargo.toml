@@ -1,6 +1,6 @@
 [package]
 name = "lienzo"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 license = "MIT"
 description = "A Microsoft Paint clone in Rust, with Windows XP/7/10/11, Linux and macOS skins."
@@ -9,7 +9,7 @@ keywords = ["paint", "editor", "raster", "bitmap", "gui"]
 categories = ["multimedia::images", "graphics"]
 authors = ["poncho-ajmv"]
 repository = "https://github.com/poncho-ajmv/lienzo"
-homepage = "https://github.com/poncho-ajmv/lienzo"
+homepage = "https://lienzo.surge.sh/"
 
 [package.metadata.winresource]
 ProductName = "Lienzo"
@@ -25,7 +25,7 @@ LegalCopyright = "Copyright © 2026 poncho-ajmv"
 ecolor = "0.36"
 egui = "0.36"
 eframe = { version = "0.36", default-features = false, features = [
-    # glow en vez de wgpu: en web ahorra ~2,4 MiB de wasm (naga no entra).
+    # glow mantiene el backend gráfico nativo más pequeño que wgpu.
     "glow",
     "default_fonts",
     # Con default-features = false hay que pedirlos a mano o no hay ventana
@@ -38,6 +38,8 @@ eframe = { version = "0.36", default-features = false, features = [
 ] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+rfd = "0.17"
+arboard = { version = "3.6", features = ["image-data"] }
 
 # Sólo los formatos que Paint maneja. Por defecto `image` compila EXR, DDS,
 # HDR, AVIF y media docena más que no usamos: es la perilla de tamaño más
@@ -45,11 +47,6 @@ serde_json = "1"
 image = { version = "0.25", default-features = false, features = [
     "png", "jpeg", "bmp", "gif", "tiff", "ico",
 ] }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-rfd = "0.17"
-# arboard no compila a wasm; en web el portapapeles lo maneja eframe.
-arboard = { version = "3.6", features = ["image-data"] }
 
 [target.'cfg(windows)'.build-dependencies]
 winresource = "0.1.31"

@@ -130,7 +130,7 @@ jobs:
           install -m 755 target/release/lienzo "$deb/usr/bin/lienzo"
           install -m 644 packaging/linux/lienzo.desktop "$deb/usr/share/applications/lienzo.desktop"
           install -m 644 assets/icons/linux/lienzo.png "$deb/usr/share/icons/hicolor/512x512/apps/lienzo.png"
-          printf 'Package: lienzo\nVersion: %s\nSection: graphics\nPriority: optional\nArchitecture: amd64\nMaintainer: poncho-ajmv\nDepends: libc6 (>= 2.35), libgcc-s1, libgl1, libx11-6, libxcursor1, libxi6, libxrandr2, libwayland-client0, libxkbcommon0\nHomepage: https://github.com/poncho-ajmv/lienzo\nDescription: Editor de imágenes libre, rápido y multiplataforma.\n' "$version" > "$deb/DEBIAN/control"
+          printf 'Package: lienzo\nVersion: %s\nSection: graphics\nPriority: optional\nArchitecture: amd64\nMaintainer: poncho-ajmv\nDepends: libc6 (>= 2.35), libgcc-s1, libgl1, libx11-6, libxcursor1, libxi6, libxrandr2, libwayland-client0, libxkbcommon0\nHomepage: https://lienzo.surge.sh/\nDescription: Editor de imágenes libre, rápido y multiplataforma.\n' "$version" > "$deb/DEBIAN/control"
           dpkg-deb --build --root-owner-group "$deb" "dist/lienzo_${version}_amd64.deb"
           rm -rf AppDir "$deb" linuxdeploy.AppImage
       - uses: actions/upload-artifact@v4

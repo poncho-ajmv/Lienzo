@@ -1,24 +1,23 @@
-# Lienzo 0.1.3
+# Lienzo 0.1.4
 
-Esta versión corrige el zoom por rueda, mejora la presentación pública del
-proyecto y renueva la instalación en Windows.
+Esta versión completa la selección libre y conecta impresión y vista previa
+con los servicios nativos de cada sistema operativo.
 
 ## Novedades
 
-- `Ctrl + rueda` funciona en toda el área de trabajo de Windows, Linux y macOS;
-  `Cmd + rueda` también funciona en macOS.
-- Cada muesca cambia exactamente un nivel, sin repeticiones causadas por el
-  suavizado del desplazamiento.
-- El instalador de Windows estrena interfaz MUI2 nítida en pantallas HiDPI.
-- El instalador detecta una versión anterior y ofrece actualizarla conservando
-  las preferencias; una instalación de la misma versión se puede reparar.
-- El ejecutable y el instalador muestran nombre, versión y editor en sus
-  propiedades de Windows.
-- Nuevo logo oficial en el README y en los paquetes de los tres sistemas; el
-  icono de Windows incluye siete resoluciones nativas, de 16 a 256 px.
-- La interfaz reemplaza la antigua paleta simplificada por la marca oficial sin
-  fondo; la ventana nativa también muestra el logo de Lienzo.
-- El README muestra por separado los diez temas claros y los diez oscuros.
+- El marco animado de la selección libre sigue el lazo dibujado, incluso
+  después de moverlo o cambiar su tamaño.
+- La caja de la selección libre abarca todo el recorrido y no sólo sus puntos
+  inicial y final.
+- Imprimir envía el lienzo a la impresora predeterminada del sistema.
+- Vista previa abre una copia exacta en el visor nativo; si no hay servicio de
+  impresión, ese visor funciona también como alternativa segura.
+- Lienzo queda definido exclusivamente como aplicación nativa descargable para
+  macOS, Windows y Linux; se eliminó el soporte web incompleto.
+- README principal en inglés, traducción española separada y política de
+  seguridad con reportes privados habilitados.
+- El sitio oficial, <https://lienzo.surge.sh/>, queda enlazado desde los README,
+  el diálogo Acerca de y los metadatos de los instaladores.
 
 ## Descargas
 

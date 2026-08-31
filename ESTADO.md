@@ -1,7 +1,7 @@
 # Estado actual de Lienzo
 
-Preparado para la versión 0.1.2 después de corregir el zoom por rueda y renovar
-la instalación en Windows.
+La versión 0.1.3 está publicada. La rama principal prepara 0.1.4 con impresión
+nativa y la selección libre terminada.
 
 ## Validación
 
@@ -11,20 +11,21 @@ cargo clippy --locked --offline --all-targets -- -D warnings
 cargo fmt --check
 ```
 
-- 28 tests aprobados.
+- 29 tests aprobados.
 - Clippy sin advertencias tratadas como error.
 - Formato de Rust verificado.
 - Validado en macOS sobre `aarch64-apple-darwin`.
 - Probado correctamente en Windows x86_64.
 - Compilado para Linux x86_64; todavía requiere validación en una distribución
   real.
-- DMG, ZIP portable, Setup.exe, AppImage y DEB publicados para la versión 0.1.1.
+- DMG, ZIP portable, Setup.exe, AppImage y DEB publicados para la versión 0.1.3.
 - Integridad de ZIP, DMG, AppImage, DEB y sumas SHA-256 verificada.
 
 ## Funciona
 
 - Nueve herramientas, nueve pinceles y setenta y tres formas.
-- Selección rectangular y libre, movimiento, escalado, recorte e inversión.
+- Selección rectangular y libre con contorno real, movimiento, escalado,
+  recorte e inversión.
 - Texto rasterizado con las fuentes integradas de egui.
 - Historial por rectángulos con deshacer y rehacer.
 - Apertura y guardado de PNG, JPEG, BMP, GIF y TIFF; apertura de ICO.
@@ -33,6 +34,16 @@ cargo fmt --check
 - Veinte temas embebidos, temas JSON adicionales y diez idiomas.
 - Ocho chromes: Ribbon, Palette, Mac, GNOME, KDE, Studio, Neon y Holo.
 - Once niveles de zoom, miniatura, reglas, cuadrícula y pantalla completa.
+- Impresión a la impresora predeterminada y vista previa en el visor nativo.
+
+## Alcance
+
+Lienzo se distribuye exclusivamente como aplicación nativa de escritorio para
+macOS, Windows y Linux. La versión para navegador queda cancelada y no forma
+parte de la planificación del proyecto.
+
+El sitio oficial, <https://lienzo.surge.sh/>, presenta la aplicación y dirige
+las descargas a GitHub Releases; no ejecuta el editor en el navegador.
 
 ## Protecciones de datos
 
@@ -45,7 +56,7 @@ anterior.
 Crear o abrir un documento cancela selección, curva o polígono multietapa,
 previsualización, texto flotante y arrastres del documento anterior.
 
-## Distribución 0.1.1
+## Distribución 0.1.3
 
 | Sistema | Portable | Instalador |
 |---|---|---|
@@ -53,10 +64,23 @@ previsualización, texto flotante y arrastres del documento anterior.
 | Windows x86_64 | ZIP con `Lienzo.exe` | Setup.exe por usuario |
 | Linux x86_64 | AppImage | DEB para Debian/Ubuntu |
 
-GitHub Actions genera los seis paquetes desde la etiqueta `v0.1.1` y los
+GitHub Actions genera los seis paquetes desde la etiqueta `v0.1.3` y los
 publica con la versión en el nombre y su archivo `SHA256SUMS.txt`.
 
-## Cambios preparados para 0.1.2
+## Cambios preparados para 0.1.4
+
+- La selección libre dibuja el marco animado sobre el recorrido real del lazo
+  y calcula su caja usando todos sus puntos.
+- Imprimir usa el servicio nativo y Vista previa abre el lienzo en el visor del
+  sistema, con una alternativa segura si no hay servicio de impresión.
+- Se eliminó el soporte web incompleto: Lienzo es una aplicación nativa
+  descargable para los tres sistemas.
+- README en inglés y español, política de seguridad, reportes privados y firma
+  SSH de commits.
+- Sitio oficial integrado en los README, el diálogo Acerca de y los metadatos
+  de los paquetes de Windows y Linux.
+
+## Cambios de 0.1.3
 
 - La rueda usa el evento original en lugar del desplazamiento suavizado: una
   muesca cambia un nivel de zoom y no se repite durante varios cuadros.
@@ -84,11 +108,8 @@ publica con la versión en el nombre y su archivo `SHA256SUMS.txt`.
 
 | Área | Estado |
 |---|---|
-| Imprimir y vista previa | Sólo muestran un mensaje; falta integración de impresión |
-| Web (WASM) | Abrir, guardar, exportar y pegar desde archivo no están implementados |
 | Linux | Compila para x86_64; falta probarlo en una distribución real |
-| Firma y notarización | Los instaladores funcionan, pero no tienen firma comercial |
-| Selección libre | La máscara funciona; el marco visible sigue siendo rectangular |
+| Firma y notarización | Faltan certificados comerciales de Apple y Microsoft |
 
 ## Arquitectura breve
 

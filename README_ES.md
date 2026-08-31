@@ -4,7 +4,7 @@
 
 # Lienzo
 
-[English](README.md) · [Español](README_ES.md)
+[Sitio oficial](https://lienzo.surge.sh/) · [Descargas](https://github.com/poncho-ajmv/Lienzo/releases) · [English](README.md) · [Español](README_ES.md)
 
 En todos los sistemas operativos siempre me ha gustado tener a mano una
 herramienta sencilla para trabajar con imágenes, sin recurrir a programas
@@ -27,10 +27,12 @@ cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
 
-> **Estado:** la versión 0.1.1 está publicada con formatos portables e
-> instalables para macOS, Windows y Linux. Falta imprimir, validar Linux en un
-> equipo real y terminar la versión web. El detalle completo está más abajo y
-> en `ESTADO.md`.
+> **Estado:** la versión 0.1.3 está publicada con formatos portables e
+> instalables para macOS, Windows y Linux. La rama actual prepara 0.1.4 con
+> impresión nativa y el contorno correcto de la selección libre. Falta validar
+> Linux en un equipo real y agregar firma comercial. Lienzo es exclusivamente
+> una aplicación nativa de escritorio descargable; no se planea una versión
+> para navegador. El detalle completo está más abajo y en `ESTADO.md`.
 
 ---
 
@@ -47,7 +49,9 @@ No hay base de datos, ni servidor, ni variables de entorno. Nada que configurar.
 
 ## Descargas e instalación
 
-Los binarios se publican en [GitHub Releases](https://github.com/poncho-ajmv/lienzo/releases).
+El [sitio oficial de Lienzo](https://lienzo.surge.sh/) presenta el proyecto,
+todos sus temas y accesos directos a las descargas. Los binarios se publican en
+[GitHub Releases](https://github.com/poncho-ajmv/lienzo/releases).
 
 | Sistema | Portable | Instalación en el sistema |
 |---|---|---|
@@ -178,7 +182,7 @@ C4Component
 ```
 
 **La frontera está entre `doc` y `main`.** `canvas`, `shapes` y `doc` no saben
-que egui existe: dependen sólo de `ecolor` para el tipo de color. Por eso los 27
+que egui existe: dependen sólo de `ecolor` para el tipo de color. Por eso los 29
 tests corren sin ventana, sin GPU y sin bucle de eventos. Todo lo que toque egui
 vive del otro lado.
 
@@ -279,20 +283,25 @@ temas parseen y que ninguna traducción quede en blanco.
 **Funciona**
 
 Las nueve herramientas, los nueve pinceles, las setenta y tres formas, deshacer
-y rehacer, selección rectangular y libre con estirado por las ocho manijas,
-texto con fuentes de verdad, abrir y guardar en seis formatos, portapapeles en
-los dos sentidos, veinte temas, diez idiomas, y todo eso guardado entre
-sesiones.
+y rehacer, selección rectangular y libre con estirado por las ocho manijas y
+un contorno que sigue el lazo, texto con fuentes de verdad, abrir y guardar en
+seis formatos, impresión y vista previa nativas, portapapeles en los dos
+sentidos, veinte temas, diez idiomas, y todo eso guardado entre sesiones.
 
 **Falta**
 
 | Qué | Cómo está |
 |---|---|
-| Imprimir y vista previa | Sólo dejan un mensaje en la barra de estado |
-| Web (WASM) | Compila, pero abrir, guardar y pegar no están |
-| Empaquetado | Portable e instalador listos para las tres plataformas; sin firma comercial |
-| Selección libre | Recorta bien, pero el marco que dibuja es el rectángulo que la contiene |
-| Windows y Linux | Compilan para x86_64; falta probarlos en sistemas reales |
+| Firma comercial | Los instaladores funcionan, pero no hay certificados de Apple y Microsoft |
+| Linux | Compila para x86_64; falta probarlo en una distribución real |
+
+## Seguridad
+
+Reportá las vulnerabilidades de forma privada mediante
+[GitHub Security Advisories](https://github.com/poncho-ajmv/Lienzo/security/advisories/new).
+No publiques una vulnerabilidad sin corregir en un issue. La
+[política de seguridad](.github/SECURITY.md) detalla las versiones soportadas y
+los tiempos de respuesta.
 
 ## Licencia
 

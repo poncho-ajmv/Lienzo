@@ -51,6 +51,46 @@ fn zoom_event_direction(event: &egui::Event) -> f32 {
     }
 }
 
+fn open_system_viewer(path: &std::path::Path) -> std::io::Result<()> {
+    #[cfg(target_os = "macos")]
+    let child = std::process::Command::new("open").arg(path).spawn();
+    #[cfg(target_os = "windows")]
+    let child = std::process::Command::new("powershell.exe")
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "Start-Process -FilePath $env:LIENZO_PRINT_FILE",
+        ])
+        .env("LIENZO_PRINT_FILE", path)
+        .spawn();
+    #[cfg(all(unix, not(target_os = "macos")))]
+    let child = std::process::Command::new("xdg-open").arg(path).spawn();
+    child.map(|_| ())
+}
+
+fn send_to_system_printer(path: &std::path::Path) -> std::io::Result<()> {
+    #[cfg(target_os = "windows")]
+    let status = std::process::Command::new("powershell.exe")
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "Start-Process -FilePath $env:LIENZO_PRINT_FILE -Verb Print",
+        ])
+        .env("LIENZO_PRINT_FILE", path)
+        .status();
+    #[cfg(not(target_os = "windows"))]
+    let status = std::process::Command::new("lp").arg(path).status();
+    match status {
+        Ok(s) if s.success() => Ok(()),
+        Ok(s) => Err(std::io::Error::other(format!(
+            "el servicio terminó con {s}"
+        ))),
+        Err(e) => Err(e),
+    }
+}
+
 /// Los tamaños de lienzo que se ofrecen al crear un dibujo. Sin esto hay que
 /// crear, ir a Propiedades y escribir dos números para cada formato común.
 const PRESETS: [(&str, usize, usize); 5] = [
@@ -774,10 +814,19 @@ impl App {
             Cmd::ToggleThumbnail => self.show_thumbnail = !self.show_thumbnail,
             Cmd::ToggleQatBelow => self.qat_below = !self.qat_below,
             Cmd::ToggleRibbonMin => self.ribbon_min = !self.ribbon_min,
-            // `ponytail:` sin impresión todavía. El plan es componer un PDF de
-            // una página con `printpdf` y entregárselo al sistema.
-            Cmd::Print | Cmd::PrintPreview => {
-                self.status = "Imprimir todavía no está implementado".into();
+            Cmd::Print => {
+                if self.text_box.is_some() {
+                    self.commit_text(ctx);
+                }
+                self.doc.commit_selection();
+                self.print_canvas(false);
+            }
+            Cmd::PrintPreview => {
+                if self.text_box.is_some() {
+                    self.commit_text(ctx);
+                }
+                self.doc.commit_selection();
+                self.print_canvas(true);
             }
             Cmd::FullScreen => {
                 self.fullscreen = !self.fullscreen;
@@ -798,7 +847,6 @@ impl App {
         self.recent.truncate(8);
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn open_file(&mut self, ctx: &egui::Context) {
         let Some(path) = rfd::FileDialog::new()
             .add_filter(
@@ -812,7 +860,6 @@ impl App {
         self.request_action(PendingAction::Open(path), ctx);
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn open_path(&mut self, path: &std::path::Path) {
         match image::open(path) {
             Ok(img) => {
@@ -831,7 +878,6 @@ impl App {
 
     /// Guarda una copia a otra escala. `Guardar como` sólo cambia el formato;
     /// esto saca el mismo dibujo al doble o a la mitad sin tocar el original.
-    #[cfg(not(target_arch = "wasm32"))]
     fn export(&mut self, scale: u32) {
         let (w, h) = (
             (self.doc.canvas.w * scale as usize / 100).max(1),
@@ -864,7 +910,6 @@ impl App {
     }
 
     /// Abre la carpeta del archivo y lo deja seleccionado.
-    #[cfg(not(target_arch = "wasm32"))]
     fn reveal(&mut self) {
         let Some(path) = self.path.clone() else {
             self.status = "Guardá el dibujo primero".into();
@@ -888,18 +933,8 @@ impl App {
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
-    fn open_path(&mut self, _p: &std::path::Path) {}
-    #[cfg(target_arch = "wasm32")]
-    fn export(&mut self, _s: u32) {
-        self.status = "Exportar en web todavía no está".into();
-    }
-    #[cfg(target_arch = "wasm32")]
-    fn reveal(&mut self) {}
-
     /// "Pegar desde" de Paint: trae una imagen de disco y la deja flotando
     /// encima del dibujo, sin reemplazarlo — que es lo que la distingue de Abrir.
-    #[cfg(not(target_arch = "wasm32"))]
     fn paste_from_file(&mut self) {
         let Some(path) = rfd::FileDialog::new()
             .add_filter(
@@ -923,12 +958,6 @@ impl App {
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
-    fn paste_from_file(&mut self) {
-        self.status = "Pegar desde archivo en web todavía no está".into();
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
     fn save_as(&mut self, ctx: &egui::Context) -> bool {
         let Some(path) = rfd::FileDialog::new()
             .add_filter("PNG", &["png"])
@@ -952,19 +981,9 @@ impl App {
         }
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
     fn save_to(&mut self, path: &std::path::Path) -> bool {
         self.doc.commit_selection();
-        let (w, h) = (self.doc.canvas.w, self.doc.canvas.h);
-        let mut buf = image::RgbaImage::new(w as u32, h as u32);
-        for (i, p) in self.doc.canvas.pixels().iter().enumerate() {
-            buf.put_pixel(
-                (i % w) as u32,
-                (i / w) as u32,
-                image::Rgba([p.r(), p.g(), p.b(), 255]),
-            );
-        }
-        match buf.save(path) {
+        match self.canvas_image().save(path) {
             Ok(()) => {
                 self.doc.canvas.dirty_file = false;
                 self.remember(path);
@@ -978,18 +997,45 @@ impl App {
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
-    fn open_file(&mut self, _ctx: &egui::Context) {
-        self.status = "Abrir archivos en web todavía no está".into();
+    fn canvas_image(&self) -> image::RgbaImage {
+        let (w, h) = (self.doc.canvas.w, self.doc.canvas.h);
+        let mut buf = image::RgbaImage::new(w as u32, h as u32);
+        for (i, p) in self.doc.canvas.pixels().iter().enumerate() {
+            buf.put_pixel(
+                (i % w) as u32,
+                (i / w) as u32,
+                image::Rgba([p.r(), p.g(), p.b(), 255]),
+            );
+        }
+        buf
     }
-    #[cfg(target_arch = "wasm32")]
-    fn save_as(&mut self, _ctx: &egui::Context) -> bool {
-        self.status = "Guardar en web todavía no está".into();
-        false
-    }
-    #[cfg(target_arch = "wasm32")]
-    fn save_to(&mut self, _path: &std::path::Path) -> bool {
-        false
+
+    fn print_canvas(&mut self, preview: bool) {
+        let path = std::env::temp_dir().join(format!("lienzo-print-{}.png", std::process::id()));
+        if let Err(e) = self.canvas_image().save(&path) {
+            self.status = format!("No pude preparar la impresión: {e}");
+            return;
+        }
+
+        if preview {
+            self.status = match open_system_viewer(&path) {
+                Ok(()) => "Vista previa abierta en el visor del sistema".into(),
+                Err(e) => format!("No pude abrir la vista previa: {e}"),
+            };
+            return;
+        }
+
+        self.status = match send_to_system_printer(&path) {
+            Ok(()) => "Enviado a la impresora predeterminada".into(),
+            Err(print_error) => match open_system_viewer(&path) {
+                Ok(()) => format!(
+                    "No pude enviarlo directamente ({print_error}); se abrió el visor para imprimir"
+                ),
+                Err(open_error) => format!(
+                    "No pude imprimir ({print_error}) ni abrir la vista previa ({open_error})"
+                ),
+            },
+        };
     }
 
     // --------------------------------------------------------- portapapeles
@@ -997,7 +1043,6 @@ impl App {
     /// Copiar hacia afuera. egui tiene `OutputCommand::CopyImage`, pero acá
     /// vamos directo a arboard para que sea el mismo camino en las dos
     /// direcciones.
-    #[cfg(not(target_arch = "wasm32"))]
     fn copy_to_system(&mut self) {
         let Some((w, h, px)) = self.doc.clipboard.clone() else {
             return;
@@ -1021,7 +1066,6 @@ impl App {
     /// #2108 lleva abierto desde 2022—, así que se llama a arboard directo.
     /// Lo pegado se convierte en una selección flotante, que es la misma
     /// maquinaria de la herramienta Seleccionar: pegar no es una función nueva.
-    #[cfg(not(target_arch = "wasm32"))]
     fn paste_from_system(&mut self) {
         match arboard::Clipboard::new().and_then(|mut c| c.get_image()) {
             Ok(img) => {
@@ -1043,14 +1087,6 @@ impl App {
             // Sin imagen en el portapapeles, se cae al portapapeles interno.
             Err(_) => self.doc.paste_from_clipboard(),
         }
-        self.sel_dirty = true;
-    }
-
-    #[cfg(target_arch = "wasm32")]
-    fn copy_to_system(&mut self) {}
-    #[cfg(target_arch = "wasm32")]
-    fn paste_from_system(&mut self) {
-        self.doc.paste_from_clipboard();
         self.sel_dirty = true;
     }
 
@@ -1853,20 +1889,54 @@ impl App {
                     Color32::WHITE,
                 );
             }
-            // Doble marco para que se vea sobre cualquier fondo. egui no tiene
-            // línea punteada de fábrica, y esto cumple igual.
-            p.rect_stroke(
-                sr,
-                0.0,
-                egui::Stroke::new(1.0, Color32::WHITE),
-                egui::StrokeKind::Outside,
-            );
-            p.rect_stroke(
-                sr.expand(1.0),
-                0.0,
-                egui::Stroke::new(1.0, Color32::from(theme.text)),
-                egui::StrokeKind::Outside,
-            );
+            if let Some(lasso) = sel.lasso.as_ref().filter(|p| p.len() > 1) {
+                let (mut min_x, mut min_y, mut max_x, mut max_y) =
+                    (lasso[0].0, lasso[0].1, lasso[0].0, lasso[0].1);
+                for &(x, y) in &lasso[1..] {
+                    min_x = min_x.min(x);
+                    min_y = min_y.min(y);
+                    max_x = max_x.max(x);
+                    max_y = max_y.max(y);
+                }
+                let (w, h) = ((max_x - min_x).max(1.0), (max_y - min_y).max(1.0));
+                let mut outline: Vec<Pos2> = lasso
+                    .iter()
+                    .map(|&(x, y)| {
+                        Pos2::new(
+                            sr.left() + (x - min_x) / w * sr.width(),
+                            sr.top() + (y - min_y) / h * sr.height(),
+                        )
+                    })
+                    .collect();
+                outline.push(outline[0]);
+                p.add(egui::Shape::line(
+                    outline.clone(),
+                    egui::Stroke::new(3.0, Color32::WHITE),
+                ));
+                let offset = (ui.ctx().input(|i| i.time) as f32 * 16.0) % 8.0;
+                p.extend(egui::Shape::dashed_line_with_offset(
+                    &outline,
+                    egui::Stroke::new(1.0, Color32::from(theme.text)),
+                    &[4.0],
+                    &[4.0],
+                    offset,
+                ));
+                ui.ctx().request_repaint();
+            } else {
+                // Doble marco para que se vea sobre cualquier fondo.
+                p.rect_stroke(
+                    sr,
+                    0.0,
+                    egui::Stroke::new(1.0, Color32::WHITE),
+                    egui::StrokeKind::Outside,
+                );
+                p.rect_stroke(
+                    sr.expand(1.0),
+                    0.0,
+                    egui::Stroke::new(1.0, Color32::from(theme.text)),
+                    egui::StrokeKind::Outside,
+                );
+            }
 
             // Las ocho manijas para estirarla. Miden lo mismo en pantalla a
             // cualquier zoom: son para el mouse, no parte del dibujo.
@@ -3585,6 +3655,15 @@ impl App {
                                 iw,
                                 lang::t("Repositorio"),
                                 env!("CARGO_PKG_REPOSITORY").trim_start_matches("https://"),
+                            );
+                            ui::info_row(
+                                ui,
+                                &theme,
+                                iw,
+                                "Web",
+                                env!("CARGO_PKG_HOMEPAGE")
+                                    .trim_start_matches("https://")
+                                    .trim_end_matches('/'),
                             );
                             ui::info_row(ui, &theme, iw, lang::t("Licencia"), "MIT");
                             ui::info_row(ui, &theme, iw, lang::t("Tema"), &theme.name);

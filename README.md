@@ -4,7 +4,7 @@
 
 # Lienzo
 
-[English](README.md) · [Español](README_ES.md)
+[Official website](https://lienzo.surge.sh/) · [Downloads](https://github.com/poncho-ajmv/Lienzo/releases) · [English](README.md) · [Español](README_ES.md)
 
 On every operating system, I have always liked having a simple tool close at
 hand for working with images without turning to overly sophisticated software.
@@ -26,10 +26,12 @@ cargo test    # the engine, without a window
 cargo run     # the application
 ```
 
-> **Status:** version 0.1.1 is available in portable and installable formats
-> for macOS, Windows, and Linux. Printing, validation on a real Linux system,
-> and completion of the web version are still pending. Full details appear
-> below and in `ESTADO.md`.
+> **Status:** version 0.1.3 is available in portable and installable formats
+> for macOS, Windows, and Linux. The current branch prepares 0.1.4 with native
+> printing and an accurate free-form selection outline. Validation on a real
+> Linux system and commercial signing are still pending. Lienzo is exclusively
+> a downloadable native desktop application; no browser version is planned.
+> Full details appear below and in `ESTADO.md`.
 
 ---
 
@@ -47,7 +49,10 @@ configure.
 
 ## Downloads and installation
 
-Binaries are published on [GitHub Releases](https://github.com/poncho-ajmv/lienzo/releases).
+Visit the [official Lienzo website](https://lienzo.surge.sh/) for the project
+showcase, theme gallery, and download shortcuts. The binaries themselves are
+published on [GitHub Releases](https://github.com/poncho-ajmv/lienzo/releases).
+The website is currently available in Spanish.
 
 | System | Portable | System installation |
 |---|---|---|
@@ -179,7 +184,7 @@ C4Component
 
 **The boundary lies between `doc` and `main`.** `canvas`, `shapes`, and `doc`
 do not know that egui exists: they depend only on `ecolor` for the color type.
-That is why the 27 tests run without a window, GPU, or event loop. Everything
+That is why the 29 tests run without a window, GPU, or event loop. Everything
 that touches egui lives on the other side.
 
 ## Decisions worth explaining
@@ -280,19 +285,25 @@ theme must parse, and no translation may be blank.
 **Working**
 
 The nine tools, nine brushes, seventy-three shapes, undo and redo, rectangular
-and free-form selection with eight resize handles, text with real fonts,
-opening and saving six formats, two-way clipboard, twenty themes, ten
-languages, and persistence across sessions.
+and free-form selection with eight resize handles and an outline that follows
+the lasso, text with real fonts, opening and saving six formats, native printing
+and preview, two-way clipboard, twenty themes, ten languages, and persistence
+across sessions.
 
 **Pending**
 
 | What | Current state |
 |---|---|
-| Printing and print preview | Only display a status-bar message |
-| Web (WASM) | Builds, but open, save, and paste are unavailable |
-| Packaging | Portable and installer ready for all three platforms; no commercial signature |
-| Free-form selection | Crops correctly, but its outline is the containing rectangle |
-| Windows and Linux | Build for x86_64; testing on real systems remains pending |
+| Commercial signing | Installers work, but Apple and Microsoft certificates are not available |
+| Linux | Builds for x86_64; testing on a real distribution remains pending |
+
+## Security
+
+Report vulnerabilities privately through
+[GitHub Security Advisories](https://github.com/poncho-ajmv/Lienzo/security/advisories/new).
+Do not publish an uncorrected vulnerability in an issue. See the complete
+[security policy](.github/SECURITY.md) for supported versions and response
+times.
 
 ## License
 

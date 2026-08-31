@@ -102,7 +102,7 @@ Section "Lienzo" SEC_LIENZO
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Lienzo" "DisplayIcon" "$INSTDIR\Lienzo.exe,0"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Lienzo" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Lienzo" "Publisher" "poncho-ajmv"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Lienzo" "URLInfoAbout" "https://github.com/poncho-ajmv/Lienzo"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Lienzo" "URLInfoAbout" "https://lienzo.surge.sh/"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Lienzo" "UninstallString" '"$INSTDIR\Uninstall.exe"'
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Lienzo" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Lienzo" "NoModify" 1
