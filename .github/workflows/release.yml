@@ -2,15 +2,53 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
+    paths:
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "packaging/macos/Info.plist"
+      - ".github/workflows/release.yml"
 
 permissions:
   contents: write
 
 jobs:
+  prepare:
+    name: Detectar una versión nueva
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      should_publish: ${{ steps.version.outputs.should_publish }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - id: version
+        name: Leer versión y comprobar el tag
+        shell: bash
+        run: |
+          version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -n 1)"
+          test -n "$version"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          tag="v$version"
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            should_publish=false
+            echo "El tag $tag ya existe: se ejecutarán las pruebas, pero no se publicará de nuevo."
+          else
+            should_publish=true
+            echo "Nueva versión detectada: $tag"
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "should_publish=$should_publish" >> "$GITHUB_OUTPUT"
+
   quality:
     name: Pruebas
+    needs: prepare
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
@@ -21,21 +59,24 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwayland-dev libxdo-dev libxcb-shape0-dev libxcb-xfixes0-dev libxkbcommon-dev
-      - name: Validar versión del tag
+      - name: Validar versión del manifiesto
         shell: bash
         run: |
-          version="${GITHUB_REF_NAME#v}"
           manifest_version="$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -n 1)"
-          test "$version" = "$manifest_version"
+          test -n "$manifest_version"
+          [[ "$manifest_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
       - run: cargo fmt --check
       - run: cargo clippy --locked --all-targets -- -D warnings
       - run: cargo test --locked
 
   macos:
     name: macOS ARM64
-    needs: quality
+    needs: [prepare, quality]
+    if: needs.prepare.outputs.should_publish == 'true'
     runs-on: macos-15
     timeout-minutes: 30
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - uses: actions/checkout@v5
       - name: Rust estable
@@ -45,7 +86,7 @@ jobs:
       - name: Crear APP, ZIP y DMG
         shell: bash
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="$VERSION"
           app="dist/Lienzo.app"
           mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources" dist/dmg
           cp target/release/lienzo "$app/Contents/MacOS/lienzo"
@@ -73,9 +114,12 @@ jobs:
 
   windows:
     name: Windows x86_64
-    needs: quality
+    needs: [prepare, quality]
+    if: needs.prepare.outputs.should_publish == 'true'
     runs-on: windows-2022
     timeout-minutes: 30
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - uses: actions/checkout@v5
       - name: Rust estable
@@ -86,7 +130,7 @@ jobs:
       - name: Crear portable
         shell: pwsh
         run: |
-          $version = $env:GITHUB_REF_NAME.Substring(1)
+          $version = $env:VERSION
           $portable = "dist/Lienzo-$version-Windows-x86_64-portable"
           New-Item -ItemType Directory -Force $portable | Out-Null
           Copy-Item target/release/lienzo.exe "$portable/Lienzo.exe"
@@ -97,7 +141,7 @@ jobs:
         shell: pwsh
         run: |
           choco install nsis --version=3.12.0 --no-progress -y
-          $version = $env:GITHUB_REF_NAME.Substring(1)
+          $version = $env:VERSION
           $binary = (Resolve-Path target/release/lienzo.exe).Path
           $license = (Resolve-Path LICENSE).Path
           $icon = (Resolve-Path packaging/windows/lienzo.ico).Path
@@ -109,7 +153,7 @@ jobs:
       - name: Probar instalador de Windows
         shell: pwsh
         run: |
-          $version = $env:GITHUB_REF_NAME.Substring(1)
+          $version = $env:VERSION
           $installer = "$PWD/dist/Lienzo-$version-Windows-x86_64-setup.exe"
           $installDir = Join-Path $env:RUNNER_TEMP "Lienzo-installer-smoke-test"
           $result = Start-Process -FilePath $installer -ArgumentList @('/S', "/D=$installDir") -Wait -PassThru
@@ -131,9 +175,12 @@ jobs:
 
   linux:
     name: Linux x86_64
-    needs: quality
+    needs: [prepare, quality]
+    if: needs.prepare.outputs.should_publish == 'true'
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - uses: actions/checkout@v5
       - name: Rust estable
@@ -147,7 +194,7 @@ jobs:
       - name: Crear AppImage y DEB
         shell: bash
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="$VERSION"
           mkdir -p dist AppDir/usr/bin
           install -m 755 target/release/lienzo AppDir/usr/bin/lienzo
           curl -fsSL -o linuxdeploy.AppImage https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
@@ -178,8 +225,12 @@ jobs:
 
   publish:
     name: Publicar GitHub Release
-    needs: [macos, windows, linux]
+    needs: [prepare, macos, windows, linux]
+    if: needs.prepare.outputs.should_publish == 'true'
     runs-on: ubuntu-22.04
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      TAG: ${{ needs.prepare.outputs.tag }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/download-artifact@v7
@@ -193,9 +244,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release upload "$GITHUB_REF_NAME" release/* --clobber
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" release/* --clobber
           else
-            gh release create "$GITHUB_REF_NAME" release/* --title "Lienzo $version" --notes-file RELEASE_NOTES.md --verify-tag
+            gh release create "$TAG" release/* --target "$GITHUB_SHA" --title "Lienzo $VERSION" --notes-file RELEASE_NOTES.md
           fi
