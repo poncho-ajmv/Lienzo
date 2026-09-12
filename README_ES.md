@@ -27,13 +27,14 @@ cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
 
-> **Estado:** la versión 0.1.4 está publicada con formatos portables e
-> instalables para macOS, Windows y Linux. La rama actual prepara 0.1.5, que
-> corrige el bloqueo de la interfaz introducido por el icono de la aplicación y
-> agrega controles de los paquetes de los tres sistemas. Falta validar Linux en
-> un escritorio real y agregar firma comercial. Lienzo es exclusivamente
-> una aplicación nativa de escritorio descargable; no se planea una versión
-> para navegador. El detalle completo está más abajo y en `ESTADO.md`.
+> **Estado:** 0.1.5 es la última versión publicada. La 0.1.6 está terminada y
+> validada localmente en Windows x86_64; queda preparada para publicar cuando
+> se haga push a `main`. Incluye controles de zoom configurables, cursores de
+> redimensionado, vista Solo lienzo y una miniatura integrada con cada tema.
+> Falta validarla en un escritorio Linux real y agregar firma comercial. Lienzo
+> es exclusivamente una aplicación nativa de escritorio descargable; no se
+> planea una versión para navegador. El detalle completo está más abajo y en
+> `ESTADO.md`.
 
 ---
 
@@ -63,9 +64,11 @@ todos sus temas y accesos directos a las descargas. Los binarios se publican en
 Los binarios todavía no tienen firma comercial. macOS Gatekeeper y Windows
 SmartScreen pueden mostrar una advertencia la primera vez que se abren.
 
-Cada etiqueta `vX.Y.Z` ejecuta `.github/workflows/release.yml`: valida el código,
-compila en los tres sistemas, crea todos los paquetes y publica el release con
-su archivo `SHA256SUMS.txt`.
+Un push a `main` que cambie la versión de `Cargo.toml` activa
+`.github/workflows/release.yml`. El flujo primero valida el código; si esa
+versión todavía no tiene tag, compila los tres sistemas, crea los seis paquetes,
+publica el tag y el release con `SHA256SUMS.txt`. No hace falta crear un tag
+manualmente.
 
 ## Compilar desde el código
 
@@ -101,6 +104,19 @@ flotante, según el tema— y el grosor también en la barra de abajo.
 
 El tema, el idioma y los colores se eligen en **Archivo → Configuración** y se
 guardan solos para la próxima vez.
+
+### Vista y zoom
+
+El porcentaje de la barra de estado se puede editar directamente entre **12,5 %**
+y **800 %**. Los botones `−` y `+`, la lupa y los atajos usan el salto elegido
+en el botón `⚙` junto al porcentaje; ese paso se guarda en las preferencias. La
+rueda con `Cmd/Ctrl` también cambia el zoom sobre el área de trabajo.
+
+Desde **Ver → Solo lienzo** se ocultan temporalmente la cinta, las barras y la
+miniatura para concentrarse en el dibujo. `Esc` restaura la interfaz. Esta vista
+es independiente de pantalla completa. Al pasar el puntero por los tres
+tiradores de tamaño del lienzo, el cursor indica si el cambio será horizontal,
+vertical o diagonal.
 
 ## Apariencia y temas
 
@@ -183,7 +199,7 @@ C4Component
 ```
 
 **La frontera está entre `doc` y `main`.** `canvas`, `shapes` y `doc` no saben
-que egui existe: dependen sólo de `ecolor` para el tipo de color. Por eso los 29
+que egui existe: dependen sólo de `ecolor` para el tipo de color. Por eso los 31
 tests corren sin ventana, sin GPU y sin bucle de eventos. Todo lo que toque egui
 vive del otro lado.
 
@@ -274,10 +290,12 @@ forma todavía caen así.
 cargo test
 ```
 
-Cubren el motor: que deshacer sea exacto, que el relleno respete los bordes, que
-ninguna forma se salga de su caja ni se cruce a sí misma, que estirar una
-selección y devolverla al tamaño de antes dé la imagen de antes, que todos los
-temas parseen y que ninguna traducción quede en blanco.
+Cubren el motor y regresiones de interacción: que deshacer sea exacto, que el
+relleno respete los bordes, que ninguna forma se salga de su caja ni se cruce a
+sí misma, que estirar una selección y devolverla al tamaño de antes dé la imagen
+de antes, que todos los temas parseen, que ninguna traducción quede en blanco,
+que el zoom permanezca en su rango seguro y que los tiradores muestren el cursor
+correcto.
 
 ## Estado del proyecto
 
@@ -287,7 +305,8 @@ Las nueve herramientas, los nueve pinceles, las setenta y tres formas, deshacer
 y rehacer, selección rectangular y libre con estirado por las ocho manijas y
 un contorno que sigue el lazo, texto con fuentes de verdad, abrir y guardar en
 seis formatos, impresión y vista previa nativas, portapapeles en los dos
-sentidos, veinte temas, diez idiomas, y todo eso guardado entre sesiones.
+sentidos, veinte temas, diez idiomas, zoom configurable de 12,5 % a 800 %, vista
+Solo lienzo y todo eso guardado entre sesiones.
 
 **Falta**
 

@@ -1,27 +1,30 @@
 # Estado actual de Lienzo
 
-La versión 0.1.4 está publicada. La rama principal prepara 0.1.5 con la
-corrección del bloqueo al cargar el icono y controles de distribución más
-estrictos para Windows, macOS y Linux.
+La versión 0.1.5 es la última publicada. La 0.1.6 está terminada localmente:
+su ejecutable de Windows x86_64 se compiló y validó, pero todavía no se hizo
+commit ni push. Por eso aún no existe el tag, el release ni los paquetes 0.1.6
+para descargar.
 
 ## Validación
 
 ```sh
-cargo test --locked --offline
-cargo clippy --locked --offline --all-targets -- -D warnings
 cargo fmt --check
+cargo +stable-x86_64-pc-windows-gnu test --locked --target-dir target-gnu
+cargo +stable-x86_64-pc-windows-gnu clippy --locked --all-targets --target-dir target-gnu -- -D warnings
+cargo +stable-x86_64-pc-windows-gnu build --release --locked --target-dir target-gnu
 ```
 
-- 30 tests aprobados, incluida la regresión del bloqueo de egui.
+- 31 tests aprobados, incluidas las regresiones del bloqueo de egui, los
+  cursores de redimensionado y los límites del zoom configurable.
 - Clippy sin advertencias tratadas como error.
 - Formato de Rust verificado.
-- Validado en macOS sobre `aarch64-apple-darwin`.
+- El ejecutable local `target-gnu/release/lienzo.exe` informa versión 0.1.6.
 - Probado correctamente en Windows x86_64, incluido el cambio repetido entre
   los temas Windows 7, 10 y 11.
-- Compilado para Linux x86_64; todavía requiere validación en una distribución
-  real.
-- DMG, ZIP portable, Setup.exe, AppImage y DEB publicados para la versión 0.1.4.
-- Integridad de ZIP, DMG, AppImage, DEB y sumas SHA-256 verificada.
+- La validación visual de 0.1.6 sigue pendiente en Linux y macOS; el flujo de
+  publicación los compila de forma aislada al subir la versión.
+- DMG, ZIP portable, Setup.exe, AppImage y DEB están publicados y verificados
+  para 0.1.5.
 
 ## Funciona
 
@@ -35,7 +38,8 @@ cargo fmt --check
 - Portapapeles de imágenes en los dos sentidos.
 - Veinte temas embebidos, temas JSON adicionales y diez idiomas.
 - Ocho chromes: Ribbon, Palette, Mac, GNOME, KDE, Studio, Neon y Holo.
-- Once niveles de zoom, miniatura, reglas, cuadrícula y pantalla completa.
+- Zoom editable de 12,5 % a 800 %, paso configurable y persistente, miniatura,
+  reglas, cuadrícula, pantalla completa y vista Solo lienzo.
 - Impresión a la impresora predeterminada y vista previa en el visor nativo.
 
 ## Alcance
@@ -58,7 +62,7 @@ anterior.
 Crear o abrir un documento cancela selección, curva o polígono multietapa,
 previsualización, texto flotante y arrastres del documento anterior.
 
-## Distribución 0.1.5
+## Distribución 0.1.6
 
 | Sistema | Portable | Instalador |
 |---|---|---|
@@ -66,21 +70,24 @@ previsualización, texto flotante y arrastres del documento anterior.
 | Windows x86_64 | ZIP con `Lienzo.exe` | Setup.exe por usuario |
 | Linux x86_64 | AppImage | DEB para Debian/Ubuntu |
 
-GitHub Actions genera los seis paquetes desde la etiqueta `v0.1.5` y los
-publica con la versión en el nombre y su archivo `SHA256SUMS.txt`.
+Al hacer push a `main`, GitHub Actions detecta la versión de `Cargo.toml`.
+Siempre ejecuta calidad; sólo si el tag todavía no existe genera los seis
+paquetes y publica el tag y los archivos con su `SHA256SUMS.txt`. No se crea un
+tag manual.
 
-## Cambios preparados para 0.1.5
+## Cambios listos para 0.1.6
 
-- Se corrigió el bloqueo reentrante de egui al cargar la textura del icono
-  dentro de `Context::data_mut`; afectaba los temas Ribbon y el diálogo Acerca
-  de desde la versión 0.1.3.
-- La memoria visual transitoria de egui se reinicia entre versiones sin perder
-  tema, idioma ni colores.
-- Una prueba con límite de tiempo cubre la primera carga y la reutilización del
-  icono para impedir que el bloqueo reaparezca.
-- CI ejecuta las pruebas en Linux, Windows x86_64 y macOS ARM64.
-- El release valida la instalación silenciosa de Windows, el ZIP y DMG de
-  macOS, y la estructura del AppImage, DEB y archivo de escritorio de Linux.
+- Los tres tiradores de cambio de tamaño del lienzo anuncian su dirección con
+  cursores horizontal, vertical o diagonal.
+- Solo lienzo permite trabajar sin cinta, barras ni miniatura y se cierra con
+  `Esc`; pantalla completa permanece como una opción independiente.
+- La miniatura elimina el pozo fijo que causaba franjas vacías y se integra con
+  los colores, bordes y proporción del dibujo actual.
+- Las nueve interfaces traducidas incluyen el nuevo control Solo lienzo.
+- El porcentaje de zoom se puede editar directamente y el paso de `− / +` se
+  configura y conserva en las preferencias; funciona entre 12,5 % y 800 %.
+- Acerca de Lienzo muestra la versión compilada desde `Cargo.toml` tanto bajo
+  el logo como en la ficha de información.
 
 ## Cambios de 0.1.4
 

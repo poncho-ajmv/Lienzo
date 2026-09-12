@@ -52,6 +52,8 @@ pub enum Cmd {
     ToggleStatusBar,
     ToggleThumbnail,
     FullScreen,
+    /// Oculta el chrome para dejar sólo el área de dibujo; Escape lo restaura.
+    ToggleCanvasOnly,
     Print,
     PrintPreview,
     /// Crear un dibujo con un tamaño elegido de la lista.
@@ -292,6 +294,7 @@ pub enum Ico {
     ZoomOut,
     Zoom100,
     FullScreen,
+    CanvasOnly,
     Thumbnail,
     Palette,
     FlipH,
@@ -572,6 +575,19 @@ fn small_icon(ui: &Ui, r: Rect, ico: Ico, col: Color32) {
                 p.line_segment([pt(cx, cy), pt(cx + 0.11 * dx, cy)], s);
                 p.line_segment([pt(cx, cy), pt(cx, cy + 0.11 * dy)], s);
             }
+        }
+        // Un marco de imagen sin chrome: diferencia "solo lienzo" de ocupar
+        // toda la pantalla, que conserva la interfaz.
+        Ico::CanvasOnly => {
+            p.rect_stroke(
+                rc((0.10, 0.16), (0.90, 0.84)),
+                1.0,
+                s,
+                egui::StrokeKind::Inside,
+            );
+            p.line_segment([pt(0.22, 0.66), pt(0.42, 0.46)], s);
+            p.line_segment([pt(0.42, 0.46), pt(0.56, 0.60)], s);
+            p.line_segment([pt(0.56, 0.60), pt(0.72, 0.36)], s);
         }
         // Ventana con la vista chica adentro.
         Ico::Thumbnail => {
@@ -2465,6 +2481,15 @@ fn view_tab(ui: &mut Ui, theme: &Theme, band: Rect, themes: &[(String, usize)], 
             false,
         ) {
             out.cmds.push(Cmd::FullScreen);
+        }
+        if big_plain(
+            ui,
+            theme,
+            lang::t("Solo\nlienzo"),
+            Icon::I(Ico::CanvasOnly),
+            false,
+        ) {
+            out.cmds.push(Cmd::ToggleCanvasOnly);
         }
         if big_plain(
             ui,

@@ -26,13 +26,13 @@ cargo test    # the engine, without a window
 cargo run     # the application
 ```
 
-> **Status:** version 0.1.4 is available in portable and installable formats
-> for macOS, Windows, and Linux. The current branch prepares version 0.1.5,
-> which fixes the interface freeze introduced by the application icon and adds
-> release-package checks on all three systems. Validation on a real Linux
-> desktop and commercial signing are still pending. Lienzo is exclusively
-> a downloadable native desktop application; no browser version is planned.
-> Full details appear below and in `ESTADO.md`.
+> **Status:** 0.1.5 is the latest published release. Version 0.1.6 is complete
+> and locally validated on Windows x86_64, ready to publish with a push to
+> `main`. It adds configurable zoom controls, resize cursors, Canvas-only view,
+> and a thumbnail integrated with each theme. Validation on a real Linux desktop
+> and commercial signing are still pending. Lienzo is exclusively a downloadable
+> native desktop application; no browser version is planned. Full details appear
+> below and in `ESTADO.md`.
 
 ---
 
@@ -64,9 +64,11 @@ The website is currently available in Spanish.
 The binaries do not yet have a commercial signature. macOS Gatekeeper and
 Windows SmartScreen may display a warning the first time they are opened.
 
-Each `vX.Y.Z` tag runs `.github/workflows/release.yml`: it validates the code,
-builds on all three systems, creates every package, and publishes the release
-along with its `SHA256SUMS.txt` file.
+A push to `main` that changes the version in `Cargo.toml` starts
+`.github/workflows/release.yml`. It validates the code first; if that version
+does not already have a tag, it builds all three systems, creates the six
+packages, then publishes the tag and release with `SHA256SUMS.txt`. No manual
+tag is required.
 
 ## Building from source
 
@@ -102,6 +104,18 @@ depending on the theme—and stroke width is also available in the bottom bar.
 
 The theme, language, and colors are selected under **File → Settings** and are
 saved automatically for the next session.
+
+### View and zoom
+
+The percentage in the status bar is editable directly between **12.5%** and
+**800%**. The `−` and `+` buttons, magnifier, and shortcuts use the increment
+chosen from the `⚙` button beside the percentage; that increment is retained in
+preferences. `Cmd/Ctrl + wheel` also changes zoom over the workspace.
+
+Use **View → Canvas-only** to temporarily hide the ribbon, bars, and thumbnail
+and focus on the drawing. `Esc` restores the full interface. This is separate
+from fullscreen mode. Hovering any of the three canvas resize handles changes
+the cursor to indicate horizontal, vertical, or diagonal resizing.
 
 ## Appearance and themes
 
@@ -185,7 +199,7 @@ C4Component
 
 **The boundary lies between `doc` and `main`.** `canvas`, `shapes`, and `doc`
 do not know that egui exists: they depend only on `ecolor` for the color type.
-That is why the 29 tests run without a window, GPU, or event loop. Everything
+That is why the 31 tests run without a window, GPU, or event loop. Everything
 that touches egui lives on the other side.
 
 ## Decisions worth explaining
@@ -276,10 +290,11 @@ The seventy-three shape names still use that fallback.
 cargo test
 ```
 
-The tests cover the engine: undo must be exact, fill must respect boundaries,
-no shape may leave its box or cross itself, stretching a selection and
-returning it to its previous size must reproduce the previous image, every
-theme must parse, and no translation may be blank.
+The tests cover the engine and interaction regressions: undo must be exact,
+fill must respect boundaries, no shape may leave its box or cross itself,
+stretching a selection and returning it to its previous size must reproduce the
+previous image, every theme must parse, no translation may be blank, zoom stays
+within its safe range, and canvas resize handles expose the correct cursor.
 
 ## Project status
 
@@ -288,8 +303,8 @@ theme must parse, and no translation may be blank.
 The nine tools, nine brushes, seventy-three shapes, undo and redo, rectangular
 and free-form selection with eight resize handles and an outline that follows
 the lasso, text with real fonts, opening and saving six formats, native printing
-and preview, two-way clipboard, twenty themes, ten languages, and persistence
-across sessions.
+and preview, two-way clipboard, twenty themes, ten languages, configurable zoom
+from 12.5% to 800%, Canvas-only view, and persistence across sessions.
 
 **Pending**
 

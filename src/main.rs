@@ -22,19 +22,25 @@ use text::TextBox;
 use theme::Theme;
 use ui::{Cmd, Ico, Icon, Tab, UiIn};
 
-/// Los once niveles de zoom de Paint: duplica por debajo de 100%, suma 100 por
-/// encima. Verificado contra el original — la serie de sólo duplicar es de la
-/// versión de Windows 11.
+/// Presets de zoom para los menús de los chromes. El control de la barra de
+/// estado también acepta cualquier porcentaje dentro de los mismos límites.
 const ZOOMS: [f32; 11] = [0.125, 0.25, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
+const MIN_ZOOM: f32 = 0.125;
+const MAX_ZOOM: f32 = 8.0;
+const DEFAULT_ZOOM_STEP: f32 = 0.25;
+/// Se obtiene al compilar desde Cargo.toml. Es la única fuente de verdad para
+/// el ejecutable, los metadatos y el diálogo Acerca de.
+const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-fn zoom_step(index: usize, direction: f32) -> usize {
-    if direction > 0.0 {
-        (index + 1).min(ZOOMS.len() - 1)
-    } else if direction < 0.0 {
-        index.saturating_sub(1)
-    } else {
-        index
-    }
+fn default_zoom_step() -> f32 {
+    DEFAULT_ZOOM_STEP
+}
+
+/// Sube o baja el zoom con el salto elegido por el usuario y no deja que la
+/// vista se vuelva ilegible ni consuma memoria con escalas desproporcionadas.
+fn zoom_adjust(zoom: f32, step: f32, direction: f32) -> f32 {
+    let step = step.clamp(0.01, MAX_ZOOM - MIN_ZOOM);
+    (zoom + step * direction.signum()).clamp(MIN_ZOOM, MAX_ZOOM)
 }
 
 /// Dirección de un gesto de zoom sin el suavizado de la rueda de egui.
@@ -48,6 +54,16 @@ fn zoom_event_direction(event: &egui::Event) -> f32 {
         } if modifiers.ctrl || modifiers.command => delta.x + delta.y,
         egui::Event::Zoom(factor) => factor - 1.0,
         _ => 0.0,
+    }
+}
+
+/// Cursor que representa los ejes que modifica cada tirador del lienzo.
+fn canvas_resize_cursor(horizontal: bool, vertical: bool) -> egui::CursorIcon {
+    match (horizontal, vertical) {
+        (true, true) => egui::CursorIcon::ResizeNwSe,
+        (true, false) => egui::CursorIcon::ResizeHorizontal,
+        (false, true) => egui::CursorIcon::ResizeVertical,
+        (false, false) => unreachable!("un tirador debe cambiar al menos un eje"),
     }
 }
 
@@ -130,6 +146,8 @@ struct Ajustes {
     color1: [u8; 3],
     color2: [u8; 3],
     personalizados: Vec<Option<[u8; 3]>>,
+    #[serde(default = "default_zoom_step")]
+    paso_zoom: f32,
 }
 
 /// La clave del almacén de eframe.
@@ -373,7 +391,11 @@ struct App {
     sel_dirty: bool,
     /// Si el trazo actual empezó sobre el lienzo.
     drawing: bool,
-    zoom_idx: usize,
+    /// Zoom real del lienzo. No se limita a los presets: el campo de la barra
+    /// de estado puede recibir, por ejemplo, 137%.
+    zoom: f32,
+    /// Salto de los botones ± y de la lupa, expresado como escala (0.25 = 25%).
+    zoom_step: f32,
     path: Option<std::path::PathBuf>,
     dialogs: Dialogs,
     show_grid: bool,
@@ -382,6 +404,9 @@ struct App {
     show_thumbnail: bool,
     tab: Tab,
     fullscreen: bool,
+    /// Vista de concentración: deja solamente el área de trabajo sin cambiar el
+    /// estado de pantalla completa de la ventana.
+    canvas_only: bool,
     /// Qué botones muestra la barra de acceso rápido, en el orden de `ALL_QAT`.
     qat: [bool; ui::ALL_QAT.len()],
     qat_below: bool,
@@ -450,7 +475,8 @@ impl App {
             sel_tex: None,
             sel_dirty: false,
             drawing: false,
-            zoom_idx: 3, // 100%
+            zoom: 1.0,
+            zoom_step: DEFAULT_ZOOM_STEP,
             path: None,
             dialogs: Dialogs {
                 keep_ratio: true,
@@ -465,6 +491,7 @@ impl App {
             show_thumbnail: false,
             tab: Tab::Home,
             fullscreen: false,
+            canvas_only: false,
             // Los mismos tres que trae Paint de fábrica: guardar, deshacer, rehacer.
             qat: [false, false, true, false, false, true, true],
             qat_below: false,
@@ -507,6 +534,9 @@ impl App {
                 for (slot, saved) in app.custom_colors.iter_mut().zip(a.personalizados) {
                     *slot = saved.map(c);
                 }
+                if a.paso_zoom.is_finite() {
+                    app.zoom_step = a.paso_zoom.clamp(0.01, MAX_ZOOM - MIN_ZOOM);
+                }
             }
         }
 
@@ -531,7 +561,11 @@ impl App {
     }
 
     fn zoom(&self) -> f32 {
-        ZOOMS[self.zoom_idx]
+        self.zoom
+    }
+
+    fn adjust_zoom(&mut self, direction: f32) {
+        self.zoom = zoom_adjust(self.zoom, self.zoom_step, direction);
     }
 
     fn title(&self) -> String {
@@ -805,10 +839,10 @@ impl App {
                 self.doc.canvas.flip_vertical();
             }
             Cmd::InvertColors => self.doc.invert_selection_colors(),
-            Cmd::ZoomIn => self.zoom_idx = zoom_step(self.zoom_idx, 1.0),
-            Cmd::ZoomOut => self.zoom_idx = zoom_step(self.zoom_idx, -1.0),
-            Cmd::Zoom100 => self.zoom_idx = 3,
-            Cmd::ZoomTo(i) => self.zoom_idx = i.min(ZOOMS.len() - 1),
+            Cmd::ZoomIn => self.adjust_zoom(1.0),
+            Cmd::ZoomOut => self.adjust_zoom(-1.0),
+            Cmd::Zoom100 => self.zoom = 1.0,
+            Cmd::ZoomTo(i) => self.zoom = ZOOMS[i.min(ZOOMS.len() - 1)],
             Cmd::SetTheme(i) => {
                 if i < self.themes.len() {
                     self.theme_idx = i;
@@ -839,6 +873,7 @@ impl App {
                 self.fullscreen = !self.fullscreen;
                 ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(self.fullscreen));
             }
+            Cmd::ToggleCanvasOnly => self.canvas_only = !self.canvas_only,
             Cmd::About => self.dialogs.about = true,
             Cmd::Exit => self.request_action(PendingAction::Exit, ctx),
         }
@@ -1122,6 +1157,10 @@ impl App {
                 return cmds;
             }
             if self.dialogs.close_all() {
+                return cmds;
+            }
+            if self.canvas_only {
+                self.canvas_only = false;
                 return cmds;
             }
         }
@@ -1628,9 +1667,9 @@ impl App {
         // La lupa hace zoom acá, no en el documento: es cosa de la vista.
         if self.doc.tool == Tool::Magnifier {
             if resp.hovered() && l_down {
-                self.zoom_idx = (self.zoom_idx + 1).min(ZOOMS.len() - 1);
+                self.adjust_zoom(1.0);
             } else if resp.hovered() && r_down {
-                self.zoom_idx = self.zoom_idx.saturating_sub(1);
+                self.adjust_zoom(-1.0);
             }
             return;
         }
@@ -1811,7 +1850,12 @@ impl App {
         ];
         for (i, (p, hx, hy)) in spots.iter().enumerate() {
             let hr = egui::Rect::from_center_size(*p, vec2(10.0, 10.0));
-            let resp = ui.interact(hr, ui.id().with(("tirador", i)), Sense::drag());
+            // El cursor tiene que anticipar el eje que se modificará: con el
+            // tirador de la esquina se redimensionan ambos, como en Paint.
+            let cursor = canvas_resize_cursor(*hx, *hy);
+            let resp = ui
+                .interact(hr, ui.id().with(("tirador", i)), Sense::drag())
+                .on_hover_cursor(cursor);
             ui.painter()
                 .rect_filled(hr.shrink(2.0), 0.0, Color32::WHITE);
             ui.painter().rect_stroke(
@@ -3636,9 +3680,12 @@ impl App {
                                 .color(Color32::from(theme.text)),
                         );
                         ui.label(
-                            egui::RichText::new(format!("Versión {}", env!("CARGO_PKG_VERSION")))
-                                .size(theme.font_size)
-                                .color(Color32::from(theme.text_dim)),
+                            egui::RichText::new(format!(
+                                "{} {PACKAGE_VERSION}",
+                                lang::t("Versión")
+                            ))
+                            .size(theme.font_size)
+                            .color(Color32::from(theme.text_dim)),
                         );
                     });
 
@@ -3649,6 +3696,7 @@ impl App {
                             let iw = W - 36.0;
                             // Salen de Cargo.toml, no escritos acá: así el
                             // diálogo no puede desfasarse del paquete.
+                            ui::info_row(ui, &theme, iw, lang::t("Versión"), PACKAGE_VERSION);
                             ui::info_row(
                                 ui,
                                 &theme,
@@ -3769,11 +3817,17 @@ impl App {
         let Some(tex) = self.tex.as_ref() else { return };
         let id = tex.id();
         let (w, h) = (self.doc.canvas.w as f32, self.doc.canvas.h as f32);
-        const W: f32 = 272.0;
-        const PW: f32 = 240.0;
-        const PH: f32 = 180.0;
-        let scale = (PW / w).min(PH / h).min(1.0);
+        // La miniatura no usa un "pozo" fijo: en dibujos panorámicos dejaba
+        // bandas grandes arriba y abajo que parecían un segundo lienzo. La
+        // tarjeta se ajusta a la proporción real y conserva sólo un marco fino.
+        const W: f32 = 264.0;
+        const PW: f32 = 232.0;
+        const MIN_PH: f32 = 86.0;
+        const MAX_PH: f32 = 154.0;
+        let ph = (PW * h / w).clamp(MIN_PH, MAX_PH);
+        let scale = (PW / w).min(ph / h).min(1.0);
         let image_size = vec2((w * scale).max(1.0), (h * scale).max(1.0));
+        let well_size = image_size + vec2(12.0, 12.0);
         let mut close = false;
 
         egui::Window::new("thumbnail_panel")
@@ -3792,19 +3846,19 @@ impl App {
                     close = true;
                 }
 
-                ui.add_space(12.0);
+                ui.add_space(10.0);
                 ui.horizontal(|ui| {
-                    ui.add_space(16.0);
-                    let (well, _) = ui.allocate_exact_size(vec2(PW, PH), Sense::hover());
+                    ui.add_space(((W - well_size.x) * 0.5).max(0.0));
+                    let (well, _) = ui.allocate_exact_size(well_size, Sense::hover());
                     ui.painter()
-                        .rect_filled(well, 1.0, Color32::from(theme.workspace));
+                        .rect_filled(well, 4.0, Color32::from(theme.surface_alt));
                     ui.painter().rect_stroke(
                         well,
-                        1.0,
-                        egui::Stroke::new(1.0, Color32::from(theme.border_strong)),
+                        4.0,
+                        egui::Stroke::new(1.0, Color32::from(theme.border)),
                         egui::StrokeKind::Inside,
                     );
-                    let rect = egui::Rect::from_center_size(well.center(), image_size);
+                    let rect = well.shrink(6.0);
                     ui.painter().image(
                         id,
                         rect,
@@ -3813,17 +3867,17 @@ impl App {
                     );
                     ui.painter().rect_stroke(
                         rect,
-                        0.0,
+                        2.0,
                         egui::Stroke::new(1.0, Color32::from(theme.border)),
                         egui::StrokeKind::Inside,
                     );
-                    ui.add_space(16.0);
+                    ui.add_space(((W - well_size.x) * 0.5).max(0.0));
                 });
 
-                ui.add_space(8.0);
+                ui.add_space(10.0);
                 let (footer, _) = ui.allocate_exact_size(vec2(W, 28.0), Sense::hover());
                 ui.painter()
-                    .rect_filled(footer, 0.0, Color32::from(theme.surface_alt));
+                    .rect_filled(footer, 3.0, Color32::from(theme.surface_alt));
                 ui.painter().line_segment(
                     [footer.left_top(), footer.right_top()],
                     egui::Stroke::new(1.0, Color32::from(theme.border)),
@@ -3984,6 +4038,7 @@ impl eframe::App for App {
                 color1: c(self.doc.color1),
                 color2: c(self.doc.color2),
                 personalizados: self.custom_colors.iter().map(|o| o.map(c)).collect(),
+                paso_zoom: self.zoom_step,
             },
         );
     }
@@ -4027,7 +4082,7 @@ impl eframe::App for App {
         // La barra de estado se arma antes que el resto: en egui el primer
         // panel de abajo es el que queda pegado al borde de la ventana. Yendo
         // después, la paleta de XP le quedaba *debajo*, al revés que en Paint.
-        if self.show_status {
+        if self.show_status && !self.canvas_only {
             egui::Panel::bottom("estado")
                 .exact_size(28.0)
                 .show(ui, |ui| {
@@ -4094,25 +4149,63 @@ impl eframe::App for App {
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                             ui.add_space(4.0);
                             if ui.small_button("+").clicked() {
-                                self.zoom_idx = (self.zoom_idx + 1).min(ZOOMS.len() - 1);
+                                self.adjust_zoom(1.0);
                             }
-                            // Deslizador sobre el índice, no sobre el porcentaje:
-                            // los once niveles no son lineales.
-                            let mut idx = self.zoom_idx as f32;
+                            // El deslizador y el campo representan el porcentaje
+                            // real. Así 137% es tan válido como los presets 100 o
+                            // 200, y el cambio se ve al instante sobre el lienzo.
+                            let mut percent = self.zoom * 100.0;
                             if ui
                                 .add_sized(
                                     vec2(110.0, 18.0),
-                                    egui::Slider::new(&mut idx, 0.0..=(ZOOMS.len() - 1) as f32)
-                                        .show_value(false),
+                                    egui::Slider::new(
+                                        &mut percent,
+                                        (MIN_ZOOM * 100.0)..=(MAX_ZOOM * 100.0),
+                                    )
+                                    .logarithmic(true)
+                                    .show_value(false),
                                 )
                                 .changed()
                             {
-                                self.zoom_idx = idx.round() as usize;
+                                self.zoom = (percent / 100.0).clamp(MIN_ZOOM, MAX_ZOOM);
                             }
                             if ui.small_button("−").clicked() {
-                                self.zoom_idx = self.zoom_idx.saturating_sub(1);
+                                self.adjust_zoom(-1.0);
                             }
-                            ui.label(format!("{}%", (zoom * 100.0).round() as i32));
+                            let mut typed_percent = self.zoom * 100.0;
+                            if ui
+                                .add_sized(
+                                    vec2(68.0, 18.0),
+                                    egui::DragValue::new(&mut typed_percent)
+                                        .range((MIN_ZOOM * 100.0)..=(MAX_ZOOM * 100.0))
+                                        .speed(self.zoom_step * 100.0)
+                                        .suffix("%")
+                                        .max_decimals(1),
+                                )
+                                .changed()
+                            {
+                                self.zoom = (typed_percent / 100.0).clamp(MIN_ZOOM, MAX_ZOOM);
+                            }
+                            ui.menu_button("⚙", |ui| {
+                                ui.label(lang::t("Paso de zoom"));
+                                let mut step_percent = self.zoom_step * 100.0;
+                                if ui
+                                    .add(
+                                        egui::DragValue::new(&mut step_percent)
+                                            .range(1.0..=((MAX_ZOOM - MIN_ZOOM) * 100.0))
+                                            .speed(1.0)
+                                            .suffix("%"),
+                                    )
+                                    .changed()
+                                {
+                                    self.zoom_step =
+                                        (step_percent / 100.0).clamp(0.01, MAX_ZOOM - MIN_ZOOM);
+                                }
+                                if ui.button(lang::t("Restablecer")).clicked() {
+                                    self.zoom_step = DEFAULT_ZOOM_STEP;
+                                    ui.close();
+                                }
+                            });
                             ui.separator();
                             // Lo que va a pesar el PNG, aproximado por los píxeles
                             // crudos: da la escala sin tener que comprimir nada.
@@ -4129,95 +4222,97 @@ impl eframe::App for App {
                 });
         }
 
-        let names = theme::families(&self.themes, theme.dark);
+        if !self.canvas_only {
+            let names = theme::families(&self.themes, theme.dark);
 
-        let out = ui::chrome(
-            ui,
-            &mut self.doc,
-            &theme,
-            &names,
-            UiIn {
-                tab: self.tab,
-                picking_c1: self.picking_c1,
-                show_rulers: self.show_rulers,
-                show_grid: self.show_grid,
-                show_status: self.show_status,
-                show_thumbnail: self.show_thumbnail,
-                zoom,
-                qat: self.qat,
-                qat_below: self.qat_below,
-                ribbon_min: self.ribbon_min,
-                theme_idx: self.theme_idx,
-                // La cinta tiene lugar para diez; el resto vive sólo en el diálogo.
-                custom: std::array::from_fn(|i| self.custom_colors[i]),
-            },
-            self.text_box.as_mut(),
-        );
-        self.picking_c1 = out.picking_c1;
-        // Todos los que se anclan a un botón. El de acceso rápido faltaba acá,
-        // así que se abría con el ancla del menú anterior —o en el origen— y
-        // caía en medio del lienzo.
-        if out.open_paste_menu
-            || out.open_select_menu
-            || out.open_brushes
-            || out.open_outline_menu
-            || out.open_fill_menu
-            || out.open_rotate_menu
-            || out.open_size_menu
-            || out.open_theme_menu
-            || out.open_qat_menu
-        {
-            self.menu_anchor = out.menu_anchor;
-        }
-        if let Some(t) = out.set_tab {
-            self.tab = t;
-        }
-        if out.open_qat_menu {
-            self.dialogs.qat_menu = true;
-        }
-        if out.open_settings {
-            self.pane = Pane::Settings;
-            self.dialogs.file_menu = true;
-        }
-        if out.open_paste_menu {
-            self.dialogs.paste_menu = true;
-        }
-        if out.open_brushes {
-            self.dialogs.brushes = true;
-        }
-        if out.open_outline_menu {
-            self.dialogs.outline_menu = true;
-        }
-        if out.open_fill_menu {
-            self.dialogs.fill_menu = true;
-        }
-        if out.open_rotate_menu {
-            self.dialogs.rotate_menu = true;
-        }
-        if out.open_size_menu {
-            self.dialogs.size_menu = true;
-        }
-        if out.open_theme_menu {
-            self.dialogs.theme_menu = true;
-        }
-        if out.open_select_menu {
-            self.dialogs.select_menu = true;
-        }
-        if out.open_file_menu {
-            self.dialogs.file_menu = true;
-        }
-        if out.open_color_dialog {
-            let c = if self.picking_c1 {
-                self.doc.color1
-            } else {
-                self.doc.color2
-            };
-            let h = ecolor::Hsva::from_srgb([c.r(), c.g(), c.b()]);
-            self.dialogs.hsv = [h.h, h.s, h.v];
-            self.dialogs.color = true;
-        }
-        for c in out.cmds {
-            self.apply(c, &ctx);
+            let out = ui::chrome(
+                ui,
+                &mut self.doc,
+                &theme,
+                &names,
+                UiIn {
+                    tab: self.tab,
+                    picking_c1: self.picking_c1,
+                    show_rulers: self.show_rulers,
+                    show_grid: self.show_grid,
+                    show_status: self.show_status,
+                    show_thumbnail: self.show_thumbnail,
+                    zoom,
+                    qat: self.qat,
+                    qat_below: self.qat_below,
+                    ribbon_min: self.ribbon_min,
+                    theme_idx: self.theme_idx,
+                    // La cinta tiene lugar para diez; el resto vive sólo en el diálogo.
+                    custom: std::array::from_fn(|i| self.custom_colors[i]),
+                },
+                self.text_box.as_mut(),
+            );
+            self.picking_c1 = out.picking_c1;
+            // Todos los que se anclan a un botón. El de acceso rápido faltaba acá,
+            // así que se abría con el ancla del menú anterior —o en el origen— y
+            // caía en medio del lienzo.
+            if out.open_paste_menu
+                || out.open_select_menu
+                || out.open_brushes
+                || out.open_outline_menu
+                || out.open_fill_menu
+                || out.open_rotate_menu
+                || out.open_size_menu
+                || out.open_theme_menu
+                || out.open_qat_menu
+            {
+                self.menu_anchor = out.menu_anchor;
+            }
+            if let Some(t) = out.set_tab {
+                self.tab = t;
+            }
+            if out.open_qat_menu {
+                self.dialogs.qat_menu = true;
+            }
+            if out.open_settings {
+                self.pane = Pane::Settings;
+                self.dialogs.file_menu = true;
+            }
+            if out.open_paste_menu {
+                self.dialogs.paste_menu = true;
+            }
+            if out.open_brushes {
+                self.dialogs.brushes = true;
+            }
+            if out.open_outline_menu {
+                self.dialogs.outline_menu = true;
+            }
+            if out.open_fill_menu {
+                self.dialogs.fill_menu = true;
+            }
+            if out.open_rotate_menu {
+                self.dialogs.rotate_menu = true;
+            }
+            if out.open_size_menu {
+                self.dialogs.size_menu = true;
+            }
+            if out.open_theme_menu {
+                self.dialogs.theme_menu = true;
+            }
+            if out.open_select_menu {
+                self.dialogs.select_menu = true;
+            }
+            if out.open_file_menu {
+                self.dialogs.file_menu = true;
+            }
+            if out.open_color_dialog {
+                let c = if self.picking_c1 {
+                    self.doc.color1
+                } else {
+                    self.doc.color2
+                };
+                let h = ecolor::Hsva::from_srgb([c.r(), c.g(), c.b()]);
+                self.dialogs.hsv = [h.h, h.s, h.v];
+                self.dialogs.color = true;
+            }
+            for c in out.cmds {
+                self.apply(c, &ctx);
+            }
         }
 
         // Barra de estado.
@@ -4234,7 +4329,7 @@ impl eframe::App for App {
         // Lo que va **encima** del lienzo y no en un panel: la píldora de
         // GNOME y la consola de SW. Si les diéramos un panel les comería
         // espacio al lienzo, que es justo lo que los dos temas evitan.
-        if matches!(theme.chrome, theme::Chrome::Gnome | theme::Chrome::Holo) {
+        if !self.canvas_only && matches!(theme.chrome, theme::Chrome::Gnome | theme::Chrome::Holo) {
             let mut pill = ui::UiOut::new(ui::UiIn {
                 tab: self.tab,
                 picking_c1: self.picking_c1,
@@ -4275,7 +4370,9 @@ impl eframe::App for App {
         for c in self.dialogs(&ctx) {
             self.apply(c, &ctx);
         }
-        self.thumbnail(&ctx);
+        if !self.canvas_only {
+            self.thumbnail(&ctx);
+        }
         self.unsaved_dialog(&ctx);
     }
 }
@@ -4295,12 +4392,20 @@ mod tests {
     }
 
     #[test]
-    fn zoom_por_rueda_respeta_los_limites() {
-        assert_eq!(zoom_step(3, 1.0), 4);
-        assert_eq!(zoom_step(3, -1.0), 2);
-        assert_eq!(zoom_step(0, -1.0), 0);
-        assert_eq!(zoom_step(ZOOMS.len() - 1, 1.0), ZOOMS.len() - 1);
-        assert_eq!(zoom_step(3, 0.0), 3);
+    fn zoom_configurable_respeta_los_limites() {
+        assert_eq!(zoom_adjust(1.0, 0.25, 1.0), 1.25);
+        assert_eq!(zoom_adjust(1.0, 0.25, -1.0), 0.75);
+        assert_eq!(zoom_adjust(MIN_ZOOM, 0.25, -1.0), MIN_ZOOM);
+        assert_eq!(zoom_adjust(MAX_ZOOM, 0.25, 1.0), MAX_ZOOM);
+        assert_eq!(zoom_adjust(1.0, 0.0, 1.0), 1.01);
+    }
+
+    #[test]
+    fn los_tiradores_del_lienzo_anuncian_su_direccion() {
+        use egui::CursorIcon as C;
+        assert_eq!(canvas_resize_cursor(true, false), C::ResizeHorizontal);
+        assert_eq!(canvas_resize_cursor(false, true), C::ResizeVertical);
+        assert_eq!(canvas_resize_cursor(true, true), C::ResizeNwSe);
     }
 
     #[test]
