@@ -15,8 +15,9 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Rust estable
         run: rustup update stable && rustup default stable
       - name: Dependencias de Linux
@@ -29,6 +30,7 @@ jobs:
 
   native:
     name: Compilar en ${{ matrix.name }}
+    timeout-minutes: 20
     strategy:
       matrix:
         include:
@@ -38,7 +40,7 @@ jobs:
             name: Windows x86_64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Rust estable
         run: rustup update stable && rustup default stable
-      - run: cargo check --locked
+      - run: cargo test --locked

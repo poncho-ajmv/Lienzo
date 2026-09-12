@@ -1,23 +1,20 @@
-# Lienzo 0.1.4
+# Lienzo 0.1.5
 
-Esta versión completa la selección libre y conecta impresión y vista previa
-con los servicios nativos de cada sistema operativo.
+Esta versión corrige el bloqueo de la interfaz que podía aparecer al cambiar a
+un tema Windows o al abrir el diálogo Acerca de.
 
 ## Novedades
 
-- El marco animado de la selección libre sigue el lazo dibujado, incluso
-  después de moverlo o cambiar su tamaño.
-- La caja de la selección libre abarca todo el recorrido y no sólo sus puntos
-  inicial y final.
-- Imprimir envía el lienzo a la impresora predeterminada del sistema.
-- Vista previa abre una copia exacta en el visor nativo; si no hay servicio de
-  impresión, ese visor funciona también como alternativa segura.
-- Lienzo queda definido exclusivamente como aplicación nativa descargable para
-  macOS, Windows y Linux; se eliminó el soporte web incompleto.
-- README principal en inglés, traducción española separada y política de
-  seguridad con reportes privados habilitados.
-- El sitio oficial, <https://lienzo.surge.sh/>, queda enlazado desde los README,
-  el diálogo Acerca de y los metadatos de los instaladores.
+- El icono de Lienzo se carga fuera del acceso exclusivo a la memoria de egui,
+  evitando el bloqueo reentrante que dejaba la ventana sin responder.
+- La memoria visual transitoria de egui ya no se conserva entre actualizaciones;
+  tema, idioma y colores siguen guardándose normalmente.
+- Una prueba de regresión detecta si la carga o reutilización del icono vuelve a
+  bloquear la interfaz.
+- El instalador de Windows se genera con NSIS 3.12.0 y se instala en modo
+  silencioso como prueba antes de publicarse.
+- macOS verifica el `Info.plist`, la firma ad hoc, el ZIP y el DMG.
+- Linux valida el archivo de escritorio y la estructura del AppImage y del DEB.
 
 ## Descargas
 

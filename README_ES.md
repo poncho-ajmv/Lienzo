@@ -27,10 +27,11 @@ cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
 
-> **Estado:** la versión 0.1.3 está publicada con formatos portables e
-> instalables para macOS, Windows y Linux. La rama actual prepara 0.1.4 con
-> impresión nativa y el contorno correcto de la selección libre. Falta validar
-> Linux en un equipo real y agregar firma comercial. Lienzo es exclusivamente
+> **Estado:** la versión 0.1.4 está publicada con formatos portables e
+> instalables para macOS, Windows y Linux. La rama actual prepara 0.1.5, que
+> corrige el bloqueo de la interfaz introducido por el icono de la aplicación y
+> agrega controles de los paquetes de los tres sistemas. Falta validar Linux en
+> un escritorio real y agregar firma comercial. Lienzo es exclusivamente
 > una aplicación nativa de escritorio descargable; no se planea una versión
 > para navegador. El detalle completo está más abajo y en `ESTADO.md`.
 

@@ -26,10 +26,11 @@ cargo test    # the engine, without a window
 cargo run     # the application
 ```
 
-> **Status:** version 0.1.3 is available in portable and installable formats
-> for macOS, Windows, and Linux. The current branch prepares 0.1.4 with native
-> printing and an accurate free-form selection outline. Validation on a real
-> Linux system and commercial signing are still pending. Lienzo is exclusively
+> **Status:** version 0.1.4 is available in portable and installable formats
+> for macOS, Windows, and Linux. The current branch prepares version 0.1.5,
+> which fixes the interface freeze introduced by the application icon and adds
+> release-package checks on all three systems. Validation on a real Linux
+> desktop and commercial signing are still pending. Lienzo is exclusively
 > a downloadable native desktop application; no browser version is planned.
 > Full details appear below and in `ESTADO.md`.
 

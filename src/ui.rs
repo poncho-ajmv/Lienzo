@@ -724,20 +724,26 @@ fn undo_arrow(ui: &Ui, r: Rect, col: Color32, forward: bool) {
 /// La marca oficial de Lienzo sin fondo, usada dentro de la interfaz.
 pub fn app_icon(ui: &Ui, r: Rect, _col: Color32) {
     let id = egui::Id::new("lienzo_app_icon_texture");
-    let texture = ui.ctx().data_mut(|data| {
-        data.get_temp::<egui::TextureHandle>(id).unwrap_or_else(|| {
-            let icon = eframe::icon_data::from_png_bytes(include_bytes!(
-                "../assets/icons/lienzo-mark.png"
-            ))
-            .expect("la marca de Lienzo debe ser un PNG válido");
-            let texture = ui.ctx().load_texture(
-                "lienzo_app_icon",
-                egui::ColorImage::from(icon),
-                egui::TextureOptions::LINEAR,
-            );
-            data.insert_temp(id, texture.clone());
-            texture
-        })
+    // Nunca cargar una textura dentro de `data_mut`: ambas operaciones entran
+    // al mismo contexto de egui y el segundo bloqueo deja congelado el hilo de
+    // la ventana. Eso ocurría al mostrar por primera vez un chrome Ribbon o el
+    // diálogo Acerca de. Primero se consulta la caché, se libera ese acceso y
+    // recién entonces se crea e inserta la textura si hace falta.
+    let cached = ui
+        .ctx()
+        .data(|data| data.get_temp::<egui::TextureHandle>(id));
+    let texture = cached.unwrap_or_else(|| {
+        let icon =
+            eframe::icon_data::from_png_bytes(include_bytes!("../assets/icons/lienzo-mark.png"))
+                .expect("la marca de Lienzo debe ser un PNG válido");
+        let texture = ui.ctx().load_texture(
+            "lienzo_app_icon",
+            egui::ColorImage::from(icon),
+            egui::TextureOptions::LINEAR,
+        );
+        ui.ctx()
+            .data_mut(|data| data.insert_temp(id, texture.clone()));
+        texture
     });
 
     ui.painter().image(
@@ -5366,4 +5372,35 @@ fn view_menu(ui: &mut Ui, themes: &[(String, usize)], out: &mut UiOut) {
             }
         });
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::{sync::mpsc, time::Duration};
+
+    #[test]
+    fn cargar_el_icono_dos_veces_no_bloquea_egui() {
+        let (done, result) = mpsc::channel();
+
+        // Ejecutarlo en un hilo permite convertir una regresión del bloqueo
+        // reentrante de `Context::data_mut` en un fallo rápido y explicativo.
+        std::thread::spawn(move || {
+            let ctx = egui::Context::default();
+            let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
+                let rect = Rect::from_min_size(Pos2::ZERO, vec2(20.0, 20.0));
+                app_icon(ui, rect, Color32::WHITE);
+                app_icon(ui, rect.translate(vec2(24.0, 0.0)), Color32::WHITE);
+            });
+            // En la aplicación eframe entrega estos cambios al renderizador.
+            // El test es deliberadamente headless, así que los consume aquí.
+            output.textures_delta.clear();
+            let _ = done.send(());
+        });
+
+        assert!(
+            result.recv_timeout(Duration::from_secs(5)).is_ok(),
+            "app_icon bloqueó el contexto de egui al cargar o reutilizar la textura"
+        );
+    }
 }

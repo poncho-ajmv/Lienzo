@@ -434,6 +434,13 @@ struct App {
 
 impl App {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        // eframe restaura su memoria antes de crear la aplicación. Guardar esa
+        // memoria transitoria entre versiones puede reabrir menús o paneles con
+        // geometría vieja y dejar la interfaz desacomodada. Las preferencias de
+        // Lienzo se restauran abajo desde `Ajustes`, por lo que se conservan
+        // tema, idioma y colores sin arrastrar el estado visual de egui.
+        cc.egui_ctx
+            .memory_mut(|memory| *memory = egui::Memory::default());
         let themes = theme::load_all();
         let mut app = Self {
             doc: Doc::new(DEFAULT_W, DEFAULT_H),
@@ -3958,6 +3965,13 @@ enum TGrab {
 }
 
 impl eframe::App for App {
+    /// Lienzo persiste sus preferencias explícitamente en `Ajustes`; la
+    /// memoria de egui contiene sólo estado visual efímero (menús, paneles y
+    /// posiciones) y no debe sobrevivir a una actualización.
+    fn persist_egui_memory(&self) -> bool {
+        false
+    }
+
     /// eframe lo llama cada tanto y al cerrar.
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
         let c = |v: Color32| [v.r(), v.g(), v.b()];

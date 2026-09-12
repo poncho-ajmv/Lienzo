@@ -1,7 +1,8 @@
 # Estado actual de Lienzo
 
-La versión 0.1.3 está publicada. La rama principal prepara 0.1.4 con impresión
-nativa y la selección libre terminada.
+La versión 0.1.4 está publicada. La rama principal prepara 0.1.5 con la
+corrección del bloqueo al cargar el icono y controles de distribución más
+estrictos para Windows, macOS y Linux.
 
 ## Validación
 
@@ -11,14 +12,15 @@ cargo clippy --locked --offline --all-targets -- -D warnings
 cargo fmt --check
 ```
 
-- 29 tests aprobados.
+- 30 tests aprobados, incluida la regresión del bloqueo de egui.
 - Clippy sin advertencias tratadas como error.
 - Formato de Rust verificado.
 - Validado en macOS sobre `aarch64-apple-darwin`.
-- Probado correctamente en Windows x86_64.
+- Probado correctamente en Windows x86_64, incluido el cambio repetido entre
+  los temas Windows 7, 10 y 11.
 - Compilado para Linux x86_64; todavía requiere validación en una distribución
   real.
-- DMG, ZIP portable, Setup.exe, AppImage y DEB publicados para la versión 0.1.3.
+- DMG, ZIP portable, Setup.exe, AppImage y DEB publicados para la versión 0.1.4.
 - Integridad de ZIP, DMG, AppImage, DEB y sumas SHA-256 verificada.
 
 ## Funciona
@@ -56,7 +58,7 @@ anterior.
 Crear o abrir un documento cancela selección, curva o polígono multietapa,
 previsualización, texto flotante y arrastres del documento anterior.
 
-## Distribución 0.1.3
+## Distribución 0.1.5
 
 | Sistema | Portable | Instalador |
 |---|---|---|
@@ -64,10 +66,23 @@ previsualización, texto flotante y arrastres del documento anterior.
 | Windows x86_64 | ZIP con `Lienzo.exe` | Setup.exe por usuario |
 | Linux x86_64 | AppImage | DEB para Debian/Ubuntu |
 
-GitHub Actions genera los seis paquetes desde la etiqueta `v0.1.3` y los
+GitHub Actions genera los seis paquetes desde la etiqueta `v0.1.5` y los
 publica con la versión en el nombre y su archivo `SHA256SUMS.txt`.
 
-## Cambios preparados para 0.1.4
+## Cambios preparados para 0.1.5
+
+- Se corrigió el bloqueo reentrante de egui al cargar la textura del icono
+  dentro de `Context::data_mut`; afectaba los temas Ribbon y el diálogo Acerca
+  de desde la versión 0.1.3.
+- La memoria visual transitoria de egui se reinicia entre versiones sin perder
+  tema, idioma ni colores.
+- Una prueba con límite de tiempo cubre la primera carga y la reutilización del
+  icono para impedir que el bloqueo reaparezca.
+- CI ejecuta las pruebas en Linux, Windows x86_64 y macOS ARM64.
+- El release valida la instalación silenciosa de Windows, el ZIP y DMG de
+  macOS, y la estructura del AppImage, DEB y archivo de escritorio de Linux.
+
+## Cambios de 0.1.4
 
 - La selección libre dibuja el marco animado sobre el recorrido real del lazo
   y calcula su caja usando todos sus puntos.
