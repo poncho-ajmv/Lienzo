@@ -2,7 +2,7 @@
 
 La versión 0.1.7 es la última publicada y dispone de seis paquetes para Windows,
 macOS y Linux junto con sus sumas SHA-256 en GitHub Releases. Su instalador de
-Windows x86_64 también se compiló, instaló y validó localmente.
+Windows x86_64 también se compiló y validó localmente.
 
 ## Validación
 
@@ -14,7 +14,8 @@ cargo +stable-x86_64-pc-windows-gnu build --release --locked --target-dir target
 ```
 
 - La suite completa está aprobada, incluidas las regresiones del bloqueo de
-  egui, los cursores de redimensionado y los límites del zoom configurable.
+  egui, el reflejo reversible de selecciones, los cursores de redimensionado y
+  los límites del zoom configurable.
 - Clippy sin advertencias tratadas como error.
 - Formato de Rust verificado.
 - El único ejecutable local, `target-gnu/release/lienzo.exe`, informa versión
@@ -30,7 +31,7 @@ cargo +stable-x86_64-pc-windows-gnu build --release --locked --target-dir target
 
 - Nueve herramientas, nueve pinceles y setenta y tres formas.
 - Selección rectangular y libre con contorno real, movimiento, escalado,
-  recorte e inversión.
+  recorte, inversión y reflejo directo horizontal o vertical.
 - Texto rasterizado con las fuentes integradas de egui.
 - Historial por rectángulos con deshacer y rehacer.
 - Apertura y guardado de PNG, JPEG, BMP, GIF y TIFF; apertura de ICO.
@@ -75,12 +76,16 @@ Siempre ejecuta calidad; sólo si el tag todavía no existe genera los seis
 paquetes y publica el tag y los archivos con su `SHA256SUMS.txt`. No se crea un
 tag manual.
 
-## Cambios listos para 0.1.7
+## Cambios de 0.1.7
 
 - `Ctrl + V` detecta imágenes de forma fiable en Windows, incluso cuando el
   atajo procede de un botón programable del mouse.
 - Pegar agranda cada eje del lienzo sólo cuando la imagen lo necesita y nunca
   reduce un documento mayor; la imagen queda como selección flotante en (0, 0).
+- Cruzar una manija por el borde opuesto refleja la selección sobre ese eje;
+  cruzarla de regreso restaura la orientación original.
+- Voltear horizontal o verticalmente actúa sobre la selección activa y conserva
+  el comportamiento de lienzo completo cuando no hay una selección.
 - El paso de zoom se muestra en el botón `±25 %`. Su campo recibe foco y
   selecciona el valor completo al abrirse, admite teclado y no se cierra por
   hacer clic dentro; Backspace y `Ctrl + A` editan el valor. Sólo `Esc` o un

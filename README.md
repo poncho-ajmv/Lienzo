@@ -26,13 +26,13 @@ cargo test    # the engine, without a window
 cargo run     # the application
 ```
 
-> **Status:** 0.1.7 is the latest published release. It adds reliable image
-> pasting, safe canvas growth, stable startup sizing, and a keyboard-friendly
-> zoom-step panel. GitHub Releases provides six Windows, macOS, and Linux
-> packages plus SHA-256 checksums. Validation on a real Linux desktop and
-> commercial signing are still pending. Lienzo is exclusively a downloadable
-> native desktop application; no browser version is planned. Full details appear
-> below and in `ESTADO.md`.
+> **Status:** 0.1.7 is the latest release. It adds reliable image pasting, safe
+> canvas growth, direct selection mirroring, stable startup sizing, and a
+> keyboard-friendly zoom-step panel. GitHub Releases provides six Windows,
+> macOS, and Linux packages plus SHA-256 checksums. Validation on a real Linux
+> desktop and commercial signing are still pending. Lienzo is exclusively a
+> downloadable native desktop application; no browser version is planned. Full
+> details appear below and in `ESTADO.md`.
 
 ---
 
@@ -104,6 +104,13 @@ depending on the theme—and stroke width is also available in the bottom bar.
 
 The theme, language, and colors are selected under **File → Settings** and are
 saved automatically for the next session.
+
+### Selection and mirroring
+
+After selecting or pasting an image, drag any resize handle through the
+opposite edge to mirror the selection on that axis. Crossing the edge again
+restores its original orientation. **Image → Flip horizontal/vertical** applies
+to the active selection; without a selection, it transforms the whole canvas.
 
 ### View and zoom
 
@@ -295,8 +302,10 @@ cargo test
 The tests cover the engine and interaction regressions: undo must be exact,
 fill must respect boundaries, no shape may leave its box or cross itself,
 stretching a selection and returning it to its previous size must reproduce the
-previous image, every theme must parse, no translation may be blank, zoom stays
-within its safe range, and canvas resize handles expose the correct cursor.
+previous image, crossing a selection handle must mirror it and crossing back
+must restore it, every theme must parse, no translation may be blank, zoom
+stays within its safe range, and canvas resize handles expose the correct
+cursor.
 
 ## Project status
 
@@ -304,9 +313,10 @@ within its safe range, and canvas resize handles expose the correct cursor.
 
 The nine tools, nine brushes, seventy-three shapes, undo and redo, rectangular
 and free-form selection with eight resize handles and an outline that follows
-the lasso, text with real fonts, opening and saving six formats, native printing
-and preview, two-way clipboard, twenty themes, ten languages, configurable zoom
-from 12.5% to 800%, Canvas-only view, and persistence across sessions.
+the lasso, direct horizontal and vertical mirroring, text with real fonts,
+opening and saving six formats, native printing and preview, two-way clipboard,
+twenty themes, ten languages, configurable zoom from 12.5% to 800%, Canvas-only
+view, and persistence across sessions.
 
 **Pending**
 

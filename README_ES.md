@@ -27,13 +27,14 @@ cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
 
-> **Estado:** 0.1.7 es la última versión publicada. Incluye pegado de imágenes
-> fiable, crecimiento seguro del lienzo, tamaño de inicio estable y un panel de
-> paso de zoom cómodo con teclado. GitHub Releases ofrece seis paquetes para
-> Windows, macOS y Linux junto con sus sumas SHA-256. Falta validarla en un
-> escritorio Linux real y agregar firma comercial. Lienzo es exclusivamente una
-> aplicación nativa de escritorio descargable; no se planea una versión para
-> navegador. El detalle completo está más abajo y en `ESTADO.md`.
+> **Estado:** 0.1.7 es la última versión. Incluye pegado de imágenes fiable,
+> crecimiento seguro del lienzo, reflejo directo de selecciones, tamaño de
+> inicio estable y un panel de paso de zoom cómodo con teclado. GitHub Releases
+> ofrece seis paquetes para Windows, macOS y Linux junto con sus sumas SHA-256.
+> Falta validarla en un escritorio Linux real y agregar firma comercial. Lienzo
+> es exclusivamente una aplicación nativa de escritorio descargable; no se
+> planea una versión para navegador. El detalle completo está más abajo y en
+> `ESTADO.md`.
 
 ---
 
@@ -103,6 +104,14 @@ flotante, según el tema— y el grosor también en la barra de abajo.
 
 El tema, el idioma y los colores se eligen en **Archivo → Configuración** y se
 guardan solos para la próxima vez.
+
+### Selección y reflejo
+
+Después de seleccionar o pegar una imagen, arrastrá cualquier manija a través
+del borde opuesto para reflejar la selección sobre ese eje. Al cruzar el borde
+de regreso recupera su orientación original. **Imagen → Voltear horizontal o
+verticalmente** actúa sobre la selección activa; sin selección transforma todo
+el lienzo.
 
 ### Vista y zoom
 
@@ -294,9 +303,10 @@ cargo test
 Cubren el motor y regresiones de interacción: que deshacer sea exacto, que el
 relleno respete los bordes, que ninguna forma se salga de su caja ni se cruce a
 sí misma, que estirar una selección y devolverla al tamaño de antes dé la imagen
-de antes, que todos los temas parseen, que ninguna traducción quede en blanco,
-que el zoom permanezca en su rango seguro y que los tiradores muestren el cursor
-correcto.
+de antes, que cruzar una manija refleje la selección y volver a cruzarla restaure
+su orientación, que todos los temas parseen, que ninguna traducción quede en
+blanco, que el zoom permanezca en su rango seguro y que los tiradores muestren
+el cursor correcto.
 
 ## Estado del proyecto
 
@@ -304,10 +314,11 @@ correcto.
 
 Las nueve herramientas, los nueve pinceles, las setenta y tres formas, deshacer
 y rehacer, selección rectangular y libre con estirado por las ocho manijas y
-un contorno que sigue el lazo, texto con fuentes de verdad, abrir y guardar en
-seis formatos, impresión y vista previa nativas, portapapeles en los dos
-sentidos, veinte temas, diez idiomas, zoom configurable de 12,5 % a 800 %, vista
-Solo lienzo y todo eso guardado entre sesiones.
+un contorno que sigue el lazo, reflejo horizontal y vertical directo, texto con
+fuentes de verdad, abrir y guardar en seis formatos, impresión y vista previa
+nativas, portapapeles en los dos sentidos, veinte temas, diez idiomas, zoom
+configurable de 12,5 % a 800 %, vista Solo lienzo y todo eso guardado entre
+sesiones.
 
 **Falta**
 
