@@ -28,6 +28,7 @@ const ZOOMS: [f32; 11] = [0.125, 0.25, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8
 const MIN_ZOOM: f32 = 0.125;
 const MAX_ZOOM: f32 = 8.0;
 const DEFAULT_ZOOM_STEP: f32 = 0.25;
+const ZOOM_STEP_EDIT_ID: &str = "zoom_step_edit";
 /// Se obtiene al compilar desde Cargo.toml. Es la única fuente de verdad para
 /// el ejecutable, los metadatos y el diálogo Acerca de.
 const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -43,6 +44,13 @@ fn zoom_adjust(zoom: f32, step: f32, direction: f32) -> f32 {
     (zoom + step * direction.signum()).clamp(MIN_ZOOM, MAX_ZOOM)
 }
 
+fn zoom_step_from_percent(text: &str) -> Option<f32> {
+    let percent = text.trim().replace(',', ".").parse::<f32>().ok()?;
+    percent
+        .is_finite()
+        .then(|| (percent / 100.0).clamp(0.01, MAX_ZOOM - MIN_ZOOM))
+}
+
 /// Dirección de un gesto de zoom sin el suavizado de la rueda de egui.
 ///
 /// El suavizado repite una sola muesca durante varios frames; para niveles
@@ -55,6 +63,29 @@ fn zoom_event_direction(event: &egui::Event) -> f32 {
         egui::Event::Zoom(factor) => factor - 1.0,
         _ => 0.0,
     }
+}
+
+/// `egui-winit` consume la pulsación de Ctrl+V antes de que llegue a la app.
+/// En Windows consultamos las teclas directamente, sin otra dependencia.
+#[cfg(target_os = "windows")]
+fn system_paste_keys_down() -> bool {
+    #[link(name = "user32")]
+    unsafe extern "system" {
+        fn GetAsyncKeyState(v_key: i32) -> i16;
+    }
+
+    const VK_CONTROL: i32 = 0x11;
+    const VK_V: i32 = 0x56;
+    let ctrl = unsafe { GetAsyncKeyState(VK_CONTROL) };
+    let v = unsafe { GetAsyncKeyState(VK_V) };
+    // El bit alto significa "sigue presionada"; el bajo captura macros del
+    // mouse que presionan y sueltan todo antes del siguiente frame.
+    ctrl != 0 && v != 0
+}
+
+#[cfg(not(target_os = "windows"))]
+fn system_paste_keys_down() -> bool {
+    false
 }
 
 /// Cursor que representa los ejes que modifica cada tirador del lienzo.
@@ -303,6 +334,9 @@ fn main() -> eframe::Result {
                     .expect("el logo de Lienzo debe ser un PNG válido"),
             )
             .with_title("Sin título - Lienzo"),
+        // El valor predeterminado restaura el último tamaño, incluso uno muy
+        // pequeño. Lienzo debe iniciar siempre con el tamaño definido arriba.
+        persist_window: false,
         ..Default::default()
     };
     eframe::run_native("Lienzo", options, Box::new(|cc| Ok(Box::new(App::new(cc)))))
@@ -396,6 +430,8 @@ struct App {
     zoom: f32,
     /// Salto de los botones ± y de la lupa, expresado como escala (0.25 = 25%).
     zoom_step: f32,
+    /// Texto del paso de zoom mientras el usuario lo edita con el teclado.
+    zoom_step_text: String,
     path: Option<std::path::PathBuf>,
     dialogs: Dialogs,
     show_grid: bool,
@@ -454,6 +490,7 @@ struct App {
     picking_c1: bool,
     pending_action: Option<PendingAction>,
     allow_close: bool,
+    paste_keys_down: bool,
     status: String,
 }
 
@@ -466,6 +503,10 @@ impl App {
         // tema, idioma y colores sin arrastrar el estado visual de egui.
         cc.egui_ctx
             .memory_mut(|memory| *memory = egui::Memory::default());
+        cc.egui_ctx
+            .send_viewport_cmd(egui::ViewportCommand::MinInnerSize(vec2(640.0, 480.0)));
+        cc.egui_ctx
+            .send_viewport_cmd(egui::ViewportCommand::InnerSize(vec2(1280.0, 860.0)));
         let themes = theme::load_all();
         let mut app = Self {
             doc: Doc::new(DEFAULT_W, DEFAULT_H),
@@ -477,6 +518,7 @@ impl App {
             drawing: false,
             zoom: 1.0,
             zoom_step: DEFAULT_ZOOM_STEP,
+            zoom_step_text: format!("{:.0}", DEFAULT_ZOOM_STEP * 100.0),
             path: None,
             dialogs: Dialogs {
                 keep_ratio: true,
@@ -516,6 +558,7 @@ impl App {
             picking_c1: true,
             pending_action: None,
             allow_close: false,
+            paste_keys_down: false,
             status: String::new(),
         };
         // Lo guardado pisa los valores de fábrica, antes de instalar el estilo.
@@ -536,6 +579,7 @@ impl App {
                 }
                 if a.paso_zoom.is_finite() {
                     app.zoom_step = a.paso_zoom.clamp(0.01, MAX_ZOOM - MIN_ZOOM);
+                    app.zoom_step_text = format!("{:.0}", app.zoom_step * 100.0);
                 }
             }
         }
@@ -1136,11 +1180,19 @@ impl App {
 
     fn keyboard(&mut self, ctx: &egui::Context) -> Vec<Cmd> {
         let mut cmds = Vec::new();
+        let paste_keys_were_down = self.paste_keys_down;
+        self.paste_keys_down = system_paste_keys_down();
+        let system_paste_pressed = self.paste_keys_down && !paste_keys_were_down;
         if self.pending_action.is_some() {
             if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
                 self.pending_action = None;
                 self.allow_close = false;
             }
+            return cmds;
+        }
+        // Mientras se escribe el paso de zoom, Backspace, Ctrl+A y el resto
+        // de teclas de edición pertenecen al campo, no al lienzo.
+        if ctx.memory(|memory| memory.has_focus(egui::Id::new(ZOOM_STEP_EDIT_ID))) {
             return cmds;
         }
         // Si hay un cuadro de texto o un diálogo abierto, las teclas son suyos.
@@ -1221,13 +1273,15 @@ impl App {
                 }
             }
 
-            // Y pegar es peor: egui sólo emite `Event::Paste` cuando el
-            // portapapeles tiene **texto**. Con una imagen no emite nada, y
-            // además se come la tecla — por eso Ctrl+V estaba muerto.
-            //
-            // El resquicio: ese filtro corre sólo en la pulsación. Al *soltar*
-            // la tecla el evento sí se emite, así que se escucha la soltada.
-            if cmd && i.key_released(K::V) {
+            // `egui-winit` entrega Paste si pudo leer texto. Para imágenes,
+            // Windows usa el estado nativo y los demás sistemas la liberación
+            // de V. `paste_keys_were_down` evita pegar otra vez al soltarla.
+            if i.events
+                .iter()
+                .any(|event| matches!(event, egui::Event::Paste(_)))
+                || system_paste_pressed
+                || (cmd && i.key_released(K::V) && !paste_keys_were_down)
+            {
                 cmds.push(Cmd::Paste);
             }
             if cmd && i.key_pressed(K::S) {
@@ -4186,26 +4240,166 @@ impl eframe::App for App {
                             {
                                 self.zoom = (typed_percent / 100.0).clamp(MIN_ZOOM, MAX_ZOOM);
                             }
-                            ui.menu_button("⚙", |ui| {
-                                ui.label(lang::t("Paso de zoom"));
-                                let mut step_percent = self.zoom_step * 100.0;
+                            let step_label = format!("±{:.0}%", self.zoom_step * 100.0);
+                            let mut step_edit_id = None;
+                            let (step_menu_response, _) =
+                                egui::containers::menu::MenuButton::new(
+                                egui::RichText::new(step_label).strong(),
+                            )
+                            .config(
+                                egui::containers::menu::MenuConfig::new()
+                                    .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside),
+                            )
+                            .ui(ui, |ui| {
+                                ui.set_min_width(190.0);
+                                ui.spacing_mut().item_spacing = vec2(8.0, 8.0);
+                                ui.label(
+                                    egui::RichText::new(lang::t("Paso de zoom").to_uppercase())
+                                        .small()
+                                        .strong()
+                                        .color(Color32::from(theme.text_dim)),
+                                );
+
+                                egui::Frame::NONE
+                                    .fill(Color32::from(theme.button))
+                                    .stroke(egui::Stroke::new(
+                                        1.0,
+                                        Color32::from(theme.button_border),
+                                    ))
+                                    .corner_radius(theme.button_rounding)
+                                    .inner_margin(egui::Margin::symmetric(4, 4))
+                                    .show(ui, |ui| {
+                                        ui.horizontal(|ui| {
+                                            if ui
+                                                .add_sized(vec2(32.0, 28.0), egui::Button::new("−"))
+                                                .clicked()
+                                            {
+                                                self.zoom_step = (self.zoom_step - 0.01).max(0.01);
+                                                self.zoom_step_text =
+                                                    format!("{:.0}", self.zoom_step * 100.0);
+                                            }
+                                            egui::Frame::NONE
+                                                .fill(Color32::from(theme.surface))
+                                                .stroke(egui::Stroke::new(
+                                                    1.0,
+                                                    Color32::from(theme.button_border),
+                                                ))
+                                                .corner_radius(0.0)
+                                                .inner_margin(egui::Margin::symmetric(6, 2))
+                                                .show(ui, |ui| {
+                                                    ui.spacing_mut().item_spacing.x = 2.0;
+                                                    ui.allocate_ui_with_layout(
+                                                        vec2(80.0, 24.0),
+                                                        egui::Layout::left_to_right(
+                                                            egui::Align::Center,
+                                                        )
+                                                        .with_main_align(egui::Align::Center),
+                                                        |ui| {
+                                                            let response =
+                                                                ui.add_sized(
+                                                                    vec2(48.0, 24.0),
+                                                                    egui::TextEdit::singleline(
+                                                                        &mut self.zoom_step_text,
+                                                                    )
+                                                                    .id(egui::Id::new(
+                                                                        ZOOM_STEP_EDIT_ID,
+                                                                    ))
+                                                                    .frame(egui::Frame::NONE)
+                                                                    .char_limit(6)
+                                                                    .horizontal_align(
+                                                                        egui::Align::RIGHT,
+                                                                    )
+                                                                    .vertical_align(
+                                                                        egui::Align::Center,
+                                                                    ),
+                                                                );
+                                                            step_edit_id = Some(response.id);
+                                                            if response.gained_focus() {
+                                                                let mut state =
+                                                                    egui::TextEdit::load_state(
+                                                                        ui.ctx(),
+                                                                        response.id,
+                                                                    )
+                                                                    .unwrap_or_default();
+                                                                state.cursor.set_char_range(Some(
+                                                                    egui::text::CCursorRange::two(
+                                                                        egui::text::CCursor::default(),
+                                                                        egui::text::CCursor::new(
+                                                                            self.zoom_step_text
+                                                                                .chars()
+                                                                                .count(),
+                                                                        ),
+                                                                    ),
+                                                                ));
+                                                                state.store(ui.ctx(), response.id);
+                                                            }
+                                                            ui.label(
+                                                                egui::RichText::new("%").color(
+                                                                    Color32::from(theme.text_dim),
+                                                                ),
+                                                            );
+                                                            if response.changed() {
+                                                                if let Some(step) =
+                                                                    zoom_step_from_percent(
+                                                                        &self.zoom_step_text,
+                                                                    )
+                                                                {
+                                                                    self.zoom_step = step;
+                                                                }
+                                                            }
+                                                            if response.lost_focus()
+                                                                && zoom_step_from_percent(
+                                                                    &self.zoom_step_text,
+                                                                )
+                                                                .is_none()
+                                                            {
+                                                                self.zoom_step_text = format!(
+                                                                    "{:.0}",
+                                                                    self.zoom_step * 100.0
+                                                                );
+                                                            }
+                                                        },
+                                                    );
+                                                });
+                                            if ui
+                                                .add_sized(vec2(32.0, 28.0), egui::Button::new("+"))
+                                                .clicked()
+                                            {
+                                                self.zoom_step = (self.zoom_step + 0.01)
+                                                    .min(MAX_ZOOM - MIN_ZOOM);
+                                                self.zoom_step_text =
+                                                    format!("{:.0}", self.zoom_step * 100.0);
+                                            }
+                                        });
+                                    });
+
+                                ui.separator();
                                 if ui
-                                    .add(
-                                        egui::DragValue::new(&mut step_percent)
-                                            .range(1.0..=((MAX_ZOOM - MIN_ZOOM) * 100.0))
-                                            .speed(1.0)
-                                            .suffix("%"),
+                                    .add_sized(
+                                        vec2(ui.available_width(), 26.0),
+                                        egui::Button::new(format!("↺  {}", lang::t("Restablecer")))
+                                            .frame(false),
                                     )
-                                    .changed()
+                                    .clicked()
                                 {
-                                    self.zoom_step =
-                                        (step_percent / 100.0).clamp(0.01, MAX_ZOOM - MIN_ZOOM);
-                                }
-                                if ui.button(lang::t("Restablecer")).clicked() {
                                     self.zoom_step = DEFAULT_ZOOM_STEP;
+                                    self.zoom_step_text =
+                                        format!("{:.0}", DEFAULT_ZOOM_STEP * 100.0);
+                                    ui.close();
+                                }
+                                if ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+                                    if zoom_step_from_percent(&self.zoom_step_text).is_none() {
+                                        self.zoom_step_text =
+                                            format!("{:.0}", self.zoom_step * 100.0);
+                                    }
                                     ui.close();
                                 }
                             });
+                            if step_menu_response.clicked() {
+                                if let Some(id) = step_edit_id {
+                                    ui.memory_mut(|memory| memory.request_focus(id));
+                                }
+                            }
                             ui.separator();
                             // Lo que va a pesar el PNG, aproximado por los píxeles
                             // crudos: da la escala sin tener que comprimir nada.
@@ -4398,6 +4592,9 @@ mod tests {
         assert_eq!(zoom_adjust(MIN_ZOOM, 0.25, -1.0), MIN_ZOOM);
         assert_eq!(zoom_adjust(MAX_ZOOM, 0.25, 1.0), MAX_ZOOM);
         assert_eq!(zoom_adjust(1.0, 0.0, 1.0), 1.01);
+        assert_eq!(zoom_step_from_percent("25"), Some(0.25));
+        assert_eq!(zoom_step_from_percent("12,5"), Some(0.125));
+        assert_eq!(zoom_step_from_percent("texto"), None);
     }
 
     #[test]

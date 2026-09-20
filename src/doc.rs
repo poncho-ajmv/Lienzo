@@ -380,30 +380,21 @@ impl Doc {
         self.delete_selection();
     }
 
-    /// Pegar no es una función nueva: es crear una selección flotante en (0,0),
-    /// que es la misma maquinaria que usa la herramienta Seleccionar.
+    /// Pega una selección flotante desde (0,0). Como Paint, el lienzo sólo
+    /// crece: una imagen pequeña no reduce el trabajo existente.
     pub fn paste(&mut self, w: usize, h: usize, px: Vec<Color32>) {
         if w == 0 || h == 0 || px.len() != w * h {
             return;
         }
         self.commit_selection();
         self.tool = Tool::Select;
-        // Se recorta al lienzo: Paint pregunta si agrandar el bitmap, y hasta
-        // que exista ese diálogo lo pegado grande se recorta en vez de dejar un
-        // rectángulo que se sale y hace estallar a `region`.
-        let (cw, ch) = (w.min(self.canvas.w), h.min(self.canvas.h));
-        let px = if (cw, ch) == (w, h) {
-            px
-        } else {
-            (0..ch)
-                .flat_map(|y| px[y * w..y * w + cw].to_vec())
-                .collect()
-        };
+        self.canvas
+            .resize_canvas(self.canvas.w.max(w), self.canvas.h.max(h), self.bg());
         self.sel = Some(Selection {
-            r: Rect::new(0, 0, cw, ch),
+            r: Rect::new(0, 0, w, h),
             px: Some(px),
             lasso: None,
-            src: (cw, ch),
+            src: (w, h),
         });
     }
 
@@ -1099,6 +1090,11 @@ mod tests {
         d.paste(4, 4, px);
 
         let sel = d.sel.as_ref().expect("pegar no creó selección");
+        assert_eq!(
+            (d.canvas.w, d.canvas.h),
+            (50, 50),
+            "una imagen pequeña redujo el lienzo"
+        );
         assert_eq!(sel.r.x, 0);
         assert_eq!(sel.r.y, 0);
         assert!(sel.px.is_some(), "lo pegado no quedó flotando");
@@ -1111,6 +1107,16 @@ mod tests {
             Color32::RED,
             "lo pegado no bajó al lienzo"
         );
+    }
+
+    #[test]
+    fn pegar_agranda_el_lienzo_sin_encogerlo() {
+        let mut d = Doc::new(4, 6);
+        d.paste(8, 3, vec![Color32::BLUE; 8 * 3]);
+
+        assert_eq!((d.canvas.w, d.canvas.h), (8, 6));
+        let sel = d.sel.as_ref().expect("pegar no creó selección");
+        assert_eq!((sel.r.w, sel.r.h), (8, 3));
     }
 
     /// Copiar y pegar dentro de la app, sin tocar el sistema operativo.
