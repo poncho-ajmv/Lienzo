@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="570" viewBox="0 0 1200 570">
+  <defs>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".36"/>
+    </filter>
+    <style>
+      .title { font: 600 20px 'Segoe UI', sans-serif; fill: #f4f5f7; }
+      .tag { font: 600 11px 'Segoe UI', sans-serif; letter-spacing: .08em; fill: #77baff; }
+      .body { font: 14px 'Segoe UI', sans-serif; fill: #f4f5f7; }
+      .small { font: 12px 'Segoe UI', sans-serif; fill: #aeb3ba; }
+      .value { font: 600 14px 'Segoe UI', sans-serif; fill: #fff; }
+      .caption { font: 13px 'Segoe UI', sans-serif; fill: #aeb3ba; }
+      .bar { fill: #25272a; stroke: #45484d; }
+      .surface { fill: #2c2e32; stroke: #555960; }
+      .button { fill: #34373b; stroke: #5d6168; }
+      .button-hover { fill: #163f64; stroke: #4aa3ff; }
+      .accent { fill: #1677c8; }
+      .rule { stroke: #464a50; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="570" fill="#17181a"/>
+  <text x="40" y="42" class="title">Control de paso de zoom · tres direcciones</text>
+  <text x="40" y="68" class="caption">Mismo espacio de barra, mejor lectura y una acción reconocible.</text>
+
+  <!-- A -->
+  <g transform="translate(40 105)">
+    <text x="0" y="0" class="tag">A · RECOMENDADA</text>
+    <text x="0" y="29" class="title">Chip visible + panel compacto</text>
+
+    <rect x="0" y="58" width="340" height="34" rx="3" class="bar"/>
+    <text x="16" y="80" class="small">2.1 MB</text>
+    <line x1="82" y1="64" x2="82" y2="86" class="rule"/>
+    <rect x="94" y="63" width="76" height="24" rx="4" class="button-hover"/>
+    <text x="106" y="80" class="value">± 25%</text>
+    <rect x="178" y="63" width="66" height="24" rx="3" class="button"/>
+    <text x="190" y="80" class="body">125%</text>
+    <rect x="251" y="63" width="24" height="24" rx="3" class="button"/>
+    <text x="259" y="80" class="body">−</text>
+    <rect x="280" y="63" width="24" height="24" rx="3" class="button"/>
+    <text x="288" y="80" class="body">+</text>
+
+    <g filter="url(#shadow)">
+      <rect x="82" y="104" width="222" height="166" rx="8" class="surface"/>
+      <text x="98" y="130" class="small">PASO DE ZOOM</text>
+      <text x="98" y="153" class="body">Cada clic cambia</text>
+      <rect x="98" y="166" width="190" height="38" rx="6" class="button"/>
+      <rect x="102" y="170" width="34" height="30" rx="4" fill="#24262a"/>
+      <text x="114" y="190" class="body">−</text>
+      <text x="176" y="191" text-anchor="middle" class="value">25%</text>
+      <rect x="250" y="170" width="34" height="30" rx="4" fill="#24262a"/>
+      <text x="261" y="190" class="body">+</text>
+      <line x1="98" y1="219" x2="288" y2="219" class="rule"/>
+      <text x="98" y="246" class="body" fill="#77baff">↺  Usar 25% predeterminado</text>
+    </g>
+    <text x="0" y="304" class="caption">El valor deja de estar escondido. El panel sólo aparece para editar.</text>
+  </g>
+
+  <!-- B -->
+  <g transform="translate(430 105)">
+    <text x="0" y="0" class="tag">B · MÁS DIRECTA</text>
+    <text x="0" y="29" class="title">Selector de presets</text>
+
+    <rect x="0" y="58" width="340" height="34" rx="3" class="bar"/>
+    <text x="16" y="80" class="small">2.1 MB</text>
+    <line x1="82" y1="64" x2="82" y2="86" class="rule"/>
+    <rect x="94" y="63" width="93" height="24" rx="4" class="button"/>
+    <text x="104" y="80" class="value">Paso 25%</text>
+    <text x="172" y="80" class="small">▴</text>
+    <rect x="195" y="63" width="66" height="24" rx="3" class="button"/>
+    <text x="207" y="80" class="body">125%</text>
+    <rect x="268" y="63" width="24" height="24" rx="3" class="button"/>
+    <text x="276" y="80" class="body">−</text>
+    <rect x="297" y="63" width="24" height="24" rx="3" class="button"/>
+    <text x="305" y="80" class="body">+</text>
+
+    <g filter="url(#shadow)">
+      <rect x="94" y="104" width="170" height="184" rx="6" class="surface"/>
+      <text x="110" y="131" class="small">PASO DE ZOOM</text>
+      <rect x="102" y="142" width="154" height="32" rx="4" class="button"/>
+      <text x="118" y="163" class="body">10%</text>
+      <rect x="102" y="178" width="154" height="32" rx="4" class="button-hover"/>
+      <text x="118" y="199" class="value">✓  25%</text>
+      <rect x="102" y="214" width="154" height="32" rx="4" class="button"/>
+      <text x="118" y="235" class="body">50%</text>
+      <text x="110" y="272" class="body" fill="#77baff">Otro valor…</text>
+    </g>
+    <text x="0" y="322" class="caption">Muy rápido para valores comunes, pero agrega un paso para valores personalizados.</text>
+  </g>
+
+  <!-- C -->
+  <g transform="translate(820 105)">
+    <text x="0" y="0" class="tag">C · MÁS COMPACTA</text>
+    <text x="0" y="29" class="title">Control integrado</text>
+
+    <rect x="0" y="58" width="340" height="34" rx="3" class="bar"/>
+    <text x="16" y="80" class="small">2.1 MB</text>
+    <line x1="82" y1="64" x2="82" y2="86" class="rule"/>
+    <rect x="94" y="63" width="118" height="24" rx="4" class="button"/>
+    <text x="104" y="80" class="small">Paso</text>
+    <text x="147" y="80" class="value">25%</text>
+    <text x="197" y="80" class="small">⌄</text>
+    <rect x="220" y="63" width="66" height="24" rx="3" class="button"/>
+    <text x="232" y="80" class="body">125%</text>
+    <rect x="293" y="63" width="24" height="24" rx="3" class="button"/>
+    <text x="301" y="80" class="body">−</text>
+
+    <g filter="url(#shadow)">
+      <rect x="94" y="104" width="224" height="150" rx="8" class="surface"/>
+      <text x="110" y="132" class="body">Paso entre niveles</text>
+      <text x="302" y="132" text-anchor="end" class="value">25%</text>
+      <rect x="110" y="153" width="192" height="4" rx="2" fill="#555a61"/>
+      <rect x="110" y="153" width="74" height="4" rx="2" class="accent"/>
+      <circle cx="184" cy="155" r="7" fill="#77baff" stroke="#d7ecff" stroke-width="2"/>
+      <text x="110" y="185" class="small">1%</text>
+      <text x="302" y="185" text-anchor="end" class="small">100%</text>
+      <line x1="110" y1="202" x2="302" y2="202" class="rule"/>
+      <text x="110" y="230" class="body" fill="#77baff">Restablecer</text>
+    </g>
+    <text x="0" y="288" class="caption">Limpia y precisa; el deslizador exige más cuidado para fijar un número exacto.</text>
+  </g>
+
+  <rect x="40" y="514" width="1120" height="1" fill="#34373b"/>
+  <text x="40" y="543" class="caption">Recomendación: A. Hace visible la configuración sin convertir la barra de estado en un panel de preferencias.</text>
+</svg>

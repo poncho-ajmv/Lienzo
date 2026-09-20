@@ -1,9 +1,9 @@
 # Estado actual de Lienzo
 
-La versión 0.1.5 es la última publicada. La 0.1.6 está terminada localmente:
-su ejecutable de Windows x86_64 se compiló y validó, pero todavía no se hizo
-commit ni push. Por eso aún no existe el tag, el release ni los paquetes 0.1.6
-para descargar.
+La versión 0.1.6 es la última publicada y dispone de los seis paquetes y sus
+sumas SHA-256 en GitHub Releases. La 0.1.7 está preparada localmente: su
+ejecutable de Windows x86_64 se compiló y validó, pero todavía no se hizo commit
+ni push. Por eso aún no existe el tag, el release ni los paquetes 0.1.7.
 
 ## Validación
 
@@ -14,17 +14,18 @@ cargo +stable-x86_64-pc-windows-gnu clippy --locked --all-targets --target-dir t
 cargo +stable-x86_64-pc-windows-gnu build --release --locked --target-dir target-gnu
 ```
 
-- 31 tests aprobados, incluidas las regresiones del bloqueo de egui, los
-  cursores de redimensionado y los límites del zoom configurable.
+- La suite completa está aprobada, incluidas las regresiones del bloqueo de
+  egui, los cursores de redimensionado y los límites del zoom configurable.
 - Clippy sin advertencias tratadas como error.
 - Formato de Rust verificado.
-- El ejecutable local `target-gnu/release/lienzo.exe` informa versión 0.1.6.
+- El único ejecutable local, `target-gnu/release/lienzo.exe`, informa versión
+  0.1.7.
 - Probado correctamente en Windows x86_64, incluido el cambio repetido entre
   los temas Windows 7, 10 y 11.
-- La validación visual de 0.1.6 sigue pendiente en Linux y macOS; el flujo de
+- La validación visual de 0.1.7 sigue pendiente en Linux y macOS; el flujo de
   publicación los compila de forma aislada al subir la versión.
 - DMG, ZIP portable, Setup.exe, AppImage y DEB están publicados y verificados
-  para 0.1.5.
+  para 0.1.6.
 
 ## Funciona
 
@@ -62,7 +63,7 @@ anterior.
 Crear o abrir un documento cancela selección, curva o polígono multietapa,
 previsualización, texto flotante y arrastres del documento anterior.
 
-## Distribución 0.1.6
+## Distribución 0.1.7
 
 | Sistema | Portable | Instalador |
 |---|---|---|
@@ -75,7 +76,20 @@ Siempre ejecuta calidad; sólo si el tag todavía no existe genera los seis
 paquetes y publica el tag y los archivos con su `SHA256SUMS.txt`. No se crea un
 tag manual.
 
-## Cambios listos para 0.1.6
+## Cambios listos para 0.1.7
+
+- `Ctrl + V` detecta imágenes de forma fiable en Windows, incluso cuando el
+  atajo procede de un botón programable del mouse.
+- Pegar agranda cada eje del lienzo sólo cuando la imagen lo necesita y nunca
+  reduce un documento mayor; la imagen queda como selección flotante en (0, 0).
+- El paso de zoom se muestra en el botón `±25 %`. Su campo recibe foco y
+  selecciona el valor completo al abrirse, admite teclado y no se cierra por
+  hacer clic dentro; Backspace y `Ctrl + A` editan el valor. Sólo `Esc` o un
+  clic exterior lo cierran.
+- La ventana descarta tamaños persistidos inválidos y arranca con dimensiones
+  útiles y un mínimo de 640 × 480.
+
+## Cambios de 0.1.6
 
 - Los tres tiradores de cambio de tamaño del lienzo anuncian su dirección con
   cursores horizontal, vertical o diagonal.

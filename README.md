@@ -26,13 +26,13 @@ cargo test    # the engine, without a window
 cargo run     # the application
 ```
 
-> **Status:** 0.1.5 is the latest published release. Version 0.1.6 is complete
-> and locally validated on Windows x86_64, ready to publish with a push to
-> `main`. It adds configurable zoom controls, resize cursors, Canvas-only view,
-> and a thumbnail integrated with each theme. Validation on a real Linux desktop
-> and commercial signing are still pending. Lienzo is exclusively a downloadable
-> native desktop application; no browser version is planned. Full details appear
-> below and in `ESTADO.md`.
+> **Status:** 0.1.6 is the latest published release. Version 0.1.7 is prepared
+> locally for Windows x86_64 with reliable image pasting, safe canvas growth,
+> stable startup sizing, and a keyboard-friendly zoom-step panel. A push to
+> `main` will run the automated cross-platform release. Validation on a real
+> Linux desktop and commercial signing are still pending. Lienzo is exclusively
+> a downloadable native desktop application; no browser version is planned.
+> Full details appear below and in `ESTADO.md`.
 
 ---
 
@@ -109,8 +109,10 @@ saved automatically for the next session.
 
 The percentage in the status bar is editable directly between **12.5%** and
 **800%**. The `−` and `+` buttons, magnifier, and shortcuts use the increment
-chosen from the `⚙` button beside the percentage; that increment is retained in
-preferences. `Cmd/Ctrl + wheel` also changes zoom over the workspace.
+shown on the `±25%` button; open it to type a value or adjust it with `− / +`.
+Escape or a click outside closes the panel; editing keys such as Backspace and
+`Cmd/Ctrl+A` remain inside the field. The increment is retained in preferences.
+`Cmd/Ctrl + wheel` also changes zoom over the workspace.
 
 Use **View → Canvas-only** to temporarily hide the ribbon, bars, and thumbnail
 and focus on the drawing. `Esc` restores the full interface. This is separate
@@ -199,8 +201,8 @@ C4Component
 
 **The boundary lies between `doc` and `main`.** `canvas`, `shapes`, and `doc`
 do not know that egui exists: they depend only on `ecolor` for the color type.
-That is why the 31 tests run without a window, GPU, or event loop. Everything
-that touches egui lives on the other side.
+That is why the core test suite runs without a window, GPU, or event loop.
+Everything that touches egui lives on the other side.
 
 ## Decisions worth explaining
 

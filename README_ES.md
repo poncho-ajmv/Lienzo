@@ -27,14 +27,14 @@ cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
 
-> **Estado:** 0.1.5 es la última versión publicada. La 0.1.6 está terminada y
-> validada localmente en Windows x86_64; queda preparada para publicar cuando
-> se haga push a `main`. Incluye controles de zoom configurables, cursores de
-> redimensionado, vista Solo lienzo y una miniatura integrada con cada tema.
-> Falta validarla en un escritorio Linux real y agregar firma comercial. Lienzo
-> es exclusivamente una aplicación nativa de escritorio descargable; no se
-> planea una versión para navegador. El detalle completo está más abajo y en
-> `ESTADO.md`.
+> **Estado:** 0.1.6 es la última versión publicada. La 0.1.7 está preparada
+> localmente para Windows x86_64 con pegado de imágenes fiable, crecimiento
+> seguro del lienzo, tamaño de inicio estable y un panel de paso de zoom cómodo
+> con teclado. Un push a `main` ejecutará la publicación multiplataforma
+> automática. Falta validarla en un escritorio Linux real y agregar firma
+> comercial. Lienzo es exclusivamente una aplicación nativa de escritorio
+> descargable; no se planea una versión para navegador. El detalle completo
+> está más abajo y en `ESTADO.md`.
 
 ---
 
@@ -108,9 +108,11 @@ guardan solos para la próxima vez.
 ### Vista y zoom
 
 El porcentaje de la barra de estado se puede editar directamente entre **12,5 %**
-y **800 %**. Los botones `−` y `+`, la lupa y los atajos usan el salto elegido
-en el botón `⚙` junto al porcentaje; ese paso se guarda en las preferencias. La
-rueda con `Cmd/Ctrl` también cambia el zoom sobre el área de trabajo.
+y **800 %**. Los botones `−` y `+`, la lupa y los atajos usan el salto visible
+en el botón `±25 %`; al abrirlo, el valor se puede escribir con el teclado o
+ajustar con `− / +`. `Esc` o un clic fuera cierran el panel; Backspace y
+`Cmd/Ctrl+A` permanecen dentro del campo. El paso se guarda en las preferencias.
+La rueda con `Cmd/Ctrl` también cambia el zoom sobre el área de trabajo.
 
 Desde **Ver → Solo lienzo** se ocultan temporalmente la cinta, las barras y la
 miniatura para concentrarse en el dibujo. `Esc` restaura la interfaz. Esta vista
@@ -199,9 +201,9 @@ C4Component
 ```
 
 **La frontera está entre `doc` y `main`.** `canvas`, `shapes` y `doc` no saben
-que egui existe: dependen sólo de `ecolor` para el tipo de color. Por eso los 31
-tests corren sin ventana, sin GPU y sin bucle de eventos. Todo lo que toque egui
-vive del otro lado.
+que egui existe: dependen sólo de `ecolor` para el tipo de color. Por eso las
+pruebas del núcleo corren sin ventana, sin GPU y sin bucle de eventos. Todo lo
+que toque egui vive del otro lado.
 
 ## Decisiones que valen la pena contar
 
