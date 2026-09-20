@@ -1,8 +1,8 @@
-# Lienzo 0.1.7 — preparada localmente
+# Lienzo 0.1.7
 
 Esta versión refuerza las acciones cotidianas de pegar imágenes y ajustar el
-zoom. Está preparada y validada localmente en Windows x86_64; 0.1.6 sigue siendo
-la versión pública hasta que se haga push a `main`.
+zoom. Está publicada para Windows x86_64, macOS ARM64 y Linux x86_64, y fue
+validada localmente en Windows x86_64.
 
 ## Novedades
 

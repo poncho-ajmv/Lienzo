@@ -27,14 +27,13 @@ cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
 
-> **Estado:** 0.1.6 es la última versión publicada. La 0.1.7 está preparada
-> localmente para Windows x86_64 con pegado de imágenes fiable, crecimiento
-> seguro del lienzo, tamaño de inicio estable y un panel de paso de zoom cómodo
-> con teclado. Un push a `main` ejecutará la publicación multiplataforma
-> automática. Falta validarla en un escritorio Linux real y agregar firma
-> comercial. Lienzo es exclusivamente una aplicación nativa de escritorio
-> descargable; no se planea una versión para navegador. El detalle completo
-> está más abajo y en `ESTADO.md`.
+> **Estado:** 0.1.7 es la última versión publicada. Incluye pegado de imágenes
+> fiable, crecimiento seguro del lienzo, tamaño de inicio estable y un panel de
+> paso de zoom cómodo con teclado. GitHub Releases ofrece seis paquetes para
+> Windows, macOS y Linux junto con sus sumas SHA-256. Falta validarla en un
+> escritorio Linux real y agregar firma comercial. Lienzo es exclusivamente una
+> aplicación nativa de escritorio descargable; no se planea una versión para
+> navegador. El detalle completo está más abajo y en `ESTADO.md`.
 
 ---
 

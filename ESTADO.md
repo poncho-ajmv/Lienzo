@@ -1,9 +1,8 @@
 # Estado actual de Lienzo
 
-La versión 0.1.6 es la última publicada y dispone de los seis paquetes y sus
-sumas SHA-256 en GitHub Releases. La 0.1.7 está preparada localmente: su
-ejecutable de Windows x86_64 se compiló y validó, pero todavía no se hizo commit
-ni push. Por eso aún no existe el tag, el release ni los paquetes 0.1.7.
+La versión 0.1.7 es la última publicada y dispone de seis paquetes para Windows,
+macOS y Linux junto con sus sumas SHA-256 en GitHub Releases. Su instalador de
+Windows x86_64 también se compiló, instaló y validó localmente.
 
 ## Validación
 
@@ -25,7 +24,7 @@ cargo +stable-x86_64-pc-windows-gnu build --release --locked --target-dir target
 - La validación visual de 0.1.7 sigue pendiente en Linux y macOS; el flujo de
   publicación los compila de forma aislada al subir la versión.
 - DMG, ZIP portable, Setup.exe, AppImage y DEB están publicados y verificados
-  para 0.1.6.
+  para 0.1.7.
 
 ## Funciona
 

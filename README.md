@@ -26,13 +26,13 @@ cargo test    # the engine, without a window
 cargo run     # the application
 ```
 
-> **Status:** 0.1.6 is the latest published release. Version 0.1.7 is prepared
-> locally for Windows x86_64 with reliable image pasting, safe canvas growth,
-> stable startup sizing, and a keyboard-friendly zoom-step panel. A push to
-> `main` will run the automated cross-platform release. Validation on a real
-> Linux desktop and commercial signing are still pending. Lienzo is exclusively
-> a downloadable native desktop application; no browser version is planned.
-> Full details appear below and in `ESTADO.md`.
+> **Status:** 0.1.7 is the latest published release. It adds reliable image
+> pasting, safe canvas growth, stable startup sizing, and a keyboard-friendly
+> zoom-step panel. GitHub Releases provides six Windows, macOS, and Linux
+> packages plus SHA-256 checksums. Validation on a real Linux desktop and
+> commercial signing are still pending. Lienzo is exclusively a downloadable
+> native desktop application; no browser version is planned. Full details appear
+> below and in `ESTADO.md`.
 
 ---
 
