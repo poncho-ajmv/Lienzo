@@ -875,12 +875,12 @@ impl App {
                 self.doc.canvas.rotate(q);
             }
             Cmd::FlipH => {
-                self.doc.commit_selection();
-                self.doc.canvas.flip_horizontal();
+                self.doc.flip_horizontal();
+                self.sel_dirty = true;
             }
             Cmd::FlipV => {
-                self.doc.commit_selection();
-                self.doc.canvas.flip_vertical();
+                self.doc.flip_vertical();
+                self.sel_dirty = true;
             }
             Cmd::InvertColors => self.doc.invert_selection_colors(),
             Cmd::ZoomIn => self.adjust_zoom(1.0),
@@ -1747,6 +1747,9 @@ impl App {
                 self.sel_dirty = true;
             } else {
                 self.doc.drag_to(c, shift);
+                if self.doc.sel.is_some() {
+                    self.sel_dirty = true;
+                }
             }
         }
     }

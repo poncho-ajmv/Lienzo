@@ -160,6 +160,25 @@ impl Selection {
         Some(out)
     }
 
+    fn flip_pixels(&mut self, horizontal: bool) -> bool {
+        let Some(px) = self.px.as_mut() else {
+            return false;
+        };
+        let (w, h) = self.src;
+        if horizontal {
+            for row in px.chunks_exact_mut(w) {
+                row.reverse();
+            }
+        } else {
+            for y in 0..h / 2 {
+                for x in 0..w {
+                    px.swap(y * w + x, (h - 1 - y) * w + x);
+                }
+            }
+        }
+        true
+    }
+
     /// Dónde está la manija `i`, en coordenadas del lienzo.
     pub fn handle(&self, i: usize) -> Pt {
         let (hx, hy) = SEL_HANDLES[i];
@@ -217,6 +236,8 @@ enum Drag {
     SelectScale {
         handle: usize,
         orig: Rect,
+        flip_x: bool,
+        flip_y: bool,
     },
 }
 
@@ -404,6 +425,33 @@ impl Doc {
         }
     }
 
+    fn flip_selection(&mut self, horizontal: bool) -> bool {
+        if self.sel.is_none() {
+            return false;
+        }
+        if self.sel.as_ref().is_some_and(|sel| sel.px.is_none()) {
+            self.canvas.begin_stroke();
+            self.lift();
+        }
+
+        let Some(sel) = self.sel.as_mut() else {
+            return false;
+        };
+        sel.flip_pixels(horizontal)
+    }
+
+    pub fn flip_horizontal(&mut self) {
+        if !self.flip_selection(true) {
+            self.canvas.flip_horizontal();
+        }
+    }
+
+    pub fn flip_vertical(&mut self) {
+        if !self.flip_selection(false) {
+            self.canvas.flip_vertical();
+        }
+    }
+
     pub fn invert_selection_colors(&mut self) {
         let r =
             self.sel
@@ -473,7 +521,12 @@ impl Doc {
                         .as_ref()
                         .map(|s| s.r)
                         .unwrap_or(Rect::new(0, 0, 1, 1));
-                    self.drag = Drag::SelectScale { handle: i, orig };
+                    self.drag = Drag::SelectScale {
+                        handle: i,
+                        orig,
+                        flip_x: false,
+                        flip_y: false,
+                    };
                     return;
                 }
 
@@ -612,29 +665,57 @@ impl Doc {
                 self.drag = Drag::SelectNew { a, lasso };
             }
 
-            Drag::SelectScale { handle, orig } => {
+            Drag::SelectScale {
+                handle,
+                orig,
+                mut flip_x,
+                mut flip_y,
+            } => {
                 if let Some(sel) = self.sel.as_mut() {
                     let (hx, hy) = SEL_HANDLES[handle];
                     let (mut l, mut t) = (orig.x as f32, orig.y as f32);
                     let (mut r, mut b) = (l + orig.w as f32, t + orig.h as f32);
-                    // El eje con 0.5 no se toca; los otros se topan contra 1 px
-                    // para que la caja no se dé vuelta al pasarse de largo.
                     if hx == 0.0 {
-                        l = p.0.min(r - 1.0);
+                        let crossed = p.0 > r;
+                        (l, r) = (p.0.min(r), p.0.max(r));
+                        if crossed != flip_x {
+                            sel.flip_pixels(true);
+                            flip_x = crossed;
+                        }
                     } else if hx == 1.0 {
-                        r = p.0.max(l + 1.0);
+                        let crossed = p.0 < l;
+                        (l, r) = (p.0.min(l), p.0.max(l));
+                        if crossed != flip_x {
+                            sel.flip_pixels(true);
+                            flip_x = crossed;
+                        }
                     }
                     if hy == 0.0 {
-                        t = p.1.min(b - 1.0);
+                        let crossed = p.1 > b;
+                        (t, b) = (p.1.min(b), p.1.max(b));
+                        if crossed != flip_y {
+                            sel.flip_pixels(false);
+                            flip_y = crossed;
+                        }
                     } else if hy == 1.0 {
-                        b = p.1.max(t + 1.0);
+                        let crossed = p.1 < t;
+                        (t, b) = (p.1.min(t), p.1.max(t));
+                        if crossed != flip_y {
+                            sel.flip_pixels(false);
+                            flip_y = crossed;
+                        }
                     }
                     sel.r.x = l.max(0.0) as usize;
                     sel.r.y = t.max(0.0) as usize;
                     sel.r.w = ((r - l).round() as usize).max(1);
                     sel.r.h = ((b - t).round() as usize).max(1);
                 }
-                self.drag = Drag::SelectScale { handle, orig };
+                self.drag = Drag::SelectScale {
+                    handle,
+                    orig,
+                    flip_x,
+                    flip_y,
+                };
             }
 
             Drag::SelectMove { grab, origin } => {
@@ -1119,6 +1200,29 @@ mod tests {
         assert_eq!((sel.r.w, sel.r.h), (8, 3));
     }
 
+    #[test]
+    fn voltear_actua_sobre_la_seleccion_pegada() {
+        let mut d = Doc::new(4, 4);
+        d.paste(
+            2,
+            2,
+            vec![Color32::RED, Color32::GREEN, Color32::BLUE, Color32::YELLOW],
+        );
+
+        d.flip_horizontal();
+        d.flip_vertical();
+
+        assert_eq!(
+            d.sel.as_ref().and_then(Selection::pixels),
+            Some(vec![
+                Color32::YELLOW,
+                Color32::BLUE,
+                Color32::GREEN,
+                Color32::RED,
+            ])
+        );
+    }
+
     /// Copiar y pegar dentro de la app, sin tocar el sistema operativo.
     #[test]
     fn copiar_y_pegar_interno() {
@@ -1203,6 +1307,26 @@ mod tests {
             d.sel.as_ref().unwrap().pixels().unwrap(),
             antes,
             "volver al tamaño de antes tiene que dar la imagen de antes"
+        );
+    }
+
+    #[test]
+    fn cruzar_una_manija_refleja_la_seleccion() {
+        let mut d = Doc::new(8, 8);
+        d.paste(2, 1, vec![Color32::RED, Color32::BLUE]);
+
+        let esquina = d.sel.as_ref().unwrap().handle(4);
+        d.down(esquina, false, 0.1);
+        d.drag_to((-2.0, esquina.1), false);
+        assert_eq!(
+            d.sel.as_ref().and_then(Selection::pixels),
+            Some(vec![Color32::BLUE, Color32::RED])
+        );
+
+        d.drag_to(esquina, false);
+        assert_eq!(
+            d.sel.as_ref().and_then(Selection::pixels),
+            Some(vec![Color32::RED, Color32::BLUE])
         );
     }
 
