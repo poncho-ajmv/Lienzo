@@ -1,6 +1,6 @@
 # Estado actual de Lienzo
 
-La versión 0.1.7 es la última publicada y dispone de seis paquetes para Windows,
+La versión 0.1.8 es la última publicada y dispone de seis paquetes para Windows,
 macOS y Linux junto con sus sumas SHA-256 en GitHub Releases. Su instalador de
 Windows x86_64 también se compiló y validó localmente.
 
@@ -18,14 +18,14 @@ cargo +stable-x86_64-pc-windows-gnu build --release --locked --target-dir target
   los límites del zoom configurable.
 - Clippy sin advertencias tratadas como error.
 - Formato de Rust verificado.
-- El único ejecutable local, `target-gnu/release/lienzo.exe`, informa versión
-  0.1.7.
+- El ejecutable local, `target-clean/x86_64-pc-windows-gnu/release/lienzo.exe`,
+  informa versión 0.1.8.
 - Probado correctamente en Windows x86_64, incluido el cambio repetido entre
   los temas Windows 7, 10 y 11.
-- La validación visual de 0.1.7 sigue pendiente en Linux y macOS; el flujo de
+- La validación visual de 0.1.8 sigue pendiente en Linux y macOS; el flujo de
   publicación los compila de forma aislada al subir la versión.
 - DMG, ZIP portable, Setup.exe, AppImage y DEB están publicados y verificados
-  para 0.1.7.
+  para 0.1.8.
 
 ## Funciona
 
@@ -63,7 +63,7 @@ anterior.
 Crear o abrir un documento cancela selección, curva o polígono multietapa,
 previsualización, texto flotante y arrastres del documento anterior.
 
-## Distribución 0.1.7
+## Distribución 0.1.8
 
 | Sistema | Portable | Instalador |
 |---|---|---|
@@ -75,6 +75,14 @@ Al hacer push a `main`, GitHub Actions detecta la versión de `Cargo.toml`.
 Siempre ejecuta calidad; sólo si el tag todavía no existe genera los seis
 paquetes y publica el tag y los archivos con su `SHA256SUMS.txt`. No se crea un
 tag manual.
+
+## Cambios de 0.1.8
+
+- Copiar una selección para usarla en otra aplicación ya no activa el pegado
+  interno de Lienzo cuando su ventana perdió el foco.
+- Mover una selección hasta el borde conserva todos sus píxeles al confirmarla.
+- Las 36 pruebas, Clippy y la compilación de `release` pasan en Windows; GitHub
+  Actions validó y compiló los paquetes para Windows, macOS y Linux.
 
 ## Cambios de 0.1.7
 

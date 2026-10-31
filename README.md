@@ -26,13 +26,13 @@ cargo test    # the engine, without a window
 cargo run     # the application
 ```
 
-> **Status:** 0.1.7 is the latest release. It adds reliable image pasting, safe
-> canvas growth, direct selection mirroring, stable startup sizing, and a
-> keyboard-friendly zoom-step panel. GitHub Releases provides six Windows,
-> macOS, and Linux packages plus SHA-256 checksums. Validation on a real Linux
-> desktop and commercial signing are still pending. Lienzo is exclusively a
-> downloadable native desktop application; no browser version is planned. Full
-> details appear below and in `ESTADO.md`.
+> **Status:** 0.1.8 is the latest release. It prevents an image copied from
+> Lienzo from being pasted back into its canvas when another app has focus, and
+> keeps moved selections inside the canvas. GitHub Releases provides six
+> Windows, macOS, and Linux packages plus SHA-256 checksums. Validation on a
+> real Linux desktop and commercial signing are still pending. Lienzo is
+> exclusively a downloadable native desktop application; no browser version is
+> planned. Full details appear below and in `ESTADO.md`.
 
 ---
 
