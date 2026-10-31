@@ -724,8 +724,10 @@ impl Doc {
                 // del lienzo sin vuelta, y `region` termina leyendo fuera.
                 let (mw, mh) = (self.canvas.w as f32, self.canvas.h as f32);
                 if let Some(sel) = &mut self.sel {
-                    sel.r.x = (origin.0 as f32 + dx).clamp(0.0, (mw - 1.0).max(0.0)) as usize;
-                    sel.r.y = (origin.1 as f32 + dy).clamp(0.0, (mh - 1.0).max(0.0)) as usize;
+                    let max_x = (mw - sel.r.w as f32).max(0.0);
+                    let max_y = (mh - sel.r.h as f32).max(0.0);
+                    sel.r.x = (origin.0 as f32 + dx).clamp(0.0, max_x) as usize;
+                    sel.r.y = (origin.1 as f32 + dy).clamp(0.0, max_y) as usize;
                 }
                 self.drag = Drag::SelectMove { grab, origin };
             }
@@ -1130,6 +1132,28 @@ mod tests {
             pasos_antes + 1,
             "mover la selección dejó más de un paso en el historial"
         );
+    }
+
+    #[test]
+    fn mover_seleccion_al_borde_conserva_todos_los_pixeles() {
+        let mut d = Doc::new(20, 20);
+        d.canvas.clear_region(Rect::new(2, 2, 5, 5), Color32::RED);
+
+        d.tool = Tool::Select;
+        d.down((2.0, 2.0), false, 1.0);
+        d.drag_to((6.0, 6.0), false);
+        d.up((6.0, 6.0));
+
+        d.down((4.0, 4.0), false, 1.0);
+        d.drag_to((30.0, 4.0), false);
+        d.up((30.0, 4.0));
+        d.commit_selection();
+
+        for y in 2..7 {
+            for x in 15..20 {
+                assert_eq!(d.canvas.geti(x, y), Some(Color32::RED));
+            }
+        }
     }
 
     /// Cambiar de herramienta a mitad de una curva dejaba el estado armado: el
