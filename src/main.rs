@@ -88,6 +88,10 @@ fn system_paste_keys_down() -> bool {
     false
 }
 
+fn is_system_paste_pressed(focused: bool, keys_down: bool, keys_were_down: bool) -> bool {
+    focused && keys_down && !keys_were_down
+}
+
 /// Cursor que representa los ejes que modifica cada tirador del lienzo.
 fn canvas_resize_cursor(horizontal: bool, vertical: bool) -> egui::CursorIcon {
     match (horizontal, vertical) {
@@ -1181,8 +1185,10 @@ impl App {
     fn keyboard(&mut self, ctx: &egui::Context) -> Vec<Cmd> {
         let mut cmds = Vec::new();
         let paste_keys_were_down = self.paste_keys_down;
-        self.paste_keys_down = system_paste_keys_down();
-        let system_paste_pressed = self.paste_keys_down && !paste_keys_were_down;
+        let focused = ctx.input(|i| i.focused);
+        self.paste_keys_down = focused && system_paste_keys_down();
+        let system_paste_pressed =
+            is_system_paste_pressed(focused, self.paste_keys_down, paste_keys_were_down);
         if self.pending_action.is_some() {
             if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
                 self.pending_action = None;
@@ -4586,6 +4592,13 @@ mod tests {
             opaque_rgba(&[255, 0, 0, 128]),
             Color32::from_rgb(255, 127, 127)
         );
+    }
+
+    #[test]
+    fn ctrl_v_global_solo_pega_con_lienzo_enfocado() {
+        assert!(!is_system_paste_pressed(false, true, false));
+        assert!(is_system_paste_pressed(true, true, false));
+        assert!(!is_system_paste_pressed(true, true, true));
     }
 
     #[test]
