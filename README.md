@@ -26,13 +26,13 @@ cargo test    # the engine, without a window
 cargo run     # the application
 ```
 
-> **Status:** 0.1.9 is being prepared. It fixes a Windows freeze when moving the
-> Lienzo window between monitors with different display scale factors. The fix
-> was confirmed on Windows. GitHub Releases provides six Windows, macOS, and
-> Linux packages plus SHA-256 checksums. Validation on a real Linux desktop and
-> commercial signing are still pending. Lienzo is exclusively a downloadable
-> native desktop application; no browser version is planned. Full details
-> appear below and in `ESTADO.md`.
+> **Status:** 0.1.9 is the latest release. It fixes a Windows freeze when moving
+> the Lienzo window between monitors with different display scale factors; the
+> fix was confirmed on Windows. GitHub Releases provides six packages for
+> Windows, macOS, and Linux, plus SHA-256 checksums. Validation on a real Linux
+> desktop and commercial signing are still pending. Lienzo is exclusively a
+> downloadable native desktop application; no browser version is planned. Full
+> details appear below and in `ESTADO.md`.
 
 ---
 

@@ -1,8 +1,8 @@
 # Estado actual de Lienzo
 
-Se prepara la versión 0.1.9. Corrige un bloqueo de Windows al mover la ventana
-entre monitores con distintos escalados de pantalla. La versión 0.1.8 sigue
-siendo la última publicada hasta que termine el flujo de GitHub Actions.
+La versión 0.1.9 está publicada con seis paquetes para Windows, macOS y Linux y
+sus sumas SHA-256 en GitHub Releases. Corrige un bloqueo de Windows al mover la
+ventana entre monitores con distintos escalados de pantalla.
 
 ## Validación
 
@@ -19,13 +19,14 @@ cargo +stable-x86_64-pc-windows-gnu build --release --locked --target-dir target
 - Clippy sin advertencias tratadas como error.
 - Formato de Rust verificado.
 - El ejecutable local, `target-clean/x86_64-pc-windows-gnu/release/lienzo.exe`,
-  informa versión 0.1.8; la compilación 0.1.9 se hará después del incremento.
+  informa versión 0.1.9.
 - Probado correctamente en Windows x86_64, incluido el cambio repetido entre
-  los temas Windows 7, 10 y 11.
-- La validación visual de 0.1.8 sigue pendiente en Linux y macOS; el flujo de
-  publicación los compila de forma aislada al subir la versión.
+  los temas Windows 7, 10 y 11 y el movimiento entre monitores con distintos
+  escalados.
+- La validación visual de 0.1.9 sigue pendiente en Linux y macOS; GitHub Actions
+  compiló los paquetes para ambos sistemas.
 - DMG, ZIP portable, Setup.exe, AppImage y DEB están publicados y verificados
-  para 0.1.8.
+  para 0.1.9.
 
 ## Funciona
 
@@ -90,8 +91,8 @@ tag manual.
   el arrastre de la ventana, evitando el ciclo de redimensionado entre monitores
   con distintos escalados.
 - El usuario confirmó que el bloqueo dejó de ocurrir en Windows.
-- El incremento de versión activa GitHub Actions para validar y publicar los
-  paquetes de Windows, macOS y Linux.
+- Las 36 pruebas y Clippy pasan; GitHub Actions compiló y publicó los seis
+  paquetes para Windows, macOS y Linux.
 
 ## Cambios de 0.1.7
 

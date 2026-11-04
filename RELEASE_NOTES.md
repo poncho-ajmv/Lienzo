@@ -14,7 +14,7 @@ monitors with different display scale factors.
 
 ## Packages
 
-GitHub Actions will validate the code and build six packages for Windows
+GitHub Actions validated the code and published six packages for Windows
 x86_64, macOS ARM64, and Linux x86_64, along with tag `v0.1.9` and
 `SHA256SUMS.txt`. The binaries are not commercially signed, so macOS Gatekeeper
 or Windows SmartScreen may show a warning. Use `SHA256SUMS.txt` to verify each
