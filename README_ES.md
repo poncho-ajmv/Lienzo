@@ -1,40 +1,42 @@
 <p align="center">
-  <img src="assets/icons/lienzo.png" width="180" alt="Logo de Lienzo">
+  <img src="assets/icons/lienzo.png" width="96" alt="Logo de Lienzo">
 </p>
 
-# Lienzo
+<h1 align="center">Lienzo</h1>
 
-[Sitio oficial](https://lienzo.surge.sh/) · [Descargas](https://github.com/poncho-ajmv/Lienzo/releases) · [English](README.md) · [Español](README_ES.md)
+<p align="center">
+  Un editor de imágenes de escritorio, sencillo e inspirado en Paint,<br>
+  para Windows, macOS y Linux. Incluye 20 temas, entre ellos los estilos clásicos de Windows.
+</p>
 
-En todos los sistemas operativos siempre me ha gustado tener a mano una
-herramienta sencilla para trabajar con imágenes, sin recurrir a programas
-demasiado sofisticados. Durante años, esa herramienta fue Paint.
+<p align="center">
+  <a href="https://github.com/poncho-ajmv/Lienzo/releases/latest">Descargar la versión más reciente</a> ·
+  <a href="https://lienzo.surge.sh/es/">Sitio del proyecto</a> ·
+  <a href="README.md">Read in English</a>
+</p>
 
-Pero al moverme entre Windows, Linux y macOS ya no me sentía cómodo dependiendo
-de una aplicación ligada a un solo sistema. Entonces pensé: ¿por qué no crear
-una propia?
+<p align="center">
+  <img src="assets/screenshots/lienzo-principal.png" width="1000" alt="Lienzo con el tema de Windows 10 y el área de dibujo abierta">
+</p>
 
-Así nació **Lienzo**: un editor de imágenes libre, rápido, ligero y agradable a
-la vista, inspirado en la sencillez de Paint pero pensado para acompañarte en
-distintos sistemas operativos. También le puse detalles, temas y gustos
-personales para quienes disfrutamos la nostalgia: Windows XP, 7, 10 y 11,
-GNOME, KDE, macOS y tres estilos propios. Comenzó como una necesidad personal y
-hoy lo comparto con la comunidad para que cualquiera pueda usarlo, estudiarlo y
-mejorarlo.
+<p align="center"><strong>Libre y de código abierto · Licencia MIT · Versiones nativas de escritorio</strong></p>
+
+> **Versión 0.1.9:** hay descargas para Windows, macOS y Linux. Se probó en
+> Windows y macOS; los paquetes de Linux compilan, pero falta validarlos en una
+> distribución de escritorio real. Los instaladores no tienen firma comercial
+> y podrían mostrar un aviso de seguridad al abrirlos por primera vez. Consultá
+> los [requisitos](#requisitos) y las [descargas](#descargas-e-instalación).
+
+---
+
+Lienzo comenzó como una alternativa personal a depender del editor de imágenes
+de un solo sistema operativo. Conserva el estilo sencillo de Paint y suma temas
+inspirados en Windows XP, 7, 10 y 11, GNOME, KDE, macOS y estilos propios.
 
 ```sh
 cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
-
-> **Estado:** la versión 0.1.9 es la más reciente. Corrige un bloqueo de Windows
-> al mover la ventana de Lienzo entre monitores con distintos escalados de
-> pantalla; el arreglo se confirmó en Windows. GitHub Releases ofrece seis
-> paquetes para Windows, macOS y Linux junto con sus sumas SHA-256. Falta
-> validarla en un escritorio Linux real y agregar firma comercial. Lienzo es
-> exclusivamente una aplicación nativa de escritorio descargable; no se planea
-> una versión para navegador. El detalle completo está más abajo y en
-> `ESTADO.md`.
 
 ---
 
