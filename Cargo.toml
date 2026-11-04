@@ -1,6 +1,6 @@
 [package]
 name = "lienzo"
-version = "0.1.8"
+version = "0.1.9"
 edition = "2021"
 license = "MIT"
 description = "A Microsoft Paint clone in Rust, with Windows XP/7/10/11, Linux and macOS skins."
@@ -50,6 +50,10 @@ image = { version = "0.25", default-features = false, features = [
 
 [target.'cfg(windows)'.build-dependencies]
 winresource = "0.1.31"
+
+# shortcut: pin the upstream fix until winit publishes it in stable 0.30.x; remove then.
+[patch.crates-io]
+winit = { git = "https://github.com/rust-windowing/winit", rev = "39c4009c41e5977d779cf8a365792c8153ca77c5" }
 
 [profile.release]
 opt-level = 3
