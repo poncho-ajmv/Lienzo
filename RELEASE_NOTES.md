@@ -1,20 +1,21 @@
-# Lienzo 0.1.8
+# Lienzo 0.1.9
 
-Esta versión corrige dos casos que podían alterar el dibujo durante el uso
-normal de selección y portapapeles.
+This release fixes a Windows freeze when moving the Lienzo window between
+monitors with different display scale factors.
 
-## Correcciones
+## Fixes
 
-- Pegar en otra aplicación ya no pega también dentro de Lienzo cuando su ventana
-  perdió el foco.
-- Mover una selección hasta el borde mantiene todos sus píxeles dentro del
-  lienzo y evita recortarlos al confirmar.
-- Se agregaron pruebas de regresión para ambos casos; las 36 pruebas pasan.
+- During a live window drag, Lienzo now applies the DPI-adjusted rectangle
+  suggested by Windows. This prevents repeated scale changes and runaway
+  resizing when crossing mixed-DPI monitor boundaries.
+- The existing DPI adjustment remains in place outside a live drag.
+- The fix was confirmed by dragging Lienzo between monitors with different
+  scaling on Windows.
 
-## Paquetes
+## Packages
 
-GitHub Actions publicó los seis paquetes de Windows x86_64, macOS ARM64 y Linux
-x86_64, junto con el tag `v0.1.8` y `SHA256SUMS.txt`. Los binarios no tienen
-firma comercial, por lo que macOS Gatekeeper o Windows SmartScreen pueden
-mostrar una advertencia. Use `SHA256SUMS.txt` para comprobar la integridad de
-cada descarga.
+GitHub Actions will validate the code and build six packages for Windows
+x86_64, macOS ARM64, and Linux x86_64, along with tag `v0.1.9` and
+`SHA256SUMS.txt`. The binaries are not commercially signed, so macOS Gatekeeper
+or Windows SmartScreen may show a warning. Use `SHA256SUMS.txt` to verify each
+download.

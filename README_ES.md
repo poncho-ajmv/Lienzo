@@ -27,10 +27,10 @@ cargo test    # el motor, sin ventana
 cargo run     # la aplicación
 ```
 
-> **Estado:** 0.1.8 es la última versión. Evita que una imagen copiada desde
-> Lienzo también se pegue en su lienzo cuando otra aplicación tiene el foco, y
-> mantiene las selecciones movidas dentro del lienzo. GitHub Releases ofrece
-> seis paquetes para Windows, macOS y Linux junto con sus sumas SHA-256. Falta
+> **Estado:** se prepara la versión 0.1.9. Corrige un bloqueo de Windows al
+> mover la ventana de Lienzo entre monitores con distintos escalados de
+> pantalla. El arreglo se confirmó en Windows. GitHub Releases ofrece seis
+> paquetes para Windows, macOS y Linux junto con sus sumas SHA-256. Falta
 > validarla en un escritorio Linux real y agregar firma comercial. Lienzo es
 > exclusivamente una aplicación nativa de escritorio descargable; no se planea
 > una versión para navegador. El detalle completo está más abajo y en
